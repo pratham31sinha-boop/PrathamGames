@@ -1,0 +1,18 @@
+[
+  {
+    "id": "act_1794246317379",
+    "timestamp": "2026-11-09 17:45:17 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Subway Surfers",
+    "slug": "subway-surfers",
+    "category": "Adventure",
+    "device": "Linux / Chrome",
+    "path": "/"
+  },
+  {
+    "type": "USER_ENTER",
+    "game": "Pratham Store Home",
+    "timestamp": "2026-11-09T17:34:55.880313+00:00",
+    "device": "Linux / Chrome"
+  }
+]
