@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794246387645",
+    "timestamp": "2026-11-09 17:46:27 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Stick Rush",
+    "slug": "stick-rush",
+    "category": "Arcade",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=subway-surfers"
+  },
+  {
     "id": "act_1794246384183",
     "timestamp": "2026-11-09 17:46:24 UTC",
     "type": "GAME_PLAY",
