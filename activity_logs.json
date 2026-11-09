@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794246475377",
+    "timestamp": "2026-11-09 17:47:55 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Sushi Party",
+    "slug": "sushi-party-io",
+    "category": "Arcade",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/"
+  },
+  {
     "id": "act_1794246396740",
     "timestamp": "2026-11-09 17:46:36 UTC",
     "type": "GAME_PLAY",
