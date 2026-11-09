@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794246396740",
+    "timestamp": "2026-11-09 17:46:36 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Temple Run 2",
+    "slug": "temple-run-2",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=stick-rush"
+  },
+  {
     "id": "act_1794246387645",
     "timestamp": "2026-11-09 17:46:27 UTC",
     "type": "GAME_PLAY",
