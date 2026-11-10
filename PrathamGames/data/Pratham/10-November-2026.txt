@@ -33,3 +33,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:54:31 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 2166 pts | Duration: 1m 38s
 [11:54:31 AM IST] GAME PLAYED: Stickman Hook | Category: Skill | Score: Active Session Started | Duration: 0m
 [11:54:47 AM IST] GAME PLAYED: Stickman Hook | Category: Skill | Score: 359 pts | Duration: 15s
+[11:54:47 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: Active Session Started | Duration: 0m
+[11:57:12 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: 3210 pts | Duration: 2m 25s
