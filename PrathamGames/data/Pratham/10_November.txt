@@ -58,3 +58,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [03:30:31 PM IST] GAME PLAYED: MineFun.io | Category: .io & Arena | Score: Active Session Started | Duration: 0m
 [03:30:43 PM IST] GAME PLAYED: MineFun.io | Category: .io & Arena | Score: 262 pts | Duration: 11s
 [03:30:43 PM IST] GAME PLAYED: Ludo King | Category: Arcade | Score: Active Session Started | Duration: 0m
+[03:31:34 PM IST] GAME PLAYED: Ludo King | Category: Arcade | Score: 1124 pts | Duration: 51s
