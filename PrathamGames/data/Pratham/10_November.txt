@@ -27,3 +27,6 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:50:11 AM IST] GAME PLAYED: Count Control Legends | Category: Arcade | Score: 136 pts | Duration: 5s
 [11:51:36 AM IST] GAME PLAYED: Chess Pro | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [11:51:41 AM IST] GAME PLAYED: Chess Pro | Category: Puzzle | Score: 129 pts | Duration: 5s
+[11:51:41 AM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
+[11:52:52 AM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 1583 pts | Duration: 1m 11s
+[11:52:52 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
