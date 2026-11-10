@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794290386365",
+    "timestamp": "2026-11-10 05:59:46 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Talking Tom Gold Run",
+    "slug": "talking-tom-gold-run",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=beauty-salon"
+  },
+  {
     "id": "act_1794290377835",
     "timestamp": "2026-11-10 05:59:37 UTC",
     "type": "GAME_PLAY",
