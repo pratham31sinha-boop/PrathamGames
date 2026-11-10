@@ -7,20 +7,79 @@
   var noop = function() {};
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
+  // Intercept slow dynamic script injections (e.g. ad networks, tracking)
+  try {
+    var _origCreate = document.createElement;
+    document.createElement = function(tag) {
+      var el = _origCreate.apply(document, arguments);
+      if (typeof tag === 'string' && tag.toLowerCase() === 'script') {
+        var _origSetAttr = el.setAttribute;
+        el.setAttribute = function(name, val) {
+          if (name && name.toLowerCase() === 'src' && typeof val === 'string' && (val.indexOf('poki-sdk') !== -1 || val.indexOf('t2.js') !== -1)) {
+            setTimeout(function() {
+              if (typeof el.onload === 'function') el.onload();
+              el.dispatchEvent(new Event('load'));
+            }, 0);
+            return;
+          }
+          return _origSetAttr.apply(el, arguments);
+        };
+      }
+      return el;
+    };
+  } catch(e) {}
+
+  // Disable service workers inside iframe to prevent hanging
+  try {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register = function() {
+        return Promise.reject(new Error('SW disabled'));
+      };
+    }
+  } catch(e) {}
+
   var PokiMock = {
-    init: function() { return resolvedPromise(); },
+    init: function(opts) {
+      if (opts && typeof opts === 'object') {
+        if (typeof opts.submitScore === 'function') {
+          try { opts.submitScore(function() {}); } catch(e) {}
+        }
+        if (typeof opts.onReady === 'function') {
+          try { opts.onReady(); } catch(e) {}
+        }
+      }
+      if (typeof arguments[0] === 'function') {
+        try { arguments[0](); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
     initWithVideoHB: function() { return resolvedPromise(); },
-    commercialBreak: function() { return resolvedPromise(); },
-    rewardedBreak: function() { return resolvedPromise(true); },
+    commercialBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
+    rewardedBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(true); } catch(e) {}
+      }
+      return resolvedPromise(true);
+    },
     displayAd: function(e, t, o, i) {
       if (typeof i === 'function') i(true);
       if (typeof o === 'function') o();
+      if (typeof e === 'function') e();
       return resolvedPromise();
     },
     destroyAd: noop,
     getLeaderboard: function() { return resolvedPromise([]); },
     shareableURL: function() { return resolvedPromise(window.location.href); },
-    getURLParam: function() { return ''; },
+    getURLParam: function(p) {
+      try {
+        return new URLSearchParams(window.location.search).get(p) || '';
+      } catch(e) { return ''; }
+    },
     getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
     getDeviceInfo: function() { return { category: 'desktop' }; },
     isAdBlocked: function() { return false; },
@@ -62,7 +121,13 @@
   var pokiProxy = new Proxy(PokiMock, {
     get: function(target, prop) {
       if (prop in target) return target[prop];
-      return function() { return resolvedPromise(true); };
+      return function() {
+        var lastArg = arguments[arguments.length - 1];
+        if (typeof lastArg === 'function') {
+          try { lastArg(true); } catch(e) {}
+        }
+        return resolvedPromise(true);
+      };
     }
   });
 
@@ -75,6 +140,21 @@
   } catch(e) {
     window.PokiSDK = pokiProxy;
   }
+
+  window.pokiReady = true;
+  window.pokiAdBlock = false;
+
+  // Poll for Unity bridge and signal ready immediately
+  var bridgeInterval = setInterval(function() {
+    if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+      try {
+        window.unityGame.SendMessage(window.pokiBridge, 'ready');
+        clearInterval(bridgeInterval);
+      } catch(e) {}
+    }
+  }, 100);
+  setTimeout(function() { clearInterval(bridgeInterval); }, 10000);
 })();
 </script>
+
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#cb8dff"><link rel="icon" href="./logo.png"><title>Nails DIY — Art Salon</title><!-- Poki SDK: the only permitted external resource. A classic script in <head> runs before the deferred game module, so window.PokiSDK exists by the time the game boots. If it is blocked (ad blocker, offline, local server) the game falls back to standalone mode. --><script type="module" crossorigin src="./assets/main-jc1phrmt.js"></script><link rel="stylesheet" crossorigin href="./assets/main-f1qdza8j.css"></head><body><div id="loading"><img src="./logo.png" alt="Nails DIY"><progress max="1" value="0"></progress></div><main id="game" aria-label="Nails DIY — Art Salon"></main><div id="status" role="status" aria-live="polite"></div></body></html>

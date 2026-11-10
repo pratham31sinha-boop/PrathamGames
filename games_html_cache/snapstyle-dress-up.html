@@ -6,20 +6,79 @@
   var noop = function() {};
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
+  // Intercept slow dynamic script injections (e.g. ad networks, tracking)
+  try {
+    var _origCreate = document.createElement;
+    document.createElement = function(tag) {
+      var el = _origCreate.apply(document, arguments);
+      if (typeof tag === 'string' && tag.toLowerCase() === 'script') {
+        var _origSetAttr = el.setAttribute;
+        el.setAttribute = function(name, val) {
+          if (name && name.toLowerCase() === 'src' && typeof val === 'string' && (val.indexOf('poki-sdk') !== -1 || val.indexOf('t2.js') !== -1)) {
+            setTimeout(function() {
+              if (typeof el.onload === 'function') el.onload();
+              el.dispatchEvent(new Event('load'));
+            }, 0);
+            return;
+          }
+          return _origSetAttr.apply(el, arguments);
+        };
+      }
+      return el;
+    };
+  } catch(e) {}
+
+  // Disable service workers inside iframe to prevent hanging
+  try {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register = function() {
+        return Promise.reject(new Error('SW disabled'));
+      };
+    }
+  } catch(e) {}
+
   var PokiMock = {
-    init: function() { return resolvedPromise(); },
+    init: function(opts) {
+      if (opts && typeof opts === 'object') {
+        if (typeof opts.submitScore === 'function') {
+          try { opts.submitScore(function() {}); } catch(e) {}
+        }
+        if (typeof opts.onReady === 'function') {
+          try { opts.onReady(); } catch(e) {}
+        }
+      }
+      if (typeof arguments[0] === 'function') {
+        try { arguments[0](); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
     initWithVideoHB: function() { return resolvedPromise(); },
-    commercialBreak: function() { return resolvedPromise(); },
-    rewardedBreak: function() { return resolvedPromise(true); },
+    commercialBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
+    rewardedBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(true); } catch(e) {}
+      }
+      return resolvedPromise(true);
+    },
     displayAd: function(e, t, o, i) {
       if (typeof i === 'function') i(true);
       if (typeof o === 'function') o();
+      if (typeof e === 'function') e();
       return resolvedPromise();
     },
     destroyAd: noop,
     getLeaderboard: function() { return resolvedPromise([]); },
     shareableURL: function() { return resolvedPromise(window.location.href); },
-    getURLParam: function() { return ''; },
+    getURLParam: function(p) {
+      try {
+        return new URLSearchParams(window.location.search).get(p) || '';
+      } catch(e) { return ''; }
+    },
     getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
     getDeviceInfo: function() { return { category: 'desktop' }; },
     isAdBlocked: function() { return false; },
@@ -61,7 +120,13 @@
   var pokiProxy = new Proxy(PokiMock, {
     get: function(target, prop) {
       if (prop in target) return target[prop];
-      return function() { return resolvedPromise(true); };
+      return function() {
+        var lastArg = arguments[arguments.length - 1];
+        if (typeof lastArg === 'function') {
+          try { lastArg(true); } catch(e) {}
+        }
+        return resolvedPromise(true);
+      };
     }
   });
 
@@ -74,6 +139,21 @@
   } catch(e) {
     window.PokiSDK = pokiProxy;
   }
+
+  window.pokiReady = true;
+  window.pokiAdBlock = false;
+
+  // Poll for Unity bridge and signal ready immediately
+  var bridgeInterval = setInterval(function() {
+    if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+      try {
+        window.unityGame.SendMessage(window.pokiBridge, 'ready');
+        clearInterval(bridgeInterval);
+      } catch(e) {}
+    }
+  }, 100);
+  setTimeout(function() { clearInterval(bridgeInterval); }, 10000);
 })();
 </script>
+
 <meta charset=utf-8><meta content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"name=viewport><script src=https://game-cdn.poki.com/scripts/v2/poki-sdk.js></script><title>SnapStyle Dress-up</title><style>body{margin:0;background:linear-gradient(#d6edfb,#a4daf6);height:100vh}.emscripten{position:absolute;top:0;left:0;margin:0;border:0;width:100%;height:100%;overflow:hidden;display:block}.clouds{background-image:url('files/clouds.png');width:100%;height:100%;position:absolute;background-position:bottom;background-repeat:repeat-x;background-size:100%}canvas{outline:0;border:0}@font-face{font-family:Boleh;src:url('files/moderniz.otf')}#loadingContainer{width:100%;height:100%}.progress{width:60%;height:5%;max-height:15%;background-color:#b83660;border-radius:35px;margin-bottom:10px;border:7px solid #b6345e;margin-left:auto;margin-right:auto;position:relative}#progress-bar{height:100%;background-color:#ff92ac;border-radius:100px}.logo{display:block;margin-left:auto;margin-right:auto;margin-top:10vh;z-index:10;position:relative}#loadingText{position:absolute;width:100%;text-align:center;color:#ef3566;font-family:boleh;font-size:2vh;font-weight:900;margin-top:15px}.creditsText{position:absolute;width:100%;text-align:center;color:#ef3566;font-family:boleh;font-size:1vh;font-weight:900;margin-top:15px;bottom:5px}#loadingPercent{position:absolute;width:100%;text-align:center;color:#fff;font-family:boleh;font-size:3vh;font-weight:900;margin-top:1vh;transform:translate(0,-2px);-webkit-text-stroke-width:0.08em;-webkit-text-stroke-color:#ba3863}.photo{width:25%;transform:translate(50%,-20%);z-index:1;position:relative;margin-bottom:-6%}.gelatine{animation:gelatine 1.5s infinite}@keyframes gelatine{from,to{transform:scale(1,1)}25%{transform:scale(.95,1.02)}50%{transform:scale(1.02,.95)}75%{transform:scale(.95,1.02)}}@media only screen and (max-width:800px){.logo{width:70%;height:auto;margin-bottom:6vh;margin-top:30vh}.progress{height:3vh;width:90%;border:1vw solid #b6345e}#loadingPercent{margin-top:0}}@media (max-height:488px) and (orientation:landscape){.logo{width:30%;height:auto;margin-bottom:6vh;margin-top:5%}}</style></head><body><div class=emscripten><div class=clouds></div><div id=loadingContainer><img class="gelatine logo"src=files/logo.png> <img class=photo src=files/photo0.png> <img class=photo src=files/photo1.png> <img class=photo src=files/photo2.png><div class=progress><div id=progress-bar style=width:0%><span id=loadingPercent>0%</span></div></div><span id=loadingText>Loading<span class=dot-one>.</span><span class=dot-two>.</span><span class=dot-three>.</span><br></span></div></div><canvas class=emscripten id=canvas tabindex=-1></canvas><script>var Game={adPlaying:0,tookScreenshot:0};function adStarted(){Game.adPlaying=1}function adFinished(){Game.adPlaying=0,unlockAudio()}PokiSDK.init().then((()=>{console.log("Poki SDK successfully initialized")})).catch((()=>{console.log("Initialized, but user likely has adblock")}));var loadingElement=document.getElementById("progress-bar"),percentageElement=document.getElementById("loadingPercent"),loadingContainer=document.getElementById("loadingContainer"),wasmUrl="index.wasm",Module={preRun:[],postRun:[],print:(...e)=>console.log(e.join(" ")),printErr:(...e)=>console.error(e.join(" ")),canvas:(()=>{var e=document.getElementById("canvas");return e.addEventListener("webglcontextlost",(e=>{alert("WebGL context lost. Please reload the page."),e.preventDefault()}),!1),e})(),onRuntimeInitialized:()=>{loadingElement.style.width="100%",percentageElement.textContent="100%",setTimeout((()=>{loadingContainer.hidden=!0}),200)}};function unlockAudio(){"undefined"!=typeof AL&&AL.currentCtx&&AL.currentCtx.resume(),void 0!==Module&&Module.SDL2&&Module.SDL2.audioContext&&Module.SDL2.audioContext.resume()}document.addEventListener("touchstart",unlockAudio,{once:!0}),document.addEventListener("touchend",unlockAudio,{once:!0}),document.addEventListener("click",unlockAudio,{once:!0}),Module.locateFile=(e,t)=>e.endsWith(".wasm")?wasmUrl:t+e,Module.instantiateWasm=(e,t)=>(fetch(wasmUrl).then((n=>{const o=+n.headers.get("Content-Length"),l=n.body.getReader();let a=0,d=[];return function n(){return l.read().then((({done:l,value:i})=>{if(!l){if(d.push(i),a+=i.length,o){let e=Math.min(a/o*100,99);loadingElement.style.width=e+"%",percentageElement.textContent=Math.floor(e)+"%"}return n()}{let n=d.reduce(((e,t)=>e+t.length),0),o=new Uint8Array(n),l=0;for(let e of d)o.set(e,l),l+=e.length;WebAssembly.instantiate(o,e).then((e=>{t(e.instance)}))}}))}()})),{}),window.onerror=e=>{console.log("onerror: "+e),document.getElementById("loadingText").textContent="Loading Error: Please refresh the page!"}</script><script src=index.js async></script></body></html>

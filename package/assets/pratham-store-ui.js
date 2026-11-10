@@ -669,6 +669,7 @@
 
     // Show loading overlay
     if (loader) {
+      loader.style.pointerEvents = 'auto';
       loader.style.display = 'flex';
       loader.style.opacity = '1';
     }
@@ -688,6 +689,7 @@
             if (dismissed) return;
             dismissed = true;
             if (state.loadCounter === currentLoadId && loader) {
+              loader.style.pointerEvents = 'none';
               loader.style.opacity = '0';
               setTimeout(() => { loader.style.display = 'none'; }, 200);
             }
@@ -695,9 +697,10 @@
 
           iframe.onload = dismissLoader;
           iframe.onerror = dismissLoader;
-          setTimeout(dismissLoader, 1500);
+          // Ultra-fast safety dismiss so user never feels stuck
+          setTimeout(dismissLoader, 600);
         }
-      }, 40);
+      }, 20);
     }
 
     // Populate More Games Sibling Rail & Bottom Grid

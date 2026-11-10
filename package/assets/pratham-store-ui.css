@@ -1527,7 +1527,8 @@ body.mode-play #playerView {
   justify-content: center;
   gap: 1rem;
   z-index: 50;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .player-loading-spinner {
