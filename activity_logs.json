@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794318709297",
+    "timestamp": "2026-11-10 13:51:49 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Soccer REAL",
+    "slug": "soccer-real",
+    "category": "Sports",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/"
+  },
+  {
     "id": "act_1794306437751",
     "timestamp": "2026-11-10 10:27:17 UTC",
     "type": "GAME_PLAY",
