@@ -7,3 +7,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 ================================================================================
 
 [11:23:32 AM IST] PLAYER REGISTERED: Rahul (Age: 16) registered into Pratham Games
+[11:23:49 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 4,920 pts | Duration: 4m 12s
