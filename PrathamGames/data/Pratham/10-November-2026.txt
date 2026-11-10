@@ -25,3 +25,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:49:59 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 92 pts | Duration: 3s
 [11:50:06 AM IST] GAME PLAYED: Count Control Legends | Category: Arcade | Score: Active Session Started | Duration: 0m
 [11:50:11 AM IST] GAME PLAYED: Count Control Legends | Category: Arcade | Score: 136 pts | Duration: 5s
+[11:51:36 AM IST] GAME PLAYED: Chess Pro | Category: Puzzle | Score: Active Session Started | Duration: 0m
+[11:51:41 AM IST] GAME PLAYED: Chess Pro | Category: Puzzle | Score: 129 pts | Duration: 5s

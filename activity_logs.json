@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794291701265",
+    "timestamp": "2026-11-10 06:21:41 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Monkey Mart",
+    "slug": "monkey-mart",
+    "category": "Simulation",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=chess-pro"
+  },
+  {
     "id": "act_1794291696226",
     "timestamp": "2026-11-10 06:21:36 UTC",
     "type": "GAME_PLAY",
