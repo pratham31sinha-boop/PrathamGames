@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794295099482",
+    "timestamp": "2026-11-10 07:18:19 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Brain Test: Tricky Puzzles",
+    "slug": "brain-test-tricky-puzzles",
+    "category": "Puzzle",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=monkey-mart"
+  },
+  {
     "id": "act_1794295092362",
     "timestamp": "2026-11-10 07:18:12 UTC",
     "type": "GAME_PLAY",
