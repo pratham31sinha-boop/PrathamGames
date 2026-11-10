@@ -958,14 +958,27 @@
       showToast('🔄 Restarting game...');
     });
 
-    // Fullscreen button
+    // Fullscreen button (with cross-browser & mobile iOS/Android support)
     document.getElementById('playerFullscreenBtn').addEventListener('click', () => {
       sfx.click();
       const frameBox = document.getElementById('playerFrameBox');
-      if (!document.fullscreenElement) {
-        frameBox.requestFullscreen().catch(() => {});
+      const iframe = document.getElementById('playerIframe');
+      const targetElem = frameBox || iframe;
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      
+      if (!isFs) {
+        const req = targetElem.requestFullscreen || targetElem.webkitRequestFullscreen || targetElem.mozRequestFullScreen || targetElem.msRequestFullscreen;
+        if (req) {
+          req.call(targetElem).catch(() => {
+            if (iframe && (iframe.requestFullscreen || iframe.webkitRequestFullscreen)) {
+              const ifReq = iframe.requestFullscreen || iframe.webkitRequestFullscreen;
+              ifReq.call(iframe).catch(() => {});
+            }
+          });
+        }
       } else {
-        document.exitFullscreen().catch(() => {});
+        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
       }
     });
 

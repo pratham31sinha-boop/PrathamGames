@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/package/assets/$1" },
+    { "source": "/play-game/:slug*", "destination": "/api/play-game?slug=:slug*" },
+    { "source": "/api/cors-proxy", "destination": "/api/cors-proxy" },
+    { "source": "/api/register-player", "destination": "/api/register-player" },
+    { "source": "/api/log-gameplay", "destination": "/api/log-gameplay" },
+    { "source": "/api/player-history", "destination": "/api/player-history" },
+    { "source": "/api/github-history", "destination": "/api/github-history" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "ALLOWALL" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/package/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/loaders/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}

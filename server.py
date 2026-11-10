@@ -607,6 +607,25 @@ MOCK_SDK_TEMPLATE = """
     }
   } catch(e) {}
 
+  // Universal onload handler: ensures window.onload runs even if assigned after DOM load
+  try {
+    var _assignedOnload = null;
+    Object.defineProperty(window, 'onload', {
+      get: function() { return _assignedOnload; },
+      set: function(fn) {
+        _assignedOnload = fn;
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          setTimeout(function() {
+            if (typeof fn === 'function') {
+              try { fn(); } catch(e) {}
+            }
+          }, 10);
+        }
+      },
+      configurable: true
+    });
+  } catch(e) {}
+
   // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
   try {
     var PROXY_DOMAINS = ['minefun.io', 'vectaria.io', 'supabase.co', 'pangolinworks.dev', 'cryzen.io', 'sushiparty.io'];
@@ -630,7 +649,18 @@ MOCK_SDK_TEMPLATE = """
             input = new Request(proxyUrl, input);
           }
         }
-        return _origFetch.call(this, input, init);
+        return _origFetch.call(this, input, init).then(function(res) {
+          if (typeof url === 'string' && (url.indexOf('.gz') !== -1 || url.indexOf('.unityweb') !== -1)) {
+            var origGet = res.headers.get.bind(res.headers);
+            res.headers.get = function(name) {
+              if (name && name.toLowerCase() === 'content-encoding') {
+                return origGet(name) || 'gzip';
+              }
+              return origGet(name);
+            };
+          }
+          return res;
+        });
       };
     }
 
@@ -970,6 +1000,11 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
                             elif subpath.endswith('.png'): ctype = 'image/png'
                             elif subpath.endswith('.jpg') or subpath.endswith('.jpeg'): ctype = 'image/jpeg'
                         self.send_header('Content-Type', ctype)
+                        upstream_enc = resp.headers.get('Content-Encoding')
+                        if upstream_enc:
+                            self.send_header('Content-Encoding', upstream_enc)
+                        elif subpath.endswith('.gz') or subpath.endswith('.unityweb'):
+                            self.send_header('Content-Encoding', 'gzip')
                         self.send_header('Access-Control-Allow-Origin', '*')
                         self.end_headers()
                         self.wfile.write(data)
