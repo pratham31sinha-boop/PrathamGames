@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794295617340",
+    "timestamp": "2026-11-10 07:26:57 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Monkey Mart",
+    "slug": "monkey-mart",
+    "category": "Simulation",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/"
+  },
+  {
     "id": "act_1794295612775",
     "timestamp": "2026-11-10 07:26:52 UTC",
     "type": "USER_VISIT",
