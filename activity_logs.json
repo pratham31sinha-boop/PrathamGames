@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794290377835",
+    "timestamp": "2026-11-10 05:59:37 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Beauty Salon",
+    "slug": "beauty-salon",
+    "category": "Casual",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=subway-surfers"
+  },
+  {
     "id": "act_1794290372002",
     "timestamp": "2026-11-10 05:59:32 UTC",
     "type": "GAME_PLAY",
