@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794304820867",
+    "timestamp": "2026-11-10 10:00:20 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Subway Surfers",
+    "slug": "subway-surfers",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/"
+  },
+  {
     "id": "act_1794304805939",
     "timestamp": "2026-11-10 10:00:05 UTC",
     "type": "GAME_PLAY",
