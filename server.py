@@ -793,6 +793,11 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
                     else:
                         html = mock_sdk + html
 
+                    # Fix Defold engine games (e.g. monkey-mart, level-devil) where runApp waits on poki_sdk_loaded
+                    html = html.replace('var isPokiSDKInited = false;', 'var isPokiSDKInited = true;')
+                    if 'poki_sdk_loaded' in html and 'try { poki_sdk_loaded(); }' not in html:
+                        html = re.sub(r'(function\s+poki_sdk_loaded\s*\(\)\s*\{[\s\S]*?\n\t*\})', r'\1\n\ttry { poki_sdk_loaded(); } catch(e) {}', html)
+
                     # Persist to disk cache so it loads in 0ms on next click
                     try:
                         with open(cached_file, 'w', encoding='utf-8') as f:
