@@ -1,0 +1,16 @@
+{
+  "name": "Pratham Store",
+  "short_name": "Pratham Store",
+  "description": "Play 145+ Free Online Games Instantly on Pratham Store",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070913",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "assets/thumbnails/subway-surfers.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    }
+  ]
+}

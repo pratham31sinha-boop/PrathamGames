@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="claude-orange">
+<head>
+  <meta charset="utf-8">
+  <title>PRATHAM GAMES — Premium Online Web Gaming Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="theme-color" content="#faf9f5">
+  <meta name="description" content="Play 150+ free online web games instantly on Pratham Games. Fast, modern, and 100% ad-free on desktop, tablet, and mobile.">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://a.poki-cdn.com/icons/favicon-32x32.png">
+  <link rel="stylesheet" href="./assets/pratham-store-ui.css">
+</head>
+<body class="mode-browse">
+
+  <div class="pratham-app-layout">
+    <!-- Left Vertical Category Dock (As seen in Reference Image) -->
+    <aside class="pratham-side-dock" id="prathamSideDock">
+      <div class="dock-logo-btn" id="dockLogoBtn" title="Pratham Games Home">🎮</div>
+
+      <nav class="dock-items-group">
+        <button class="dock-btn active" data-category="all" data-tooltip="All Games">🎮</button>
+        <button class="dock-btn" data-category="popular" data-tooltip="Popular Games">🔥</button>
+        <button class="dock-btn" data-category="racing" data-tooltip="Racing & Cars">🏎️</button>
+        <button class="dock-btn" data-category="adventure" data-tooltip="Adventure">🏃</button>
+        <button class="dock-btn" data-category="puzzle" data-tooltip="Puzzle & Brain">🧩</button>
+        <button class="dock-btn" data-category="action" data-tooltip="Action & Battle">⚔️</button>
+        <button class="dock-btn" data-category="multiplayer" data-tooltip="2 Player & Multi">👥</button>
+      </nav>
+
+      <div class="dock-footer">
+        <button class="dock-btn" id="dockSurpriseBtn" data-tooltip="Surprise Me">🎲</button>
+      </div>
+    </aside>
+
+    <!-- Main Application Viewport -->
+    <div class="pratham-main-content">
+      <!-- Sticky Top Header (Clean, Focused, Zero Clutter) -->
+      <header class="pratham-top-header" id="prathamTopHeader">
+        <div class="header-left">
+          <div class="header-brand" id="headerBrand">
+            <span style="font-size: 1.5rem;">🎮</span>
+            <span class="header-brand-title">PRATHAM GAMES</span>
+          </div>
+        </div>
+
+        <!-- Search Bar (Clean & Focused) -->
+        <div class="header-search-box">
+          <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="headerSearchInput" class="header-search-input" placeholder="Search 150+ games by name, category, or tag...">
+          <button id="headerSearchClear" class="header-search-clear" style="display: none;" title="Clear search">✕</button>
+          <!-- Live Instant Suggestions Dropdown -->
+          <div id="headerSearchDropdown" class="header-search-dropdown" style="display: none;"></div>
+        </div>
+
+        <!-- Header Right: Player Profile Pill & IST Status -->
+        <div class="header-right-profile">
+          <button id="headerPlayerBtn" class="header-player-pill" title="Player Profile & Daily Activity Logs">
+            <span class="player-avatar-icon">👤</span>
+            <span id="headerPlayerName" class="player-name-text">Player</span>
+            <span class="player-edit-icon" title="Switch player">✎</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- =====================================================================
+           PAGE 1: GAMES STORE VIEW
+           ===================================================================== -->
+      <section id="storeView">
+        <!-- Hero Featured Spotlight Banner -->
+        <div class="store-hero-banner" id="storeHeroBanner"></div>
+
+        <!-- Category Filter Bar -->
+        <nav class="store-categories-bar" id="storeCategoriesBar"></nav>
+
+        <!-- Section 1: Top Trending Showcase Grid -->
+        <div class="store-trending-section">
+          <div class="store-section-header">
+            <div class="store-section-title-wrap">
+              <h2 class="store-section-title">Top Trending</h2>
+            </div>
+          </div>
+
+          <div class="trending-cards-grid" id="storeTrendingGrid"></div>
+        </div>
+
+        <!-- Search Results Banner (Shown When Actively Searching) -->
+        <div id="searchResultsBanner" class="search-results-banner" style="display: none;">
+          <div class="search-results-info">
+            <span class="search-results-icon">🔍</span>
+            <span id="searchResultsTitle" class="search-results-title">Search Results</span>
+          </div>
+          <button id="searchClearBtn" class="search-results-clear-btn">✕ Clear Search</button>
+        </div>
+
+        <!-- Section 2: All 151 Games Mosaic Grid -->
+        <div class="store-catalog-section">
+          <div class="store-section-header">
+            <div class="store-section-title-wrap">
+              <h2 class="store-section-title">All Games</h2>
+              <span class="header-badge-count" id="catalogCountText">151 Games Ready</span>
+            </div>
+          </div>
+
+          <div class="all-games-grid" id="storeAllGamesGrid"></div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           PAGE 2: GAME PLAYER VIEW (Takes Priority When Playing)
+           ===================================================================== -->
+      <section id="playerView">
+        <!-- Player Stage Control Bar -->
+        <div class="player-control-bar">
+          <div class="player-control-left">
+            <button id="playerBackBtn" class="player-back-btn" title="Back to Game Store">
+              <span>←</span>
+              <span>Back to Store</span>
+            </button>
+
+            <div class="player-game-identity">
+              <img id="playerGameThumb" class="player-game-thumb" src="" alt="Game Icon">
+              <div class="player-title-wrap">
+                <h2 id="playerGameTitle">Game Title</h2>
+                <div class="player-title-sub" id="playerGameSub">⭐ 4.9 • Instant Play • Zero Ads</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="player-control-right">
+            <button id="playerNextBtn" class="player-action-pill" title="Next Random Game">
+              <span>🎲</span>
+              <span>Next Game</span>
+            </button>
+            <button id="playerRestartBtn" class="player-action-pill" title="Restart Game">
+              <span>🔄</span>
+              <span>Restart</span>
+            </button>
+            <button id="playerFullscreenBtn" class="player-action-pill" title="Play Fullscreen">
+              <span>⛶</span>
+              <span>Fullscreen</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Split Body: Main Arena (76%) + Right Sibling Rail (24%) -->
+        <div class="player-split-body">
+          <div class="player-main-arena">
+            <div class="player-frame-box" id="playerFrameBox">
+              <!-- Loading Overlay -->
+              <div class="player-loading-overlay" id="playerLoadingOverlay">
+                <div class="player-loading-spinner"></div>
+                <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">Launching Game...</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">100% Free • Ad-Free Verified Stream</div>
+              </div>
+
+              <!-- Real Game Iframe -->
+              <iframe id="playerIframe" class="player-iframe" src="" allow="autoplay; fullscreen; gamepad; focus-without-user-activation *"></iframe>
+            </div>
+
+            <!-- Game Info Card Below Player -->
+            <div class="player-info-card">
+              <div class="player-info-left">
+                <div class="player-info-title-row">
+                  <span class="player-cat-badge" id="playerCatBadge">Arcade</span>
+                  <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;" id="playerDevLabel">by Verified Studio</span>
+                  <span style="font-size: 0.85rem; color: #10b981; font-weight: 800;">🟢 Ad-Free Verified</span>
+                </div>
+                <div class="player-controls-hint" id="playerControlsHint">
+                  🎮 Controls: Use Arrow keys or WASD to navigate • Space to jump
+                </div>
+              </div>
+
+              <div class="player-info-right">
+                <button id="playerLikeBtn" class="player-like-btn" title="Like this game">
+                  <span>👍</span>
+                  <span id="playerLikeCount">89</span>
+                  <span>Likes</span>
+                </button>
+                <button id="playerShareBtn" class="player-action-pill" title="Copy game link">
+                  <span>🔗</span>
+                  <span>Share</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Rail: Sibling Games ("More Pratham Games • 1-Click Play") -->
+          <aside class="player-side-rail">
+            <div class="player-rail-header">
+              <div class="player-rail-title">
+                <span>🎮 More Pratham Games</span>
+              </div>
+              <span class="player-rail-badge">1-CLICK PLAY</span>
+            </div>
+            <div id="playerSiblingRailList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          </aside>
+        </div>
+
+        <!-- Bottom Sibling Games Grid: Visible Greatly Below The Game -->
+        <section class="player-bottom-section">
+          <div class="player-bottom-header">
+            <div class="player-bottom-title">
+              <span>🔥 More Games You Might Like</span>
+            </div>
+            <span class="header-badge-count">150+ GAMES READY</span>
+          </div>
+          <div class="player-bottom-grid" id="playerBottomGrid"></div>
+        </section>
+      </section>
+
+      <!-- Footer -->
+      <footer class="pratham-footer">
+        <div class="footer-content">
+          <div class="footer-left">
+            <span style="font-size: 1.6rem;">🎮</span>
+            <div>
+              <div style="font-weight: 900; font-size: 1.1rem; color: var(--text-main);">PRATHAM GAMES</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">The Ultimate High-Speed Ad-Free Gaming Portal</div>
+            </div>
+          </div>
+
+          <div class="footer-right">
+            <button class="github-sync-pill" id="githubStatusBtn" title="GitHub Telemetry Active • Click to view live session log">
+              <span class="github-live-dot"></span>
+              <span>🐙 GitHub Sync: Active</span>
+            </button>
+            <span>© 2026 Pratham Games. All rights reserved.</span>
+            <a href="/?category=racing">Racing</a>
+            <a href="/?category=adventure">Adventure</a>
+            <a href="/?category=puzzle">Puzzle</a>
+            <a href="/?category=action">Action</a>
+            <a href="/?category=multiplayer">2 Player</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- GitHub Live Telemetry & Config Modal -->
+  <div class="github-modal-backdrop" id="githubModal" style="display: none;">
+    <div class="github-modal-card">
+      <div class="github-modal-header">
+        <div class="github-modal-title">
+          <span>🐙</span>
+          <span>GitHub Live Activity & Session Stream</span>
+        </div>
+        <button class="github-modal-close" id="githubModalClose">&times;</button>
+      </div>
+      <div class="github-modal-body">
+        <p class="github-modal-desc">
+          Automatically tracks and syncs user browser visits and real-time game play sessions to your GitHub repository and webhooks.
+        </p>
+
+        <!-- Live Event Feed -->
+        <div class="github-live-feed-wrap">
+          <div class="github-feed-header">
+            <span>Recent Activity Stream</span>
+            <span id="githubEventCountBadge" class="github-badge">Active</span>
+          </div>
+          <div class="github-feed-list" id="githubFeedList">
+            <div style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading live events...</div>
+          </div>
+        </div>
+
+        <!-- GitHub Sync Config Form -->
+        <div class="github-config-box">
+          <div class="github-config-title">⚙️ GitHub Remote / Webhook Integration</div>
+          <div class="github-form-row">
+            <label>GitHub Webhook URL (Discord / Slack / GitHub Webhook):</label>
+            <input type="text" id="githubWebhookInput" placeholder="https://discord.com/api/webhooks/... or https://...">
+          </div>
+          <div class="github-form-row">
+            <label>Target GitHub Repository (owner/repo):</label>
+            <input type="text" id="githubRepoInput" placeholder="e.g. prathamsinha/pratham-games-activity">
+          </div>
+          <div class="github-form-row">
+            <label>GitHub Personal Access Token (PAT):</label>
+            <input type="password" id="githubTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          </div>
+          <div class="github-form-actions">
+            <button id="githubSaveConfigBtn" class="github-btn-primary">Save Settings</button>
+            <button id="githubTestPingBtn" class="github-btn-secondary">Test GitHub Ping</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Onboarding Modal (Name & Age Required at Start) -->
+  <div class="player-onboard-backdrop" id="playerOnboardModal" style="display: none;">
+    <div class="player-onboard-card">
+      <div class="onboard-header">
+        <div class="onboard-logo-icon">🎮</div>
+        <h2 class="onboard-title">Welcome to PRATHAM GAMES</h2>
+        <p class="onboard-sub">Enter your Gamer Name and Age to register your profile and track all game plays & scores.</p>
+      </div>
+      <form id="playerOnboardForm" class="onboard-form" onsubmit="return false;">
+        <div class="onboard-field">
+          <label for="onboardNameInput">YOUR NAME</label>
+          <div class="onboard-input-wrap">
+            <span class="onboard-icon">👤</span>
+            <input type="text" id="onboardNameInput" placeholder="e.g. Rahul" required autocomplete="name" maxlength="28">
+          </div>
+        </div>
+        <div class="onboard-field">
+          <label for="onboardAgeInput">YOUR AGE</label>
+          <div class="onboard-input-wrap">
+            <span class="onboard-icon">🎂</span>
+            <input type="number" id="onboardAgeInput" placeholder="e.g. 16" min="3" max="120" required>
+          </div>
+        </div>
+        <div class="onboard-notice">
+          <span>🇮🇳</span>
+          <span>Registered in <strong>PrathamGames/data/</strong> with daily Indian Time (IST) txt files.</span>
+        </div>
+        <button type="submit" id="onboardSubmitBtn" class="onboard-submit-btn">
+          <span>START PLAYING</span>
+          <span>▶</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Player Profile & Session Logs Modal -->
+  <div class="player-onboard-backdrop" id="playerProfileModal" style="display: none;">
+    <div class="player-onboard-card" style="max-width: 580px;">
+      <div class="github-modal-header">
+        <div class="github-modal-title">
+          <span>👤</span>
+          <span id="profileModalHeaderTitle">Player Profile</span>
+        </div>
+        <button class="github-modal-close" id="playerProfileClose">&times;</button>
+      </div>
+      <div class="github-modal-body">
+        <div class="player-profile-stats-card">
+          <div class="profile-stat-box">
+            <div class="profile-stat-label">Player Name</div>
+            <div class="profile-stat-val" id="profileStatName">Player</div>
+          </div>
+          <div class="profile-stat-box">
+            <div class="profile-stat-label">Age</div>
+            <div class="profile-stat-val" id="profileStatAge">--</div>
+          </div>
+          <div class="profile-stat-box">
+            <div class="profile-stat-label">Timezone</div>
+            <div class="profile-stat-val" id="profileStatTimezone">IST (India)</div>
+          </div>
+        </div>
+
+        <div class="github-live-feed-wrap">
+          <div class="github-feed-header">
+            <span>Today's Daily File: <strong id="profileTodayFileName">Today's Log</strong></span>
+            <span class="github-badge" id="profileLogCount">Active</span>
+          </div>
+          <div class="github-feed-list" id="profileFeedList">
+            <div style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading your daily games log...</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
+          <button id="profileSwitchBtn" class="github-btn-secondary">Switch / Change Player</button>
+          <button id="profileCloseBtn" class="github-btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Database & Interactive Engine Scripts -->
+  <script src="./assets/games-data.js"></script>
+  <script src="./assets/pratham-store-ui.js"></script>
+</body>
+</html>
