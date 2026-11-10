@@ -682,14 +682,22 @@
       setTimeout(() => {
         if (state.loadCounter === currentLoadId) {
           iframe.src = `/play-game/${game.slug}`;
-          iframe.onload = () => {
+
+          let dismissed = false;
+          const dismissLoader = () => {
+            if (dismissed) return;
+            dismissed = true;
             if (state.loadCounter === currentLoadId && loader) {
               loader.style.opacity = '0';
-              setTimeout(() => { loader.style.display = 'none'; }, 300);
+              setTimeout(() => { loader.style.display = 'none'; }, 200);
             }
           };
+
+          iframe.onload = dismissLoader;
+          iframe.onerror = dismissLoader;
+          setTimeout(dismissLoader, 1500);
         }
-      }, 50);
+      }, 40);
     }
 
     // Populate More Games Sibling Rail & Bottom Grid

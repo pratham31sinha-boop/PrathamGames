@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base href="https://f7bd6ec2-e411-4a92-ae46-1afb96a3697a.gdn.poki.com/27359558-03bc-4b6f-8fb6-5275cc02fc74/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+    <meta charset="UTF-8">
+	<title>POKI_Brain_Test_POKI_Special</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	
+	<!-- Made with Construct, the game and app creator :: https://www.construct.net -->
+	<meta name="generator" content="Scirra Construct">
+
+	<meta name="author" content="cemal">
+	<meta name="description" content="Brain Test: Tricky Puzzles">
+
+	<link rel="manifest" href="appmanifest.json">
+
+
+	<link rel="stylesheet" href="style.css">
+
+
+
+</head> 
+ 
+<body>
+
+	
+
+<script>
+if (location.protocol.substr(0, 4) === "file")
+{
+	alert("Web exports won't work until you upload them. (When running on the file: protocol, browsers block many features from working for security reasons.)");
+}
+</script>
+	
+	<noscript>
+		<div id="notSupportedWrap">
+			<h2 id="notSupportedTitle">This content requires JavaScript</h2>
+			<p class="notSupportedMessage">JavaScript appears to be disabled. Please enable it to view this content.</p>
+		</div>
+	</noscript>
+	<script src="scripts/modernjscheck.js"></script>
+	<script src="scripts/supportcheck.js"></script>
+	<script src="scripts/offlineclient.js" type="module"></script>
+	<script src="scripts/main.js" type="module"></script>
+	<script src="scripts/register-sw.js" type="module"></script>
+	
+
+</body> 
+</html>

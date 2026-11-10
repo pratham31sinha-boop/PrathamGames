@@ -52,7 +52,18 @@ def load_github_config():
 IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 PRATHAM_GAMES_DIR = os.path.join(BASE_DIR, 'PrathamGames')
 PRATHAM_DATA_DIR = os.path.join(PRATHAM_GAMES_DIR, 'data')
+HTML_CACHE_DIR = os.path.join(BASE_DIR, 'games_html_cache')
 os.makedirs(PRATHAM_DATA_DIR, exist_ok=True)
+os.makedirs(HTML_CACHE_DIR, exist_ok=True)
+
+def async_git_commit(message):
+    def _worker():
+        try:
+            subprocess.run(['git', '-C', BASE_DIR, 'add', 'PrathamGames/data/'], capture_output=True)
+            subprocess.run(['git', '-C', BASE_DIR, 'commit', '-m', message], capture_output=True)
+        except Exception as e:
+            print(f"Git commit error: {e}")
+    threading.Thread(target=_worker, daemon=True).start()
 
 def get_ist_now():
     return datetime.datetime.now(IST)
@@ -122,14 +133,10 @@ def register_player_entry(name, age):
     except Exception:
         pass
 
-    # Git auto-commit
+    # Git auto-commit (Async)
     cfg = load_github_config()
     if cfg.get('auto_git_commit', True):
-        try:
-            subprocess.run(['git', '-C', BASE_DIR, 'add', 'PrathamGames/data/'], capture_output=True)
-            subprocess.run(['git', '-C', BASE_DIR, 'commit', '-m', f"Register player: {clean_name} (Age: {age_str}) [IST]"], capture_output=True)
-        except Exception as e:
-            print(f"Git commit error: {e}")
+        async_git_commit(f"Register player: {clean_name} (Age: {age_str}) [IST]")
 
     return {
         "name": clean_name,
@@ -170,14 +177,10 @@ def log_gameplay_entry(name, age, game_title, category, score="Active", duration
     with open(daily_file, 'a', encoding='utf-8') as f:
         f.write(log_line)
 
-    # Git auto-commit
+    # Git auto-commit (Async)
     cfg = load_github_config()
     if cfg.get('auto_git_commit', True):
-        try:
-            subprocess.run(['git', '-C', BASE_DIR, 'add', 'PrathamGames/data/'], capture_output=True)
-            subprocess.run(['git', '-C', BASE_DIR, 'commit', '-m', f"Gameplay: {clean_name} - {game_title} [{time_ist}]"], capture_output=True)
-        except Exception as e:
-            print(f"Git commit error: {e}")
+        async_git_commit(f"Gameplay: {clean_name} - {game_title} [{time_ist}]")
 
     # Async external dispatch
     event = {
@@ -365,171 +368,157 @@ def resolve_game_slug(slug):
 
     return None
 
-FALLBACK_GAME_HTML = """<!DOCTYPE html>
+GAME_RELOAD_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pratham Games - Mini Runner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connecting to Game...</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: #faf9f5;
-    color: #111827;
+    color: #18181b;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    overflow: hidden;
+    padding: 1.5rem;
   }
-  #gameCanvas {
+  .reload-card {
     background: #ffffff;
     border: 2px solid #18181b;
-    border-radius: 12px;
+    border-radius: 16px;
     box-shadow: 4px 4px 0px #18181b;
+    max-width: 440px;
+    width: 100%;
+    padding: 2.25rem 2rem;
+    text-align: center;
   }
-  .hud {
-    margin-bottom: 14px;
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    font-size: 1rem;
-    font-weight: 700;
+  .reload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: inline-block;
   }
-  .hud-badge {
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 850;
+    margin-bottom: 0.5rem;
+  }
+  p {
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+  .retry-btn {
     background: #da7756;
     color: #ffffff;
-    border: 1.5px solid #18181b;
-    box-shadow: 2px 2px 0px #18181b;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border: 2px solid #18181b;
+    border-radius: 8px;
+    padding: 0.75rem 1.75rem;
+    font-size: 0.95rem;
     font-weight: 800;
+    cursor: pointer;
+    box-shadow: 2.5px 2.5px 0px #18181b;
+    transition: all 0.15s ease;
   }
-  .instructions {
-    margin-top: 14px;
-    color: #6b7280;
-    font-size: 0.88rem;
-    font-weight: 600;
+  .retry-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px #18181b;
   }
 </style>
 </head>
 <body>
-  <div class="hud">
-    <span class="hud-badge">🎮 PRATHAM GAMES</span>
-    <span>Score: <span id="scoreVal" style="color: #da7756;">0</span></span>
-    <span>Best: <span id="highVal" style="color: #18181b;">0</span></span>
+  <div class="reload-card">
+    <div class="reload-icon">🎮</div>
+    <h2>Connecting to __GAME_TITLE__</h2>
+    <p>The game stream is temporarily connecting. Tap below to launch your game directly.</p>
+    <button class="retry-btn" onclick="window.location.reload()">🔄 Launch Actual Game</button>
   </div>
-  <canvas id="gameCanvas" width="640" height="360"></canvas>
-  <div class="instructions">Press [SPACE] or Click to Jump! Dodge obstacles.</div>
-
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let score = 0, high = 0, gameOver = false, frame = 0;
-    let player = { x: 70, y: 280, w: 32, h: 32, vy: 0, jump: -11, ground: 280, grounded: true };
-    let obstacles = [];
-
-    function jump() {
-      if (gameOver) { resetGame(); return; }
-      if (player.grounded) {
-        player.vy = player.jump;
-        player.grounded = false;
-      }
-    }
-
-    window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); jump(); } });
-    canvas.addEventListener('click', jump);
-
-    function resetGame() {
-      score = 0;
-      frame = 0;
-      obstacles = [];
-      player.y = player.ground;
-      player.vy = 0;
-      player.grounded = true;
-      gameOver = false;
-    }
-
-    function update() {
-      if (!gameOver) {
-        frame++;
-        if (frame % 80 === 0) {
-          obstacles.push({ x: canvas.width, w: 24, h: 28 + Math.random() * 24 });
-        }
-
-        player.vy += 0.55;
-        player.y += player.vy;
-        if (player.y >= player.ground) {
-          player.y = player.ground;
-          player.vy = 0;
-          player.grounded = true;
-        }
-
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-          let o = obstacles[i];
-          o.x -= 5.5;
-          if (o.x + o.w < 0) {
-            obstacles.splice(i, 1);
-            score += 10;
-            if (score > high) high = score;
-          }
-          // Collision
-          let oy = canvas.height - 48 - o.h;
-          if (player.x + player.w > o.x && player.x < o.x + o.w && player.y + player.h > oy) {
-            gameOver = true;
-          }
-        }
-
-        document.getElementById('scoreVal').innerText = score;
-        document.getElementById('highVal').innerText = high;
-      }
-
-      // Draw
-      ctx.fillStyle = '#faf9f5';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Ground
-      ctx.fillStyle = '#f3f2eb';
-      ctx.fillRect(0, canvas.height - 48, canvas.width, 48);
-      ctx.fillStyle = '#18181b';
-      ctx.fillRect(0, canvas.height - 50, canvas.width, 2);
-
-      // Player
-      ctx.fillStyle = '#da7756';
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.strokeStyle = '#18181b';
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(player.x + player.w - 10, player.y + 6, 6, 6);
-
-      // Obstacles
-      ctx.fillStyle = '#18181b';
-      obstacles.forEach(o => {
-        let oy = canvas.height - 48 - o.h;
-        ctx.fillRect(o.x, oy, o.w, o.h);
-      });
-
-      if (gameOver) {
-        ctx.fillStyle = 'rgba(250, 249, 245, 0.88)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#111827';
-        ctx.font = 'bold 28px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 10);
-        ctx.font = '16px sans-serif';
-        ctx.fillStyle = '#da7756';
-        ctx.fillText('Click or Press SPACE to Retry', canvas.width / 2, canvas.height / 2 + 25);
-      }
-
-      requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
-  </script>
 </body>
 </html>"""
+
+MOCK_SDK_TEMPLATE = """
+<base href="__BASE_URL__">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+"""
 
 class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -689,123 +678,57 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def handle_play_game(self, slug):
-        game_uri = resolve_game_slug(slug)
+        cached_file = os.path.join(HTML_CACHE_DIR, f"{slug}.html")
+        if os.path.exists(cached_file) and os.path.getsize(cached_file) > 100:
+            try:
+                with open(cached_file, 'r', encoding='utf-8') as f:
+                    html = f.read()
+                self.serve_html(html)
+                return
+            except Exception as e:
+                print(f"Error reading disk cache for {slug}: {e}")
 
+        # If not already cached on disk, resolve and fetch with retry
+        game_uri = resolve_game_slug(slug)
         if not game_uri:
-            # Serve fallback game HTML
-            self.serve_html(FALLBACK_GAME_HTML)
+            self.serve_html(GAME_RELOAD_HTML_TEMPLATE.replace('__GAME_TITLE__', slug.replace('-', ' ').title()))
             return
 
-        try:
-            req = urllib.request.Request(game_uri, headers={
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://games.poki.com/'
-            })
-            with urllib.request.urlopen(req, timeout=6) as response:
-                html = response.read().decode('utf-8', errors='ignore')
-
-                # Base tag pointing to asset directory (strip query params first)
+        for attempt in range(3):
+            try:
                 clean_uri = game_uri.split('?')[0]
                 base_url = clean_uri.rsplit('/', 1)[0] + '/'
+                req = urllib.request.Request(game_uri, headers={
+                    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer': 'https://games.poki.com/'
+                })
+                with urllib.request.urlopen(req, timeout=12) as response:
+                    html = response.read().decode('utf-8', errors='ignore')
+                    mock_sdk = MOCK_SDK_TEMPLATE.replace('__BASE_URL__', base_url)
+                    html = re.sub(r'<script[^>]*src=[\'"][^\'"]*poki-sdk[^\'"]*[\'"][^>]*>\s*</script>', '', html, flags=re.IGNORECASE)
+                    html = re.sub(r'<div[^>]*id=["\'](?:adInfo|poki-video-ad-container)["\'][^>]*>.*?</div>', '', html, flags=re.DOTALL | re.IGNORECASE)
+                    if '<head>' in html:
+                        html = html.replace('<head>', '<head>' + mock_sdk, 1)
+                    elif '<head ' in html:
+                        html = re.sub(r'(<head[^>]*>)', r'\1' + mock_sdk, html, count=1)
+                    else:
+                        html = mock_sdk + html
 
-                # Ad-free PokiSDK mock that resolves immediately
-                mock_sdk_template = """
-<base href="__BASE_URL__">
-<script>
-(function() {
-  'use strict';
-  var noop = function() {};
-  var resolvedPromise = function(val) { return Promise.resolve(val); };
+                    # Persist to disk cache so it loads in 0ms on next click
+                    try:
+                        with open(cached_file, 'w', encoding='utf-8') as f:
+                            f.write(html)
+                    except Exception:
+                        pass
 
-  var PokiMock = {
-    init: function() { return resolvedPromise(); },
-    initWithVideoHB: function() { return resolvedPromise(); },
-    commercialBreak: function() { return resolvedPromise(); },
-    rewardedBreak: function() { return resolvedPromise(true); },
-    displayAd: function(e, t, o, i) {
-      if (typeof i === 'function') i(true);
-      if (typeof o === 'function') o();
-      return resolvedPromise();
-    },
-    destroyAd: noop,
-    getLeaderboard: function() { return resolvedPromise([]); },
-    shareableURL: function() { return resolvedPromise(window.location.href); },
-    getURLParam: function() { return ''; },
-    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
-    getDeviceInfo: function() { return { category: 'desktop' }; },
-    isAdBlocked: function() { return false; },
-    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
-    getToken: function() { return resolvedPromise('pratham_token'); },
-    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
-    generateScreenshot: function() { return resolvedPromise(''); },
-    measure: noop,
-    captureError: noop,
-    customEvent: noop,
-    gameInteractive: noop,
-    gameLoadingFinished: noop,
-    gameLoadingProgress: noop,
-    gameLoadingStart: noop,
-    gameplayStart: noop,
-    gameplayStop: noop,
-    happyTime: noop,
-    logError: noop,
-    muteAd: noop,
-    roundEnd: noop,
-    roundStart: noop,
-    sendHighscore: noop,
-    setDebug: noop,
-    setDebugTouchOverlayController: noop,
-    setLogging: noop,
-    setPlayerAge: noop,
-    setPlaytestCanvas: noop,
-    enableEventTracking: noop,
-    openExternalLink: noop,
-    playtestSetCanvas: noop,
-    playtestCaptureHtmlOnce: noop,
-    playtestCaptureHtmlForce: noop,
-    playtestCaptureHtmlOn: noop,
-    playtestCaptureHtmlOff: noop,
-    movePill: noop,
-    showLeaderboard: function() { return resolvedPromise([]); }
-  };
+                    self.serve_html(html)
+                    return
+            except Exception as e:
+                print(f"Fetch attempt {attempt+1} failed for {slug}: {e}")
+                time.sleep(0.4)
 
-  var pokiProxy = new Proxy(PokiMock, {
-    get: function(target, prop) {
-      if (prop in target) return target[prop];
-      return function() { return resolvedPromise(true); };
-    }
-  });
-
-  try {
-    Object.defineProperty(window, 'PokiSDK', {
-      value: pokiProxy,
-      writable: false,
-      configurable: false
-    });
-  } catch(e) {
-    window.PokiSDK = pokiProxy;
-  }
-})();
-</script>
-"""
-                mock_sdk = mock_sdk_template.replace('__BASE_URL__', base_url)
-                # 1. Remove all Poki SDK script tags so they cannot override our mock SDK
-                html = re.sub(r'<script[^>]*src=[\'"][^\'"]*poki-sdk[^\'"]*[\'"][^>]*>\s*</script>', '', html, flags=re.IGNORECASE)
-                # 2. Strip out Poki video ad containers and house ads
-                html = re.sub(r'<div[^>]*id=["\'](?:adInfo|poki-video-ad-container)["\'][^>]*>.*?</div>', '', html, flags=re.DOTALL | re.IGNORECASE)
-                # 3. Inject our mock SDK and base tag into <head>
-                if '<head>' in html:
-                    html = html.replace('<head>', '<head>' + mock_sdk, 1)
-                elif '<head ' in html:
-                    html = re.sub(r'(<head[^>]*>)', r'\1' + mock_sdk, html, count=1)
-                else:
-                    html = mock_sdk + html
-
-                self.serve_html(html)
-
-        except Exception as e:
-            print(f"Error serving game {slug}: {e}")
-            self.serve_html(FALLBACK_GAME_HTML)
+        # Serve clean retry screen (NEVER fake runner game!)
+        self.serve_html(GAME_RELOAD_HTML_TEMPLATE.replace('__GAME_TITLE__', slug.replace('-', ' ').title()))
 
     def serve_html(self, html_str):
         content_bytes = html_str.encode('utf-8')
@@ -817,8 +740,11 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content_bytes)
 
+class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
 if __name__ == '__main__':
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(('', PORT), PrathamGamesHandler) as httpd:
-        print(f"Pratham Games Server active on port {PORT}...")
+    with ThreadedHTTPServer(('', PORT), PrathamGamesHandler) as httpd:
+        print(f"Pratham Games Multi-Threaded Server active on port {PORT}...")
         httpd.serve_forever()

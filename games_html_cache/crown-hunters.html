@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+<base href="https://ff9402b8-9d37-4759-87f8-ad9ccb8b3003.gdn.poki.com/db1f3961-f1f6-4722-933f-253838510977/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+    <meta charset='utf-8' />
+    <meta name='viewport'
+          content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+    <meta name='format-detection' content='telephone=no, address=no, email=no'>
+    <meta name='google' content='notranslate'>
+    <meta name='theme-color' content='#000000'>
+    <meta name='color-scheme' content='dark'>
+    <meta property='og:type' content='website'>
+    <meta property='og:title' content='CROWN HUNTERS'>
+    <meta property='og:image' content='./thumbnail.jpg'>
+    <meta property='og:image:type' content='image/jpeg'>
+    <meta property='og:image:width' content='628'>
+    <meta property='og:image:height' content='628'>
+    <meta name='twitter:card' content='summary'>
+    <meta name='twitter:title' content='CROWN HUNTERS'>
+    <meta name='twitter:image' content='./thumbnail.jpg'>
+    <link rel='image_src' href='thumbnail.jpg'>
+    <link rel='icon' type='image/svg+xml' href='favicon.svg'>
+    
+    <link rel='stylesheet' href='fonts/inter/inter.css'>
+    <link rel='stylesheet' href='fonts/fredoka/fredoka.css'>
+    <link rel='stylesheet' href='client.css'>
+    <title>CROWN HUNTERS</title>
+</head>
+
+<body>
+
+<div id='game-root'>
+
+    <!-- Initial loading screen: a playable preview of the game loop. A grass
+         tuft hides a crown silhouette; chops cut it down and reveal the crown,
+         then an egg cracks open to reveal a pet, each round rarer. Chops come
+         on a timer while loading, and tapping adds more. Plain HTML/CSS plus
+         the inline script below, so it runs before the bundle arrives. Art is
+         baked by scripts/bake-loading-reel.mjs; item names stay untranslated
+         like in-game. It stays mounted after boot and covers every world
+         switch too (gameUI.showLoadingScreen/hideLoadingScreen). -->
+    <div id='loading-screen' data-phase='grass' data-hits='0'>
+        <div class='game-title' data-i18n='loading.title'>CROWN HUNTERS</div>
+        <button class='loading-stage' type='button' aria-hidden='true' tabindex='-1'>
+            <span class='stage-glow'></span>
+            <img class='stage-backgrass' src='textures/loading/grass-tuft.webp' alt=''>
+            <img class='stage-prize' src='textures/loading/crown-storm.webp' alt='' fetchpriority='high'>
+            <span class='stage-cover'>
+                <img src='textures/loading/grass-tuft.webp' alt='' fetchpriority='high'>
+                <svg class='stage-cracks' viewBox='0 0 100 100'>
+                    <path d='M30 46 L38 52 L34 58 L42 63'/>
+                    <path d='M42 63 L50 60 L55 67 L62 64'/>
+                    <path d='M38 52 L47 48 L52 53 L60 49 L67 55'/>
+                </svg>
+            </span>
+            <img class='stage-slice' src='textures/loading/grass-tuft.webp' alt=''>
+            <span class='stage-bits'><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <div class='stage-captions'>
+            <p data-caption='grass' class='stage-hint active' data-i18n='loading.chopGrass'>CHOP THE GRASS!</p>
+            <p data-caption='egg' class='stage-hint' data-i18n='pet.chopToCrack'>CHOP TO CRACK</p>
+            <p data-caption='0-crown' style='--tier: #ff2698'><b data-i18n='rarity.mythic'>Mythic</b><span>Thunder Crown</span></p>
+            <p data-caption='0-pet' style='--tier: #ff5252'><b data-i18n='rarity.godly'>Godly</b><span>Solaris</span></p>
+            <p data-caption='1-crown' style='--tier: #a98cff'><b data-i18n='rarity.eternal'>Eternal</b><span>Eclipse Crown</span></p>
+            <p data-caption='1-pet' style='--tier: #a98cff'><b data-i18n='rarity.eternal'>Eternal</b><span>Everember</span></p>
+            <p data-caption='2-crown' style='--tier: #ffffff' class='prismatic'><b data-i18n='rarity.transcendent'>Transcendent</b><span>Scorchwing Crown</span></p>
+            <p data-caption='2-pet' style='--tier: #ffffff' class='prismatic'><b data-i18n='rarity.transcendent'>Transcendent</b><span>Apex</span></p>
+        </div>
+        <div class='loading-bar-track'>
+            <div class='loading-bar-fill'></div>
+            <div class='loading-label'>
+                <span data-i18n='loading.text'>LOADING</span><span class='loading-dots'><i>.</i><i>.</i><i>.</i></span>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Drives the #loading-screen preview above. Auto-chops while the screen
+        // is up and pauses while the game has it marked done.
+        (() => {
+            const ROUNDS = [
+                { crown: 'storm', pet: 'godly', crownTier: '#ff2698', petTier: '#ff5252' },
+                { crown: 'eclipse', pet: 'eternal', crownTier: '#a98cff', petTier: '#a98cff' },
+                { crown: 'scorchwing', pet: 'transcendent', crownTier: '#ffffff', petTier: '#ffffff' },
+            ]
+            const AUTO_CHOP_MS = 700
+            const REVEAL_HOLD_MS = 1300
+            const MIN_REVEAL_MS = 450
+            const HITS = { grass: 3, egg: 4 }
+            // How much of the front tuft (% from its top) is sliced away after n
+            // chops. The last chop leaves stubble, so the crown stands in cut grass.
+            const GRASS_CUTS = [0, 46, 66, 82]
+            const screen = document.getElementById('loading-screen')
+            const stage = screen.querySelector('.loading-stage')
+            const cover = screen.querySelector('.stage-cover img')
+            const prize = screen.querySelector('.stage-prize')
+            const slice = screen.querySelector('.stage-slice')
+            const captions = screen.querySelectorAll('[data-caption]')
+            const art = (kind, id) => 'textures/loading/' + kind + '-' + id + '.webp'
+            const preload = (kind, id) => { new Image().src = art(kind, id) }
+            const clip = (element, inset) => { element.style.clipPath = element.style.webkitClipPath = inset }
+            let round = 0, phase = 'grass', hits = 0, revealedAt = 0, holdTimer = 0, afterReveal = null
+
+            function show(next) {
+                phase = next
+                hits = 0
+                const current = ROUNDS[round]
+                if (phase === 'grass') { cover.src = art('grass', 'tuft'); prize.src = art('crown', current.crown) }
+                if (phase === 'egg') { cover.src = art('egg', current.pet); prize.src = art('pet', current.pet) }
+                if (phase === 'grass' || phase === 'egg') {
+                    clip(cover, 'none')
+                    clip(slice, 'inset(100% 0 0 0)')
+                }
+                screen.style.setProperty('--tier', phase === 'grass' || phase === 'crown' ? current.crownTier : current.petTier)
+                screen.dataset.phase = phase
+                screen.dataset.hits = '0'
+                const caption = phase === 'crown' || phase === 'pet' ? round + '-' + phase : phase
+                captions.forEach(element => element.classList.toggle('active', element.dataset.caption === caption))
+            }
+            function replay(className) {
+                stage.classList.remove(className)
+                void stage.offsetWidth
+                stage.classList.add(className)
+            }
+            function reveal(prizePhase, then) {
+                show(prizePhase)
+                revealedAt = performance.now()
+                afterReveal = then
+                replay('reveal')
+                holdTimer = setTimeout(advance, REVEAL_HOLD_MS)
+            }
+            function advance() {
+                clearTimeout(holdTimer)
+                const then = afterReveal
+                afterReveal = null
+                if (then) then()
+            }
+            function hit() {
+                if (!HITS[phase]) return
+                hits++
+                screen.dataset.hits = String(hits)
+                if (phase === 'grass') {
+                    // Slice the next band off the tuft's top; the slice flies off.
+                    clip(cover, 'inset(' + GRASS_CUTS[hits] + '% 0 0 0)')
+                    clip(slice, 'inset(' + GRASS_CUTS[hits - 1] + '% 0 ' + (100 - GRASS_CUTS[hits]) + '% 0)')
+                }
+                replay('hit')
+                if (hits < HITS[phase]) return
+                const current = ROUNDS[round]
+                if (phase === 'grass') {
+                    preload('egg', current.pet)
+                    preload('pet', current.pet)
+                    reveal('crown', () => show('egg'))
+                } else {
+                    const next = (round + 1) % ROUNDS.length
+                    preload('crown', ROUNDS[next].crown)
+                    reveal('pet', () => { round = next; show('grass') })
+                }
+            }
+
+            stage.addEventListener('pointerdown', event => {
+                event.preventDefault()
+                if (HITS[phase]) hit()
+                else if (performance.now() - revealedAt > MIN_REVEAL_MS) advance()
+            })
+            let autoChop = 0
+            function setRunning(running) {
+                if (running === !!autoChop) return
+                clearInterval(autoChop)
+                autoChop = running ? setInterval(hit, AUTO_CHOP_MS) : 0
+                // A reveal left waiting while hidden would stall the next showing.
+                if (!running) advance()
+            }
+            new MutationObserver(() => setRunning(!screen.classList.contains('done')))
+                .observe(screen, { attributes: true, attributeFilter: ['class'] })
+            setRunning(true)
+        })()
+    </script>
+
+    <!-- Game -->
+    <div id='game'>
+        <!-- HUD root. Contains every in-game element (touch controls,
+             picker menu, popups). Hidden when the customize
+             overlay is open so the customize preview gets a clean stage.
+             gameUI toggles `display` on this and #customize-ui as it
+             enters/leaves customize mode. -->
+        <div id='hud-ui'>
+            <!-- Top-left HUD controls. -->
+            <div class="hud-topleft">
+                <!-- Options pill. Coins moved top-right as coin-counter
+                     (plus-one-keyboard HUD grammar: currency under the
+                     world-name label). -->
+                <div class="hud-side-buttons">
+                    <options-trigger></options-trigger>
+                </div>
+            </div>
+
+            <!-- Profile popup (stats + rename). Opened by the local-player
+                 nametag's pencil icon dispatching profile:open. -->
+            <profile-popup></profile-popup>
+
+            <!-- Options popup. Opened by the options trigger. -->
+            <options-popup></options-popup>
+
+            <!-- HUD. All Lit custom elements; GameUI pushes state via reactive
+                 properties. See src/client/ui/components/. -->
+            <world-name-label></world-name-label>
+
+            <!-- Per-map player count. Placed by game.css, under the Ranking/Skins group (top-right) or, on touch
+                 portrait, in the bottom-right corner. Renders nothing until 2+ players share the room. -->
+            <presence-pill></presence-pill>
+
+            <!-- Touch HUD region. GameUI flips display:block/none on this
+                 wrapper based on IS_TOUCH_DEVICE. -->
+            <div id='touch-controls' class='touch-controls'>
+                <character-controls></character-controls>
+                <!-- Right-half capture region for the touch look joystick.
+                     Invisible (nipplejs dataOnly:true) — just a hit-target
+                     for drag-to-rotate. Always on while #touch-controls
+                     is visible. -->
+                <div id='nipple-look-zone'></div>
+            </div>
+        </div>
+
+        <!-- Customize root. The full-screen character-customize overlay is
+             hidden by default. -->
+        <div id='customize-ui' style='display: none;'>
+            <character-customize></character-customize>
+        </div>
+
+    </div>
+</div>
+
+<script type='module' src='bundle.js'></script>
+
+<script>
+    // Prevent gestures on ipad / iphone
+    document.addEventListener('gesturestart', e => e.preventDefault())
+    document.addEventListener('gesturechange', e => e.preventDefault())
+    document.addEventListener('gestureend', e => e.preventDefault())
+
+    // Prevents pinch-zoom (use touches.length, not event.scale which is Safari-only)
+    document.addEventListener('touchmove', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault()
+        }
+    }, { passive: false })
+
+    // Prevents double-tap zoom
+    let lastTouchEnd = 0
+    document.addEventListener('touchend', function(event) {
+        let now = (new Date()).getTime()
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault()
+        }
+        lastTouchEnd = now
+    }, { passive: false })
+</script>
+
+</body>
+</html>

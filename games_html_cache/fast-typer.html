@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<base href="https://27c936fc-32f4-11ea-b919-acde48001122.gdn.poki.com/ca0bc452-c551-49a4-b5fc-e238227edd1e/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Fast Typer</title>
+    <script type="module" crossorigin src="./assets/index-L04ZqofV.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-iUQU1D3F.css">
+  </head>
+  <body>
+    <div id="game"></div>
+  </body>
+</html>

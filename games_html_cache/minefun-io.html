@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<!-- translate="no" + the "google notranslate" meta below: the game ships its own 46 locales, while
+     browser page translation (Chrome/Edge, incl. mobile auto-translate) rewrites text nodes under Vue —
+     the next re-render then tears the DOM (insertBefore NotFoundError storms in otel → vanished UI). -->
+<html lang="en" translate="no">
+  <head>
+<base href="https://c89f4abe-5041-497b-8705-986b6f3b748c.gdn.poki.com/93756285-89ef-4a9b-a7b2-46ec20e1d80e/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+    <script class="desktop-safari-polyfill">
+      const if‌ = [0, 3]
+      ;((of‌, in‌) => {
+        return of‌[(typeof "")[if‌[0]] + ("" + void if‌[0])[if‌[1]] + in‌[5] + in‌[if‌[1]]](
+          of‌["\u0070\u0072\u006f\u0074\u006f\u0074" + "\x79\x70\x65"]
+        )
+      })({}["\x63\x6f\x6e\x73\x74\x72" + "\x75\x63\x74\x6f\x72"], typeof !if‌[0])
+    </script>
+
+    <meta charset="UTF-8" />
+    <!-- Belt to the html translate="no" braces: Google Translate (and Chrome's built-in prompt) honors
+         this page-level opt-out even where the attribute is ignored. -->
+    <meta name="google" content="notranslate" />
+
+    <script class="boot-beacon">
+      // One visit in ten reports that this HTML arrived and how the wait for the app bundle went: a visitor lost
+      // while the game is still downloading never reaches the bundle's own telemetry.
+      ;(function () {
+        try {
+          var host = location.hostname
+          var poki = /\.poki-gdn\.com$|\.gdn\.poki\.com$/.test(host)
+          var domain = host === "minefun.io" || /\.minefun\.io$/.test(host)
+          if (!poki && !domain) return
+
+          // The bundle reuses the id, so these records join the rest of the visit.
+          var boot = (window.__mfBoot = {
+            visitId: Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
+            sampled: Math.random() < 0.1,
+            loaded: false,
+          })
+          if (!boot.sampled) return
+
+          var ua = navigator.userAgent
+          // Coarse stand-ins for the bundle's UAParser fields: without them every row here would group as desktop.
+          var deviceType = /iPad|Tablet|Android(?!.*Mobile)/.test(ua)
+            ? "tablet"
+            : /Mobi|iPhone|iPod|Android/.test(ua)
+              ? "mobile"
+              : ""
+          var osName = /Android/.test(ua)
+            ? "Android"
+            : /iPhone|iPad|iPod/.test(ua)
+              ? "iOS"
+              : /Windows/.test(ua)
+                ? "Windows"
+                : /CrOS/.test(ua)
+                  ? "Chrome OS"
+                  : /Mac OS X/.test(ua)
+                    ? "macOS"
+                    : /Linux/.test(ua)
+                      ? "Linux"
+                      : ""
+          // A reload (by the visitor or by the stale-chunk guard below) is a second load of the same visitor.
+          var navigation = (performance.getEntriesByType && performance.getEntriesByType("navigation")[0]) || {}
+          var connection = navigator.connection || {}
+
+          var list = function (attrs) {
+            var out = []
+            for (var key in attrs) {
+              var v = attrs[key]
+              out.push({
+                key: key,
+                value:
+                  typeof v === "string"
+                    ? { stringValue: v }
+                    : typeof v === "boolean"
+                      ? { boolValue: v }
+                      : { intValue: Math.round(v) },
+              })
+            }
+            return out
+          }
+          // Same collector, transport, payload shape and resource names as the bundle's logger
+          // (src/otel/instrumentation.ts): whatever blocks one blocks the other, and the two stay comparable.
+          var send = function (body, attrs) {
+            try {
+              attrs["page.visitId"] = boot.visitId
+              attrs.userAgent = ua
+              if (deviceType) attrs.deviceType = deviceType
+              if (osName) attrs.osName = osName
+              attrs["device.touchPoints"] = navigator.maxTouchPoints || 0
+              attrs["net.effectiveType"] = connection.effectiveType || ""
+              attrs["page.navType"] = navigation.type || ""
+              var time = Date.now() + "000000"
+              fetch("https://otl.minefun.io/v1/logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                keepalive: true,
+                mode: "cors",
+                body: JSON.stringify({
+                  resourceLogs: [
+                    {
+                      resource: {
+                        attributes: list({
+                          "service.name": "minefun-client",
+                          "deployment.environment": host === "sandbox.minefun.io" ? "sandbox" : "production",
+                          "app.platform": poki ? "poki" : "domain",
+                          "service.version": "ts-2026-11-04T15:11",
+                        }),
+                      },
+                      scopeLogs: [
+                        {
+                          scope: { name: "frontend-logger" },
+                          logRecords: [
+                            {
+                              timeUnixNano: time,
+                              observedTimeUnixNano: time,
+                              severityNumber: 9,
+                              severityText: "info",
+                              body: { stringValue: body },
+                              attributes: list(attrs),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                }),
+              })["catch"](function () {})
+              return true
+            } catch (err) {
+              return false
+            }
+          }
+
+          if (!send("page shell loaded", { "page.shellMs": performance.now(), "page.hidden": !!document.hidden })) {
+            // Nothing can be reported from here: the bundle must not count the visit as sampled either.
+            boot.sampled = false
+            return
+          }
+
+          var left = false
+          var leave = function (how) {
+            if (boot.loaded || left) return
+            left = true
+            send("page left before load", { "page.waitedMs": performance.now(), "left.how": how })
+          }
+          // A closing tab or a parent page that navigates away can drop the leave record, so the wait is also
+          // reported while the page is alive: the last of these bounds how long a visitor stayed.
+          var stillLoading = function () {
+            if (boot.loaded || left) return
+            send("page still loading", { "page.waitedMs": performance.now() })
+          }
+          var waits = [3000, 8000, 15000, 30000]
+          for (var i = 0; i < waits.length; i++) setTimeout(stillLoading, waits[i])
+
+          // A bundle that failed to download or to run would otherwise look like a slow one.
+          var failed = false
+          addEventListener(
+            "error",
+            function (e) {
+              if (boot.loaded || failed) return
+              var tag = e.target && e.target.tagName
+              if (tag && tag !== "SCRIPT" && tag !== "LINK") return
+              failed = true
+              send("page load error", {
+                "page.waitedMs": performance.now(),
+                "page.loadError": tag ? tag + " failed" : String(e.message).slice(0, 120),
+              })
+            },
+            true,
+          )
+
+          addEventListener("pagehide", function () {
+            leave("pagehide")
+          })
+          // A visitor who comes back is waiting again: later progress and a later exit are reported too.
+          addEventListener("pageshow", function (e) {
+            if (e.persisted) left = false
+          })
+          document.addEventListener("visibilitychange", function () {
+            if (document.hidden) leave("hidden")
+            else left = false
+          })
+        } catch (err) {
+          // Whatever an old or locked-down browser lacks, the game loads without the beacon.
+        }
+      })()
+    </script>
+
+    <script class="stale-chunk-reload-guard">
+      // ИЗНАЧАЛЬНЫЙ ФИКС: после деплоя старый закэшированный index.html ссылается на хэш-чанки,
+      // которых на сервере уже нет → Cloudflare отдаёт на них сам index.html (HTML), и стартовый
+      // чанк падает с "Unexpected token '<'" — приложение не загружается. Тогда один раз
+      // перезагружаемся (свежий index.html уже с новыми хэшами).
+      //
+      // ОБЛАСТЬ ДЕЙСТВИЯ: ТОЛЬКО главная страница/сайт и ТОЛЬКО пока приложение ещё не смонтировалось
+      // (boot не прошёл). На игровом роуте (/match/*) и после запуска игры guard не реагирует НИ НА
+      // ЧТО — поэтому в игре (например i18n при ударе) перезагрузки быть не может в принципе.
+      ;(function () {
+        var RELOAD_COUNT_KEY = "mf_staleChunkReloads"
+        var MAX_RELOADS = 2
+
+        // Приложение монтируется в #app. Пока в нём нет детей — boot ещё не прошёл.
+        function appBooted() {
+          var root = document.getElementById("app")
+          return !!root && root.childElementCount > 0
+        }
+
+        // Игровой роут (/match/*). На нём guard не трогаем вообще — фиксим только главную/сайт.
+        function onGamePage() {
+          var p = window.location.pathname
+          return p === "/match" || p.indexOf("/match/") === 0
+        }
+
+        function isOurAsset(url) {
+          return typeof url === "string" && url.indexOf("/assets/") !== -1
+        }
+
+        // Жёсткий лимит: не больше MAX_RELOADS перезагрузок за вкладку, потом стоп НАВСЕГДА.
+        // Это исключает любой цикл, даже если ошибка повторяется на каждой загрузке.
+        function reloadOnce() {
+          try {
+            var n = parseInt(window.sessionStorage.getItem(RELOAD_COUNT_KEY) || "0", 10)
+            if (n >= MAX_RELOADS) return
+            window.sessionStorage.setItem(RELOAD_COUNT_KEY, String(n + 1))
+          } catch (err) {
+            // Нет доступа к sessionStorage — без счётчика не рискуем циклом, не перезагружаемся.
+            return
+          }
+          window.location.reload()
+        }
+
+        window.addEventListener(
+          "error",
+          function (e) {
+            if (!e) return
+            // Реагируем ТОЛЬКО на главной/сайте и ТОЛЬКО до загрузки приложения. На игровом роуте
+            // (/match/*) и после запуска игры guard молчит — перезагрузки в игре быть не может.
+            if (appBooted() || onGamePage()) return
+
+            var target = e.target || e.srcElement
+            var tag = target && target.tagName
+            // Чанк-<script>/<link> из /assets/ не загрузился (404 на старый хэш после деплоя).
+            var brokenChunkTag = (tag === "SCRIPT" || tag === "LINK") && isOurAsset(target.src || target.href)
+            // Чанк отдан как HTML вместо JS ("Unexpected token '<'"); не путаем с JSON.parse.
+            var htmlInsteadOfJs =
+              typeof e.message === "string" &&
+              /Unexpected token '<'|expected expression, got '<'/.test(e.message) &&
+              !/JSON/i.test(e.message)
+
+            if (brokenChunkTag || htmlInsteadOfJs) reloadOnce()
+          },
+          true,
+        )
+      })()
+    </script>
+
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="apple-touch-icon" sizes="192x192" href="./Logo192x192.png" />
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"
+    />
+    <title>MineFun.io - Play Free Online Cube Games</title>
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MineFun.io" />
+    <meta name="application-name" content="MineFun.io" />
+    <link rel="canonical" href="https://minefun.io/" />
+    <meta property="og:title" content="MineFun.io - Play Free Online Cube Games" />
+    <meta
+      property="og:description"
+      content="Play MineFun.io – a no-download, free Minecraft-like game. Join PvP|PvE battles in Bedwars, Skywars, Hide and Seek, and Parkour. Build, craft, and explore blocky worlds!"
+    />
+    <meta property="og:image" content="https://minefun.io/preview-og.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Free Online Block Games - MineFun.io" />
+    <meta property="og:url" content="https://minefun.io/" />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:site_name" content="MineFun.io" />
+    <meta property="og:type" content="website" />
+    <!-- X falls back to the og: title, description and image. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@minefun_io" />
+    <!-- Add "WebApplication" to the game's type only together with own player ratings: Google requires them there. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://minefun.io/#organization",
+            "name": "MineFun.io",
+            "url": "https://minefun.io/",
+            "logo": "https://minefun.io/Logo.png",
+            "sameAs": ["https://discord.gg/jmwa2RCxzx", "https://x.com/minefun_io"]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://minefun.io/#website",
+            "name": "MineFun.io",
+            "url": "https://minefun.io/",
+            "publisher": { "@id": "https://minefun.io/#organization" }
+          },
+          {
+            "@type": "VideoGame",
+            "@id": "https://minefun.io/#game",
+            "name": "MineFun.io",
+            "url": "https://minefun.io/",
+            "description": "Free multiplayer block game that runs in the browser with no download: BedWars, SkyWars, One Block, Hide and Seek, Parkour, survival and creative building modes.",
+            "image": "https://minefun.io/preview-og.webp",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any",
+            "gamePlatform": "Web browser",
+            "genre": "Sandbox",
+            "playMode": "https://schema.org/MultiPlayer",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "publisher": { "@id": "https://minefun.io/#organization" }
+          }
+        ]
+      }
+    </script>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta
+      name="description"
+      content="Play MineFun.io – a no-download, free Minecraft-like game. Join PvP|PvE battles in Bedwars, Skywars, Hide and Seek, and Parkour. Build, craft, and explore blocky worlds!"
+    />
+    <meta name="theme-color" content="#4EB5F4" />
+    <script type="module" crossorigin src="./assets/index-Cs4gCFd4.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D5UdMuNG.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // If you put it deeper, it will start to stop working periodically (PWA)
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault()
+        window.deferredPromptPWA = e
+      })
+    </script>
+  </body>
+</html>

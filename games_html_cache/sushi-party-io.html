@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<base href="https://74b97156-f40b-11e9-859c-c6053849a814.gdn.poki.com/0384ff80-a8a7-4f4d-b50b-48130a56815d/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+	<meta name="monetization" content="$ilp.uphold.com/eJ3JRYkeJGGw">
+
+	<meta http-equiv="content-type" content="text/html; charset=UTF8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="#382C2A">
+	<meta name="viewport"
+		content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+	
+
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+	<meta name="msapplication-TileColor" content="#da532c">
+	<meta name="theme-color" content="#ffffff">
+
+	<link rel="preload" href="./assets/su.png" as="image">
+
+
+	<title>SushiParty.io</title>
+	<meta name="description" content="Sushi Party is a Kawaii styled snake game similar to Slither and Wormax. Beat high scores, unlock achievements and collect more than 30 hats"/>
+	<link href="./s.css" media="screen" rel="stylesheet" type="text/css">
+	<svg style="position:absolute; height:0" xmlns="http://www.w3.org/2000/svg" width="0" height="0">
+		<defs>
+			<filter id="sq0">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="0" />
+				<feDisplacementMap id="displacement" in="SourceGraphic" in2="noise" scale="6" />
+			</filter>
+			<filter id="sq1">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="1" />
+				<feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
+			</filter>
+			<filter id="sq2">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="2" />
+				<feDisplacementMap in="SourceGraphic" in2="noise" scale="6" />
+			</filter>
+			<filter id="sq3">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="3" />
+				<feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
+			</filter>
+			<filter id="sq4">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="4" />
+				<feDisplacementMap in="SourceGraphic" in2="noise" scale="6" />
+			</filter>
+			<filter id="squi">
+				<feTurbulence id="turbulence" baseFrequency=".02" numOctaves="3" result="noise" seed="4" />
+				<feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+			</filter>
+		</defs>
+	</svg>
+</head>
+
+<body>
+	<script>
+		window.navigateToPoki = function () {
+			if(!window.location.href.includes('poki')){
+				window.location.href = 'https://poki.com/en/g/sushi-party-io';
+			}
+		}
+	</script>
+	<div id="mm">
+		<a id="cl" href="https://coil.com/" target="_blank">
+			<img src="./no-ads-coil.png"></img>
+		</a>
+		<div id="pc"></div>
+		<div id="lg" class="ab">
+			<img src="./assets/l.png"></img>
+		</div>
+		<div id="sc">
+			<div style="position:absolute;top:10px;right:10px;display:grid;cursor:pointer" onclick="window.navigateToPoki()">
+				<span style="color: #382d2b;">Partner:</span>
+				<img style="pointer-events: all; position:unset; margin-left:6px; width:40px" src="./assets/poki.png"></img>
+			</div>
+			<input tabindex="1" type="text" id="name" name="name" value="Snake123" autocomplete="off">
+			<div id="bl">
+				<div id="ht"><svg style="height: 42px; width: 42px;">
+						<circle cx="21" cy="21" r="20" stroke="#382C2A" stroke-width="2" fill="#FFF0E5"></circle>
+					</svg></div>
+				<div id="ac"><svg style="height: 42px; width: 42px;">
+						<circle cx="21" cy="21" r="20" stroke="#382C2A" stroke-width="2" fill="#FFF0E5"></circle>
+					</svg></div>
+			</div>
+		</div>
+		<div id="ec">
+		</div>
+		<div id="lb"></div>
+		<div class="vv">
+			<div class="if">v1.6.0 ℹ️</div>
+			<ul>
+				<li>Minor bug fixes + hat promotion!</li>
+			</ul>
+			<div>v1.5.0</div>
+			<ul>
+				<li>Added a revive button!</li>
+			</ul>
+			<div>v1.4.0</div>
+			<ul>
+				<li>Added 2 Player mode + 8 new hats to unlock!</li>
+			</ul>
+		</div>
+	</div>
+	</div>
+	<div id="sh">
+		<div id="gr"></div>
+		<div class="bk"><svg style="height: 42px; width: 42px;">
+				<circle cx="21" cy="21" r="20" stroke="#382C2A" stroke-width="2" fill="#FFF0E5"></circle>
+			</svg></div>
+	</div>
+	<div id="as">
+		<div class="bk"><svg style="height: 42px; width: 42px;">
+				<circle cx="21" cy="21" r="20" stroke="#382C2A" stroke-width="2" fill="#FFF0E5"></circle>
+			</svg></div>
+	</div>
+	<svg id="sp" width="104px" height="104px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
+		preserveAspectRatio="xMidYMid" class="ab lds-infinity" style="background: none;">
+		<defs>
+			<path id="p" class="cc" fill="none" ng-attr-stroke="{{config.stroke}}"
+				ng-attr-stroke-width="{{config.width}}" ng-attr-stroke-dasharray="{{config.dasharray}}"
+				ng-attr-stroke-linecap="{{config.linecap}}"
+				d="M24.3,30C11.4,30,5,43.3,5,50s6.4,20,19.3,20c19.3,0,32.1-40,51.4-40 C88.6,30,95,43.3,95,50s-6.4,20-19.3,20C56.4,70,43.6,30,24.3,30z"
+				stroke-dasharray="133.42624267578125 123.162685546875" stroke-linecap="round">
+				<animate attributeName="stroke-dashoffset" calcMode="linear" values="0;256.58892822265625"
+					keyTimes="0;1" dur="1" begin="0s" repeatCount="indefinite"></animate>
+			</path>
+		</defs>
+		<use stroke="#382C2A" stroke-width="10" xlink:href="#p" />
+		<use stroke="#FFF0E5" stroke-width="7" xlink:href="#p" />
+	</svg>
+	<img id="stb" src="./assets/st.svg" class="ab bu"></img>
+	<script>
+		openCMP = () => {
+			window.__tcfapi('displayConsentUi', 2, () => {});
+		};
+	</script>
+	<div id="st" class = 'cl'>
+		<label class="tgl">
+			<input class="tgl-cb" type="checkbox" checked>
+			<div class="tgl-sw"></div>
+			<span class="tgl-label">Audio</span>
+		</label>
+		<a href="https://sushiparty.io/policy.html" target="_blank">Privacy Policy</a>
+		<a href="https://sushiparty.io/about.html" target="_blank">About</a>
+		<a style="text-decoration: underline;cursor:pointer"onclick="openCMP()">Manage Consent</a>
+	</div>
+	<script type="text/javascript" src="./scripts/l.js"></script>
+</body>
+
+</html>

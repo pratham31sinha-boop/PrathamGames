@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<head>
+<base href="https://dea6d1d1-5ef8-4bff-a9d2-111c72cb276d.gdn.poki.com/d965ba7c-59f4-4ba8-afb5-1b714e027d7f/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+	<meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=UTF8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="#382C2A">
+	<meta name="viewport"
+		content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+	<title>Little Master Cricket</title>
+
+	
+	<script type="text/javascript" src="./js/loader.js"></script>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		canvas {
+			outline: none
+		}
+
+		html,
+		body,
+		#container {
+			margin: 0;
+			overflow: hidden;
+			width: 100%;
+			height: 100%;
+			background-color: #000;
+		}
+
+		#splash {
+			position: absolute;
+			visibility: hidden;
+			z-index: 10;
+		}
+
+		#splash__image {
+			position: absolute;
+			background-size: contain;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-image: url("assets/todo.jpg");
+			visibility: visible;
+			transition: all 0.5s;
+			z-index: 10;
+		}
+
+		#progress__root {
+			position: absolute;
+		}
+
+		#progress__line {
+			width: 0;
+			height: 100%;
+			transition: all 0.5s;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="splash__image">
+		<div id="progress__root">
+			<div id="progress__line"></div>
+		</div>
+	</div>
+
+	<script>
+
+		window.addEventListener("load", () => {
+
+
+
+			PokiSDK.init().then(
+				() => {
+					// successfully initialized
+					onPokiInitComplete(false);
+				}
+			).catch(
+				() => {
+					// successfully initialized but the user has adblock
+					onPokiInitComplete(true);
+				}
+			);
+
+			let config;
+
+			
+config = {
+    "title": "Little Master Cricket",
+    "filename": "TopSpinner_sdk",
+    "pokiSDK": true,
+    "debugPoki": false,
+    "showFPS": false,
+    "debug": false,
+    "splash": "assets/todo.jpg",
+    "start": null,
+    "width": 720,
+    "height": 480,
+    "x": 0,
+    "y": 0,
+    "w": "100%",
+    "h": "100%",
+    "stageScaleMode": null,
+    "stageAlign": null,
+    "progressParserWeigth": 1,
+    "progress": {
+        "direction": "lr",
+        "back": "#e1dccc",
+        "line": "#2b446b",
+        "rect": [
+            0.25,
+            0.65,
+            0.5,
+            0.01
+        ]
+    },
+    "box2dVersion": "none",
+    "skipFramesOfScene": null,
+    "buttonPokiSDKActions": null,
+    "retryButtonIDS": null,
+    "retryButtonAction": null,
+    "actionOnStop": null,
+    "actionWhenRetryButtonEncountered": null,
+    "binary": [
+        {
+            "name": "fonts.swf",
+            "path": "assets/fonts.swf",
+            "size": 30506
+        },
+        {
+            "name": "TopSpinner_sdk",
+            "path": "assets/TopSpinner_sdk.swf",
+            "size": 145539,
+            "resourceType": "GAME"
+        }
+    ],
+    "runtime": "js/BennettFoddy.js"
+};
+
+			
+			PokiSDK.setDebug(config.debugPoki);
+
+			Loader.init(config);
+
+			let onPokiInitComplete = (adBlocked) => {
+
+				PokiSDK.adBlocked = adBlocked;
+				PokiSDK.gameLoadingStart();
+
+				Loader.runGame((fill) => {
+					PokiSDK.gameLoadingProgress({
+						percentageDone: fill,
+						kbLoaded: 0,
+						kbTotal: 0,
+						fileNameLoaded: "",
+						filesLoaded: 0,
+						filesTotal: 0
+					});
+				}, (instance) => {
+					PokiSDK.gameLoadingFinished();
+				})
+			}
+		})
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+  <head>
+<base href="https://316360c3-565c-45ff-9f1f-09470ef540b5.gdn.poki.com/3f8ef8f8-8d50-4b3d-85f8-5f74eea259ca/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover + user-scalable=no: full-bleed canvas, no pinch-zoom fighting the drag controls -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b1c2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Plane Wars</title>
+
+    <!-- Inline SVG data URI rather than an .ico: it is a roundel, which is four
+         circles, so the whole icon is smaller than the request that would fetch
+         it — and it costs no round trip on the critical path. Scales cleanly to
+         whatever size the tab, the bookmark bar or an installed icon asks for. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1c2c'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%237dffb2'/%3E%3Ccircle cx='16' cy='16' r='6.5' fill='%230b1c2c'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23ff5a5a'/%3E%3C/svg%3E"
+    />
+
+    <!-- Shared links resolved to a blank card before this. Nothing here runs. -->
+    <meta
+      name="description"
+      content="A mobile-first low-poly 3D dogfighting game. Fly a fighter over a 12 km theatre against a squadron of named pilots — no menus, no throttle, hold to fire."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Plane Wars" />
+    <meta
+      property="og:description"
+      content="A mobile-first low-poly 3D dogfighting game. Fly a fighter over a 12 km theatre against a squadron of named pilots — no menus, no throttle, hold to fire."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- PokiSDK must exist before the module entry point calls init(). Keeping
+         this parser-ordered prevents a fast module fetch from racing the CDN
+         script and permanently skipping SDK initialisation. A blocked/failed
+         script still falls through to the wrapper's graceful no-SDK path. -->
+    
+    <script type="module" crossorigin src="./assets/index-wDSgTPQL.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three-BIut9GC5.js">
+    <link rel="stylesheet" crossorigin href="./assets/style-CLMlBJFF.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── 3D layer ───────────────────────────────────────────────── -->
+      <canvas id="game-canvas"></canvas>
+
+      <!-- ── 2D HUD layer (pointer-events:none except buttons) ───────── -->
+      <!-- Not `aria-hidden` as a whole any more: the crosshairs, the markers,
+           the arcs and the standings are instruments and stay hidden from a
+           screen reader one by one, but the lock prompt, the flight guide and
+           the kill feed are SENTENCES — the only ones a first flight has — and
+           a layer-wide hide kept every one of them from being read. -->
+      <div id="hud">
+        <!-- Dynamic crosshair #1: where the player is STEERING (target rotation) -->
+        <div id="crosshair-target" class="crosshair" aria-hidden="true">
+          <img src="data:image/png;base64,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" alt="" width="64" height="64" />
+        </div>
+
+        <!-- Dynamic crosshair #2: where the NOSE (and therefore the guns) actually
+             points. The hit marker is a CHILD of it rather than a sibling pinned to
+             the middle of the screen: the confirmation belongs where the rounds
+             went, and parenting it means it tracks the gun for zero per-frame
+             work — the crosshair's transform is already being written. -->
+        <div id="crosshair-nose" class="crosshair" aria-hidden="true">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADQmBKKAAAABGdBTUEAALGPC/xhBQAAADlQTFRFm5ubZmZmODg4UFBQ5OTkeXl59vb22traAAAAAAAAAAAAAAAAAAAAxMTEi4uLAAAAAAAAAAAA////B+Yr3gAAABJ0Uk5Ttp6Oluem999QeCgUZM+uPH8AEBfqnQAAAc9JREFUeNrt2etygyAQhuG0zcGICtn7v9h6aMYxdTEFRDrz8hNmss8kKHyb06OwcQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECNC/BxlrTcx6apB1/bDh66lBfb2u81TcWk8NGuqJ6BW31lODzFhPr2jndZMFZKd6mujpGdZtFlDlWtFFs0daV2UB1c4jWnhcnWdTNwuRWdtfk6fJ9dgvRHZ1f4V6Al+Ms+hln1TzfJgn9Oh4il73ST3Ph3mCD9dJ9LuuNr//aT9UXqurze9//WiGA7R5f37/+5C93+1f5jNe0Or7+K2YFJ+VAjTefoZRlwHq386nWz8uzpUBqtxlfBdev5wtAuTcbXo731J8RUlAP8eXANJA57J+sqa0Td0/9h9XkfNnKY/9cOeYhikE9DDj0VEdfXRo+T0818eBtPwekeujQFp+j8n1MSAtv0fl+giQlt+3cv+O/aHOn8u67P0h8ecyyd8fEl8ukyP6Q6LnMjmmPyRaLpOD+kOtlsvaY/pDWj7Vcv/e/SE9L0fl++D+kK9eTL4P7g9560Xk+9CjYyO/h+d7/g0CBAgQIECAAAECBAgQIECAAAECBAgQIECAAAECBAiQPr4BkcxcLAgt21EAAAAASUVORK5CYII=" alt="" width="48" height="48" />
+          <div id="hit-marker">
+            <svg viewBox="0 0 48 48" width="48" height="48">
+              <path d="M12 12 L20 20 M36 12 L28 20 M12 36 L20 28 M36 36 L28 28" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Contact markers on nearby aircraft. A fixed pool, reused every frame:
+             with up to 32 aircraft in the sky, creating nodes per frame is the one
+             thing on this layer that would actually cost frames.
+
+             The diamond sits ABOVE the silhouette, not on it — a marker drawn over
+             an aircraft hides the thing it is pointing at. No range readout: at
+             these distances the number changed every frame and nobody was making a
+             firing solution off it, so it was eight DOM writes a frame of noise. -->
+        <div id="markers" aria-hidden="true">
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+          <div class="marker"><i></i></div>
+        </div>
+
+        <!-- Callsigns over the other humans, in multiplayer only.
+
+             A SEPARATE container from #markers above, and deliberately: that
+             pool is a fixed eight and Hud.ts throws at boot if the count is
+             not what it expects, so a name tag added in there would take the
+             game down. It is a sibling instead, inset over the same box, so a
+             label positioned at a projected point lands in exactly the same
+             place a contact diamond would.
+
+             Empty here: how many tags there are is how many humans are in the
+             room, which is not a fact index.html can know. Hud.ts pools
+             `.mp-nametag` nodes into it. -->
+        <div id="hud-nametags" hidden aria-hidden="true"></div>
+
+        <!-- Top-left: standings. Hidden from a screen reader: it is redrawn on
+             every death in the sky, which with a full squadron is about once a
+             second, and a live region at that rate is a voice that never stops. -->
+        <div id="leaderboard" aria-hidden="true">
+          <div class="board-title" data-i18n="hud.leaderboard">STANDINGS</div>
+          <ol id="board-rows"></ol>
+        </div>
+
+        <!-- Top-right: wallet. Deliberately the same object as the menu's — same
+             plate, same icon, same fixed width — because it is the same number.
+             The dollar sign it used to carry is gone: the icon says it — and a
+             labelled group says it to a reader, which the icon cannot. -->
+        <div id="cash" role="group" aria-label="Cash" data-i18n-aria-label="hud.cash">
+          <img src="./assets/cashicon-Ci5DlIsD.png" alt="" width="26" height="19" />
+          <span class="cash-value" id="ui-cash">0</span>
+        </div>
+
+        <!-- Bottom-left: kill feed. A log: rows are read as they arrive, and
+             `polite` means they queue behind whatever is already being said. -->
+        <!-- `aria-live="off"` on purpose: with a full squadron the sky produces
+             a row every second or so, and a live feed at that rate is a voice
+             that never lets the lock prompt or the guide through. The rows are
+             a log a reader can visit; they are not read as they land. -->
+        <div id="killfeed" role="log" aria-live="off"></div>
+
+        <!-- There is no hull bar. Damage is drawn on the AIRCRAFT — an engine
+             plume that thickens and blackens as the hull goes, then catches fire
+             (see Smoke.ts). A bar in the corner reported a number the player has
+             no relationship with, and it was read by looking away from the fight. -->
+
+        <!-- Directional damage. Four pooled arcs, each rotated to point at where
+             a round came from — without this, being shot from behind is entirely
+             invisible from a chase camera and reads as the game cheating.
+
+             The fifth, blue, is the same instrument for a different question:
+             somebody is ON YOUR SIX and lining you up. It is persistent rather
+             than pooled, because it answers "is he still there" — which is the
+             only thing worth knowing about a threat you cannot see. -->
+        <div id="damage" aria-hidden="true">
+          <div class="dmg-arc"></div>
+          <div class="dmg-arc"></div>
+          <div class="dmg-arc"></div>
+          <div class="dmg-arc"></div>
+          <div id="threat-arc" class="dmg-arc threat"></div>
+        </div>
+
+        <!-- No fire button: on touch, holding anywhere fires while the same
+             finger drags to steer. Steering is full-screen drag, never a joystick. -->
+
+        <!-- Flight guide: one line of control hint for a player who has not
+             flown yet, cleared by DOING the thing it asks for (see Game.ts,
+             updateGuide). Hud.ts writes the text and picks the icon per
+             pointer — mouse or finger — so the text node carries no data-i18n:
+             a language sweep would overwrite the variant. It sits ABOVE the
+             crosshair rather than below it, because below the crosshair on a
+             phone is under the thumb that is about to try the drag. -->
+        <div id="flight-guide" role="status">
+          <div class="guide-icon" aria-hidden="true">
+            <img id="guide-hand" src="./assets/guidehand-BwviidcF.png" alt="" width="96" height="96" />
+            <img id="guide-mouse" src="./assets/right-click-afMJCkVK.png" alt="" width="190" height="190" />
+          </div>
+          <span id="guide-text"></span>
+        </div>
+
+        <!-- Pointer-lock prompt. Desktop only, and only while the mouse is free.
+             It dims the screen, but it pauses nothing: the flight carries on
+             behind it, and it leaves the moment the lock is actually taken. -->
+        <div id="lock-prompt" role="status">
+          <img src="./assets/right-click-afMJCkVK.png" alt="" width="190" height="190" />
+          <span data-i18n="hud.lockMouse">Click to lock mouse</span>
+        </div>
+      </div>
+
+      <!-- ── Doubling offer ──────────────────────────────────────────────────
+           The only screen in the game that asks the player for something, and
+           it is deliberately the smallest one: a wreck on the ground behind it,
+           one sentence with the amount in it, one button, one way out, and a
+           bar that runs out on its own.
+
+           It sits ABOVE the HUD and BELOW the menu, which is where it lives in
+           time as well — it happens on the wreck, seconds before the menu takes
+           over, and the two are never on screen together. That is the reason it
+           is here rather than on the result plate: this is the moment the
+           number means something, because the player has just watched the
+           aircraft go in. By the time the menu opens they are looking at twenty
+           aircraft and a PLAY button. See src/ui/DoubleOffer.ts.
+
+           Not shown after every death: the life has to have earned at least
+           ADS.doubleMin. -->
+      <!-- An alert dialog to a reader: it appears on its own, it has a clock on
+           it, and the sentence inside is what the two buttons are about. The
+           clock pauses while a button in here holds focus — see Game.updateDeath. -->
+      <div
+        id="double-offer"
+        role="alertdialog"
+        aria-label="Double your take"
+        data-i18n-aria-label="offer.title"
+        aria-describedby="offer-line"
+        hidden
+      >
+        <div class="offer-card">
+          <span class="offer-title" data-i18n="offer.title">DOUBLE YOUR TAKE</span>
+          <!-- The sentence is assembled in DoubleOffer.show from the localised
+               template, because the three bold amounts sit in a different order
+               in different languages. The three <b>s below are the permanent
+               nodes it drops into it; the English wording between them is only
+               what a browser with no JS would show. -->
+          <p class="offer-line" id="offer-line">
+            <b id="offer-earned">$0</b> from <b id="offer-kills">0</b> kills. Watch
+            an ad and this flight pays <b id="offer-total">$0</b>.
+          </p>
+          <button class="btn ad large" id="offer-take" type="button">
+            <img src="data:image/png;base64,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" alt="" width="26" height="26" />
+            <span id="offer-take-label">WATCH AD · DOUBLE $0</span>
+          </button>
+          <button class="btn large offer-skip" id="offer-skip" type="button" data-i18n="offer.skip">
+            NO THANKS
+          </button>
+          <!-- The countdown, driven by a `--left` on the host rather than by a
+               width on this node: one custom property write per frame, and no
+               layout read on the way back. -->
+          <div class="offer-timer" aria-hidden="true"><i></i></div>
+        </div>
+      </div>
+
+      <!-- ── Menu layer ──────────────────────────────────────────────────────
+           Not a start screen: boot goes straight to the runway, and this is
+           what a DEATH leads to (see src/ui/Menu.ts). It sits above the HUD,
+           takes the pointer back, and the flight carries on being rendered
+           behind it — the squadron is still up there, which is the honest
+           picture of what the player is about to return to.
+
+           ── Shape ────────────────────────────────────────────────────────────
+           A fixed full-screen shell, never a page: three bands that always fit
+           the viewport, and NOTHING scrolls anywhere. Anything that would not
+           fit is either scaled to fit (the hangar grid, sized in JS) or lifted
+           into a modal (the settings). A menu you have to scroll to reach PLAY
+           is a web page wearing a game's colours.
+
+               ┌ TOP ───────────────────────────────────────────────┐
+               │ round result plate            wallet   ⚙          │
+               ├ MAIN ──────────────────────────────────────────────┤
+               │  aircraft portrait + action  │  hangar grid        │
+               ├ BOTTOM ────────────────────────────────────────────┤
+               │ multiplayer (soon)                    ▶ PLAY       │
+               └────────────────────────────────────────────────────┘
+
+           In portrait the two halves of MAIN stack; everything else holds.
+
+           BOTTOM comes before MAIN in the document and is put last by CSS
+           `order`. That is for the keyboard: the twenty hangar cards are
+           buttons, and with the band after them PLAY was the twenty-sixth Tab
+           stop from the top of the screen. Now it is the sixth, and a reader
+           hears the result, the wallet, the four buttons and PLAY before the
+           shop — which is the order a player who has just died wants them in.
+
+           The twenty hangar cards are NOT here: how many aircraft the fleet has
+           is a fact about planes.glb, so the grid is built in Menu.ts from the
+           shop table and its pictures are rendered off the models themselves. -->
+      <div id="menu" hidden>
+        <div class="menu-layout">
+          <!-- ── Top band ─────────────────────────────────────────────────── -->
+          <header class="menu-top">
+            <!-- The scoreboard for the life that just ended. Hidden on any open
+                 that did not follow a death. -->
+            <div class="result" id="menu-result" hidden>
+              <!-- The badge rides on the title's own line rather than taking a
+                   third one, so a record flight and an ordinary one are the
+                   same height of plate and nothing below moves. -->
+              <div class="result-head">
+                <span class="result-title" data-i18n="result.title">SHOT DOWN</span>
+                <span class="result-record" id="result-record" data-i18n="result.record" hidden
+                  >NEW RECORD</span
+                >
+              </div>
+              <div class="result-stats">
+                <div class="stat">
+                  <b id="stat-kills">0</b><span data-i18n="result.kills">KILLS</span>
+                </div>
+                <div class="stat">
+                  <b id="stat-place">—</b><span data-i18n="result.place">PLACE</span>
+                </div>
+                <div class="stat gold">
+                  <b id="stat-earned">0</b><span data-i18n="result.earned">EARNED</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="top-right">
+              <!-- A second entry point to the existing near-price cash offer.
+                   It is shown only while at least one unowned aircraft is within
+                   one rewarded ad of its price; Menu.ts owns that shared state. -->
+              <button class="btn ad top-cash" id="top-cash" type="button" hidden>
+                <img src="data:image/png;base64,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" alt="" width="20" height="20" />
+                <span id="top-cash-label">+$25</span>
+              </button>
+              <div class="wallet" role="group" aria-label="Cash" data-i18n-aria-label="hud.cash">
+                <img src="./assets/cashicon-Ci5DlIsD.png" alt="" width="28" height="20" />
+                <b id="menu-cash">0</b>
+              </div>
+              <button
+                class="icon-btn"
+                id="settings-open"
+                type="button"
+                aria-label="Settings"
+                data-i18n-aria-label="settings.open"
+              >
+                <img src="./assets/settingsicon-Bvw7IpLx.png" alt="" width="26" height="26" />
+              </button>
+            </div>
+          </header>
+
+          <!-- ── Bottom band ──────────────────────────────────────────────── -->
+          <!-- Before MAIN in the document, last on the screen — see the note
+               on the shape of this layout above. -->
+          <footer class="menu-bottom">
+            <!-- Every button in this band carries a `title` as well as its
+                 label: on a phone in either orientation the words go and the
+                 pictures stay, and a long press or a hover is then the only
+                 way to ask what a picture is. -->
+            <!-- The way online. Live now: the SOON badge and the `disabled` are
+                 gone, and nothing is bound here — the panel behind this button
+                 is built in JS (see src/ui/MultiplayerPanel.ts) and main.ts
+                 owns the one line that opens it, exactly as it does for the
+                 achievements panel beside it. -->
+            <button
+              class="btn ghost"
+              id="multiplayer"
+              type="button"
+              aria-label="Multiplayer"
+              data-i18n-aria-label="menu.multiplayer"
+              title="Multiplayer"
+              data-i18n-title="menu.multiplayer"
+            >
+              <img src="./assets/multiplayericon-CwWAMZ7s.png" alt="" width="30" height="22" />
+              <span data-i18n="menu.multiplayer">MULTIPLAYER</span>
+            </button>
+            <!-- The global board. Hidden outright when there is no game id
+                 configured (see BOARD in config.ts) — a button that can only
+                 fail is worse than no button, which is the same rule the
+                 account block in the settings follows. -->
+            <button
+              class="btn ghost board-open"
+              id="board-open"
+              type="button"
+              aria-label="Leaderboard"
+              data-i18n-aria-label="menu.leaderboard"
+              title="Leaderboard"
+              data-i18n-title="menu.leaderboard"
+              hidden
+            >
+              <img src="data:image/png;base64,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" alt="" width="26" height="26" />
+              <span data-i18n="menu.leaderboard">LEADERBOARD</span>
+            </button>
+            <!-- Twenty-three things worth having done, none of which pay a dollar.
+                 Beside the board on purpose: the two answer the same kind of
+                 question — how am I doing — and a player who has just been
+                 handed a result plate is already asking it.
+
+                 A star from assets/ui like every other icon in this band: the
+                 three buttons down here are read as a row of pictures, and one
+                 of them drawn in markup while the others are files is a picture
+                 that ages differently from its neighbours. The panel itself is
+                 built in JS; see src/ui/AchievementsPanel.ts. -->
+            <button
+              class="btn ghost ach-open"
+              id="ach-open"
+              type="button"
+              aria-label="Achievements"
+              data-i18n-aria-label="ach.title"
+              title="Achievements"
+              data-i18n-title="ach.title"
+            >
+              <img src="data:image/png;base64,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" alt="" width="26" height="26" />
+              <span data-i18n="ach.title">ACHIEVEMENTS</span>
+            </button>
+            <button class="btn play" id="play" type="button" data-i18n="menu.play">
+              PLAY
+            </button>
+          </footer>
+
+          <!-- ── Main band ────────────────────────────────────────────────── -->
+          <main class="menu-main">
+            <!-- The hero shot: what you are flying, or what you are looking at
+                 buying. Rendered from the model itself — see PlaneGallery.ts. -->
+            <section class="showcase">
+              <div class="showcase-art">
+                <img id="portrait" alt="" />
+              </div>
+              <div class="showcase-info">
+                <span class="showcase-name" id="plane-name">Bravo Blue</span>
+                <span class="showcase-meta">
+                  <span class="showcase-rarity rarity-common" id="plane-rarity">common</span>
+                  <span class="showcase-state" id="plane-state">On the runway</span>
+                </span>
+                <!-- What the aircraft under the name FLIES like: two named
+                     meters, speed over dive, rewritten every time the showcase
+                     changes hands (see Menu.syncStats).
+
+                     Here rather than on the twenty cards, where the same pips
+                     used to sit: a meter on every card is twenty answers to a
+                     question about one aircraft, and at card size it could
+                     carry no words at all. One aircraft is being asked about at
+                     a time, and this is where the game already says which.
+
+                     The labels are markup because they are two words that
+                     translate themselves; the pips are not, because how many
+                     there are is STAT_PIPS in config.ts — the same rule the
+                     board's fifty rows follow. -->
+                <span
+                  class="showcase-stats"
+                  id="plane-stats"
+                  role="img"
+                  aria-label="Speed, dive, armor"
+                >
+                  <span class="showcase-stat stat-speed">
+                    <span class="showcase-stat-label" data-i18n="hangar.statSpeed">Speed</span>
+                    <span class="showcase-pips" id="plane-pips-speed"></span>
+                  </span>
+                  <span class="showcase-stat stat-dive">
+                    <span class="showcase-stat-label" data-i18n="hangar.statDive">Dive</span>
+                    <span class="showcase-pips" id="plane-pips-dive"></span>
+                  </span>
+                  <span class="showcase-stat stat-armor">
+                    <span class="showcase-stat-label" data-i18n="hangar.statArmor">Armor</span>
+                    <span class="showcase-pips" id="plane-pips-armor"></span>
+                  </span>
+                </span>
+              </div>
+              <button class="btn buy" id="plane-action" type="button">FLYING</button>
+
+              <!-- Two contextual offers, both hidden almost all of the time.
+                   The cash one appears only when the player is within one ad of
+                   affording what they are looking at; the trial one only on a
+                   locked aircraft, and only while nothing else is on loan. See
+                   Menu.canOfferCash / canOfferTrial. -->
+              <!-- On one row when both are up, so a landscape phone does not
+                   spend two plates' height under the portrait. Hidden as a whole
+                   by Menu.syncShowcase when neither is showing. -->
+              <div class="showcase-offers" id="showcase-offers" hidden>
+                <button class="btn ad" id="hangar-cash" type="button" hidden>
+                  <img src="data:image/png;base64,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" alt="" width="20" height="20" />
+                  <span id="hangar-cash-label">GET $25</span>
+                </button>
+                <button class="btn ad ghosted" id="plane-trial" type="button" hidden>
+                  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAABlVBMVEVMaXEaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoyRlJdfIwaGhr////19/hnhJPh5+p7laKarbfDztQrMzcgJSgsO0QmMDZMZHA8S1NAUVqepanT2dxgZmk3RUwiJihVcH4zP0VRanceICFEV2IdICFZdoUoMzovOT4vQUtIXmknLC8jKy8pNj0uPkgxQ08lLTMcHR4iKCw+QUPGzdEfIiUrOEFQVFYsLi9wd3vq7u/f5OaAh4uss7ePl5u5wMU9VGFuf4lFXGhPaXeirrRWcoE3TVlNZnRDW2i4xs0/V2RfcXvU2t1IYG1QanhCWGajrrV7jJXr7/E1SVZQY246UF3I0NRCVGFad4e8xcrf5Oevur+Gnanq7vDU2t6Wo6qJl6BTbnxGXWpKY3Cktr/X3+NxjJqQpbCuvsbV299/jJM5TlqSmp9CWGS9xst5g4led4Rze3/N1tuiq7G7w8ewu8FZY2iXqrNjd4Fja251i5a3xMtGW2WxvMFLYW04RUxqgo6KenHSAAAAEHRSTlMA4JCg8GAgQMCAELBQ0DBwSbWVAwAAAAlwSFlzAAAsSgAALEoBd3p0TQAADYJJREFUeJztnfdfm0cSh0EFSRRhAbZjMJIQGDDGBHcbF0yzHafaKc75kkvPJXGS673k+t99H+kVQe/s7uzs7uz77iv0/Ir0sjMazX5ntmhowID+o1rMl6ciyvniyLH6hEfHK+XCVJyJ4mgAI0uA0mR+eEpKodLvLhgZz5XltncZHg9glJ4oVcZg0MvI92MQVIv5CYLtERP9lQ1l2U5DoRrAuFlQZ7v+98BIUZPtUIYznQdGidkOoxyAHVYYZTuMyezZ3s52LLZ3KGRrKihNjlllO4R8AGaRcMt2CBkIAY5sl9kQYMt2SgoBWClnhDHbzS5tLtdqtfW1c+LfgiyLGLPduZVmvXbEivCC0L4DI8UcV9Cfn23U12uABnzVcABGdxktGRc0Si4tra1C2yNm4VvC0MPVSbZsd2v7d3W57R3q8PWltG3nzHaL+1v3p6enX0IcUIOJsJKm8YzZ7tbu3s70IZgHNsAb06qIGLPdvcWF1sx0DMQDTfDuFJQAZ7a7u3+wMy1B7QEhCSTbF2HNdgstme0Rag/A5xSTsl3brDZg9tedbIdxRuUAOBHmkjC+VGHLdpdWmqu12psa8xEPLIEHTni2vepH271k7YE1+Fh/tjNru+WYHdYeWIaP9iOFqpbNagnnNpoybWftgfPgX7BLIdZs19hcllrh4AEohcY4jWfPdhiWHoAVIVdByJjt2trub7jx1Bj440nhXYIUcm8MWizNKbm7fxBN8WhJQ/fAKcED6/Bfu3WFbJfmJNza3uvVdhQPfDqD2K7ywCXwr62lEGe2W1zYEmyheOC0hQdgY8yqIGRsVt/dlRc03jzgLIWqfNluW6hkY7zpxQOrcBhmBWGR6Ss/u/RLXUGDlDROHoBDMVkkZTH/UNt9ox25Hw/YF4Qj7klvtrF51Ky2L2lMPTBzuuf1UAqRs+C4W967tCI0q7k88L6RBzYtHVC0t/38hmSVgtEDJ09RPbDaXIE6gOqASUvjZ2Elm5YH/rfZENZFOtDKIZvPHyzNWXtAFPSmHmjtbd9SDpNUEJcMbb/X0XbeBL2BB+4f7N/Fx0opBkZN8l+PtiN5wEbQkzww01pYvKcfL2V9cIxo+z3YrPYl6LUe2NnbVQd9DEoKIH0BuktzgBQ8cH9rf5H4gU0Rm4I6AXRrd0+5SvFNgh44M91aQLKdFMokiAXAPVklG8OPoBdZXVsSpnimAFBlgLa2+1478gQ8sF5vzMJuLxHKHDgqeVRb20X/PDlB//5p2RtXmyuS3U9USJuEJBqo0SNsUypp2oscm0tybcdrv/gNOB8vapg88C1Z0LepNzYcPvguxEJY6AF4KuqoJc3qmljQ2DBMXBUTUsCKMPTEPDDzZ+tsB5kg7wwQJkFJcUfwwAvXkqZF1nZahscmDZZDoAMuyYbut6Qx1HYo5cq44eZA6IBZ6dCt1igoHmgtbBMKGhIT+aLNliCaA3yUNDsHu5pKlkxhrFKy3RVKdACbB160XzmzRapkSZRzbqfGoQPOq4bO5IHav1mznfsOkCp8qrLF5+4Bd213hHm2UwGfvKYcP8UD3yreu15vbDBN8bbZTgVcClxSf4IWgr7GqO0cs52KHPgfqixYM1+jqNXWVc1qC1yznQqhGkQcYLBGUavVmwwFTcRwniHbqRCyINrsp3lgeY0t2xX4sp0K2BNvYg7QemCmtfBDoNlOBeyJbqAOwDzArO0SsL1DBfzvc7gD5B5oazsm26fKufFET70KBbF0pRfxALo0Z4bXbKdCaIlsahzQ4wH90hyZBLKdCtgUa+gc0F6joC7NkUgo26nIgzFiUihitfkHrg9+OMFspwJujlAWhLVOQcOp7ZLNdioEKaTayM2r7QK66QaOTlIQLtstzckolPkLGkegFIp3xh2W5gQmcqlmOxWwIDzqDMu2XVkSQrZTMQ5N4s52bftzKUgcKiNwtP/513+5sl3cC2OVMPI+QHBAuy9YX1ti++rHKQcXDNKvQJT8640NriQQpx0MweRDWA9CKegxGPKTIUyJcIuAtC+6Xm+wzQhxhstpBwOshpCe0OoanyiIk2YwwLHotgCv1xt/5SqG4qQTDEJHRGN/d71854CvHo4zkU9WLMPGuK4n1rtfYKa1t8vWC4tRKFeSks1QCWu6opL9EjtbC4tcXbE4iQQDrIV0HSHFfpHsBgNcGND0BE+j6wLtYPAio6cmxiolLzpaKoQR+7UrpGdq6/Um30J4jEI5V+TW0WaTAMX+LsubHNsdZfAGg04I29rfJfxgIAlhsv3yTSJeg8G1woY7JBAhbGt/TzAEWGHDh6mFsKP9Ef9oLWx70tF2wUDPgSe1+0MI9ned2DrY96SjjYOBLIT1eyMI9scect9fMOTpd4dQ9wjx29+l5aeoGqbuFycKYW/2R8y0Ftg2VxwyQZPPNCFM2OwvPfNj9pCdP7G2WwqUIBCEsHRhMBn7o4dw9t4IHiBNAkna36Xde2OQTvpcSBLCZxK3P2K93lxx09H6n1mAQlg8MsRjv8NDVjcdgkF7dpYghFO2P8I6GHSqCL5eFMLaoU8nYH/3IRa9N00ICDnwV2+8/Yqh/YQz9LxObO2ZnLLCswAUwhdOtHntrUevv5qo/eYPub9FPEuPXyUFJ4G5E0c8ePftV/4Zqv1dCMGA3yEBhfD8CcDzh+998LHb0PX3BDs6EQ8G/FZNKITvQAdEPPzyk6fSZgBh6PpTlyxO/E65ho3ZL2yTvSp3QAdJMCRlP/kh7Q0NJg4QJgHE/i5Pvnz8+WEwEG4QSdb+muxaUdsciPHhw/c++phyZlw/9O+5nShcLIs5AG4Tvkx0QMRP3330zs8ch87ixNjllPBXFtAL1qEQvmjkgA4/efDV1z9P1/74Q+AN8+g0CKPlrLkDusHw1qN3XoVD/y4N+4UrJbGbZIRt0tdsHdANhje+7tHR5qtIEj41diK0CauG5ELYkcNgYLHf/CHCDftYLWA7CZCC4S9P07BfuFIT/aUZrRB25Mmzxx98phr6Cy/2m12qCoXwFWYHRDz84hNJMNBXkRBOiW+CQhC7TchICDvyHAQDj/2Sh8DmGdYYthDCXMHgzX6jSQDmwNveHdDh+bPHv/291v6TdvYnKIQdabdbEB1tuxTnJIS5JwE9rz346nWpjrZeikxHCDsiBoP9UmyKQtiR3mBwWIqDNmFrY1AI30jT/i6dCtvB/kCEsCNRu8XGfkEIo5OAbyHsSG/vjWq/mRCGB0X8CGE32sHwC7r9wQphR548e/z5ZxT7BSGMLQslL4Td+PDhFx891a2iQpswIQyvDUhICDvy5O+S3tuPZEcIuwF6b0dAIYwuiwU+CejpWcM+JJNC2JEHvRsasiuEHTkMBrg4iglheGI6BCHsyIPfwA81k0LYgbPQAX2dAyXMA5syL4RNuQlsMhLCGZ0EYtwGNvWTECYBbeo/IYxjlAOhEL4ZsmVErgCb+lsIS7gObEIngX7MgXPAJiMh/HIABrhyA9h0zITwiZfhh4odmjr2QhgeFLkegAGuDIQwsAn9oSkYLQMh3AdAm469EMau34EnpgdCOAADXBkIYWATJoSFE9MDIZx9rsEPdSCEEQZCGLzY4qBIcFwGNg2EMGL/QAiD17IcFEmZq9ABAyGMcOyXBWG0KE5MZ4qBEAY2YQdFhMvkAxi/KwMhDB2ApYDjIIR9n5gOjoEQBjZhk8CxF8JeTkynzEAIA5tSPTGdBkZCmHh1UKY49kL4ArAprBPT/hkIYegALAX0oxC+CGxChTCcBAZCOAADXDGZBAQHZPmgyCHQJvQiVfjiMExwwkgI96MD7gCTUCEsOKAPdJCREBaUcB/MAkY5UJgG+6AaNhHCYjWc/WpQEML4bdqwH5L9XaJGQlhSDU5N3cx2IjQSwpKmcMcF82ez6wQohPGrpGXfgYgbc9cvZlIXm00CQ0OjcCKMceHm/J2MBQM0Qfs7S7AjICFLwSAIYe2vauAhcERGgsFMCHeAW2S0wRB0xWgmhCOgGtQHw9z8nVBv2YE5EDsxbfolgMFwOcRgMBPCXap2HggyGOAAaT+2JzTHDQknGAyFMEcM/MiNufkrqQeDqRA+8gDcMGzL7cvzaQYDPCiiE8JHjAqFcSaDwVQI91KS1UWuwZC0dIJjMPzBUWNFoOfG3PUryelo4cS06e/Ojkxyh0HE7YQqbAshLPkqTOY8REIywWAjhBWhMF4Z45oY4ngNBpOrg1INBl8VtpUQ1gZDqTLmJzPwV9jwP7D8Hn1EqZgrM8hFCYzBYCuEyYQeDFAI4z8tF2IwOBZV9kLYnJFSJe8pGOwrbBchbEe1WAkpGOBD6D8678RoKMHgLISDDQZihQ33CLNPAnraweBLR+srbJgC7IWwI9XxStmTjsaCQVABrkLYjdHSZLLBcA3qYB4h7IjfYOiVTlcF+5PNgRg+g6FbYV+Fq+L+dKA1/irsKXhQNCLdFKDCX4UtEMw3QMRjMBzhsxDgwXMwMPYCfOKtwkY3yQcHf4VdQLdIH4NgSKgQ9ABPMIQ5BdJxbbdkKwEosa6w+8T+CIt2S9bjX4ZBMBRCKAL9QGq3lANWwDygFXY5I/rPGWmFXcgfF/MP6QmGQrmSXe0zIGmGhob+D/n/m2fkSkRhAAAAAElFTkSuQmCC" alt="" width="20" height="20" />
+                  <span data-i18n="hangar.tryFlight">TRY ONE FLIGHT</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="hangar">
+              <div class="hangar-head">
+                <span data-i18n="hangar.title">HANGAR</span>
+                <span id="hangar-count">1 / 20</span>
+              </div>
+              <!-- Sized in JS so twenty cards always fit the box they are given,
+                   at any viewport, without a scrollbar. See Menu.layout(). -->
+              <div class="hangar-grid" id="hangar-grid"></div>
+            </section>
+          </main>
+        </div>
+
+        <!-- ── Settings ───────────────────────────────────────────────────────
+             A modal, not a panel in the column. On a phone an inline settings
+             card is the difference between a screen that fits and a screen you
+             have to scroll — and it is on screen permanently to serve something
+             a player touches twice a session. -->
+        <!-- One-time forced hangar guide. Menu.ts positions its circular focus. -->
+        <div id="hangar-tutorial" class="hangar-tutorial" hidden aria-hidden="true">
+          <div id="tutorial-hole" class="tutorial-hole"></div>
+          <img
+            id="tutorial-hand"
+            class="tutorial-hand"
+            src="./assets/guidehand-BwviidcF.png"
+            alt=""
+            width="96"
+            height="96"
+          />
+        </div>
+
+        <div class="modal" id="settings-modal" hidden>
+          <div class="modal-scrim" id="settings-scrim"></div>
+          <div
+            class="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            data-i18n-aria-label="settings.open"
+          >
+            <h2 class="modal-title" data-i18n="settings.title">SETTINGS</h2>
+
+            <!-- The band that gives. The card holds its size and this is what
+                 scrolls when a landscape phone cannot fit account, name, two
+                 switches and the language between the title and DONE — the
+                 same shape as the board's list band. It used to be
+                 transform-scaled to fit instead; see `.settings-body`. -->
+            <div class="settings-body">
+            <!-- Who you are, above what you are called — the callsign below is
+                 seeded from the account name the first time somebody signs in,
+                 so the two belong next to each other. The whole block leaves
+                 when there is no PokiSDK to sign in to: outside Poki this
+                 button cannot do anything, and a dead control is a worse answer
+                 than no control. See Menu.syncAccount. -->
+            <div class="account" id="account" hidden>
+              <img class="account-avatar" id="account-avatar" alt="" hidden />
+              <div class="account-text">
+                <span class="account-name" id="account-name">Playing as a guest</span>
+                <span class="account-note" id="account-note"
+                  >Sign in to keep your hangar on every device.</span
+                >
+              </div>
+              <button class="btn signin" id="account-signin" type="button" data-i18n="account.signIn">
+                SIGN IN
+              </button>
+            </div>
+
+            <label class="field" for="username">
+              <span class="field-label" data-i18n="settings.pilotName">PILOT NAME</span>
+              <input
+                id="username"
+                type="text"
+                placeholder="YOU"
+                data-i18n-placeholder="pilot.default"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+              />
+            </label>
+
+            <div class="setting-row">
+              <span data-i18n="settings.music">MUSIC</span>
+              <button
+                class="switch"
+                id="music-switch"
+                type="button"
+                role="switch"
+                aria-checked="true"
+                aria-label="Music"
+                data-i18n-aria-label="settings.music"
+              >
+                <i></i>
+              </button>
+            </div>
+            <div class="setting-row">
+              <span data-i18n="settings.sound">SOUND</span>
+              <button
+                class="switch"
+                id="sound-switch"
+                type="button"
+                role="switch"
+                aria-checked="true"
+                aria-label="Sound"
+                data-i18n-aria-label="settings.sound"
+              >
+                <i></i>
+              </button>
+            </div>
+
+            <!-- Language, under the sound. A row rather than a modal of its own,
+                 and a native <select> rather than a custom list: eleven options
+                 is exactly the length at which a hand-rolled dropdown starts
+                 needing scrolling, keyboard handling and a way to close, and
+                 the OS picker already does all three — better, on a phone,
+                 than anything that could be built in this file. It is dressed
+                 to match the plate; see LOCALISATION in style.css. The options
+                 are named in their own languages: "Japanese" is no use to the
+                 one person looking for it. -->
+            <div class="setting-row">
+              <span data-i18n="settings.language">LANGUAGE</span>
+              <select
+                class="lang-select"
+                id="language-select"
+                aria-label="Language"
+                data-i18n-aria-label="settings.language"
+              ></select>
+            </div>
+            </div>
+
+            <button class="btn confirm" id="settings-close" type="button" data-i18n="settings.done">
+              DONE
+            </button>
+          </div>
+        </div>
+
+        <!-- ── The global board ───────────────────────────────────────────────
+             A second modal on the same plate as the settings, opened from the
+             button beside MULTIPLAYER. Everything it shows comes from Poki's
+             AUDS; see src/core/Auds.ts for the transport, src/game/Scores.ts
+             for what this game is willing to publish and believe.
+
+             ── Two boards, one panel ──────────────────────────────────────────
+             CASH and KILLS are never on screen together. They answer different
+             questions about the same fifty people, and side by side they would
+             be read as one table with two score columns — which is the one
+             thing they are not, because the ordering is different in each. The
+             switch at the top is the whole navigation.
+
+             ── The one place in the menu that scrolls ─────────────────────────
+             Fifty rows do not fit on a phone, and there is no honest way to
+             make them: the list IS the content here, unlike the hangar grid,
+             which is twenty cards that can be made smaller. So the list scrolls
+             INSIDE the card while the switch, the pinned row and DONE stay
+             put — nothing the player needs to press is ever behind a scroll,
+             which is what the menu's no-scrolling rule is actually protecting.
+
+             The rows are built in JS: how many there are is a constant in
+             Leaderboard.ts, and two places that both have to say fifty is
+             exactly the kind of pair that drifts. -->
+        <div class="modal" id="board-modal" hidden>
+          <div class="modal-scrim" id="board-scrim"></div>
+          <div
+            class="modal-card board-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Leaderboard"
+            data-i18n-aria-label="board.title"
+          >
+            <h2 class="modal-title" data-i18n="board.title">LEADERBOARD</h2>
+
+            <!-- One pill, two halves, and a marker that slides between them —
+                 the same object as the settings switches, which is the point:
+                 this is a control with two positions, and the player has
+                 already met it twice on the screen behind this one. -->
+            <div
+              class="board-switch"
+              role="tablist"
+              aria-label="Leaderboard"
+              data-i18n-aria-label="board.title"
+            >
+              <i class="board-marker" aria-hidden="true"></i>
+              <!-- KILLS is first and is what the panel opens on. It is the
+                   board that describes FLYING: the wallet mostly counts how
+                   long somebody has played, and a player who opens this to see
+                   where they stand is asking about the fight. Cash is one tap
+                   away for the people it means something to. -->
+              <button
+                class="board-tab on"
+                id="board-tab-kills"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="board-list"
+              >
+                <img src="./assets/killicon-B2GSYp7f.png" alt="" width="18" height="18" />
+                <span data-i18n="board.kills">KILLS</span>
+              </button>
+              <button
+                class="board-tab"
+                id="board-tab-cash"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="board-list"
+              >
+                <img src="./assets/cashicon-Ci5DlIsD.png" alt="" width="20" height="15" />
+                <span data-i18n="board.cash">CASH</span>
+              </button>
+            </div>
+
+            <div class="board-body">
+              <ol class="board-list" id="board-list" role="tabpanel"></ol>
+              <!-- Loading, empty, or could not load. One line for all three:
+                   three screens for three states would be three ways of saying
+                   the list is not there yet. -->
+              <p class="board-note" id="board-note" hidden></p>
+            </div>
+
+            <!-- The player's own standing, pinned below the list — and shown
+                 ONLY when they are not already somewhere in it. A leaderboard
+                 that cannot tell you where YOU are is a list of strangers,
+                 which is the same rule the HUD's board follows. -->
+            <ol class="board-list board-pin" id="board-pin" hidden></ol>
+
+            <!-- Signed out. The board still reads — it is a public list, and
+                 hiding it would be hiding the reason to sign in — but nothing
+                 of this player's is published until there is an account to
+                 publish it under. -->
+            <div class="account board-gate" id="board-gate" hidden>
+              <div class="account-text">
+                <span class="account-name" data-i18n="board.guest">Not on the board</span>
+                <span class="account-note" data-i18n="board.guestNote"
+                  >Sign in with Poki to have your scores counted.</span
+                >
+              </div>
+              <button
+                class="btn signin"
+                id="board-signin"
+                type="button"
+                data-i18n="account.signIn"
+              >
+                SIGN IN
+              </button>
+            </div>
+
+            <button class="btn confirm" id="board-close" type="button" data-i18n="settings.done">
+              DONE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boot-time only: removed from the DOM as soon as the fleet is loaded,
+           so nothing here is ever paid for during play. It is on screen for a
+           real number of seconds on a phone — the fleet is ~1.2 MB — which makes
+           it the first thing anybody sees of the game.
+
+           Structure: a pre-blurred in-game screenshot as the backdrop (blurred
+           at build time, so no runtime filter is ever paid for), a scrim for
+           text contrast, then the title, a spinning prop, a chunky rounded
+           progress bar, and a percent + cycling status column. The bar's fill
+           is driven by `--progress`, set from main.ts as the asset loader
+           reports bytes. When `--progress` reaches 1, main.ts sets
+           `data-complete` on the host, which fades the spinner out and stops
+           the shine sweep.
+
+           The status span is EMPTY on purpose: its text lives in the
+           `.loading-msg::before` CSS cycle (localised via custom properties),
+           so literal text here would render twice. -->
+      <div id="loading">
+        <img class="loading-bg" src="./assets/loading-bg-BQ6p5xhC.jpg" alt="" aria-hidden="true" />
+        <div class="loading-scrim" aria-hidden="true"></div>
+        <div class="loading-content">
+          <div class="loading-title">PLANE WARS</div>
+          <div class="loading-spinner" aria-hidden="true">
+            <svg viewBox="-12 -12 24 24" width="52" height="52" class="prop">
+              <g class="prop-blades">
+                <ellipse cx="0" cy="-7" rx="1.4" ry="7" />
+                <ellipse cx="0" cy="-7" rx="1.4" ry="7" transform="rotate(120)" />
+                <ellipse cx="0" cy="-7" rx="1.4" ry="7" transform="rotate(240)" />
+              </g>
+              <circle class="prop-hub" cx="0" cy="0" r="1.6" />
+            </svg>
+          </div>
+          <div
+            class="loading-bar"
+            role="progressbar"
+            aria-label="Loading"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          ></div>
+          <div class="loading-meta">
+            <span class="loading-pct" id="loading-pct">0%</span>
+            <span class="loading-msg" id="loading-msg"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,3849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="https://f263c28d-6234-4bee-8e4f-4f99d92e1caf.gdn.poki.com/f1b5f621-03e1-4837-af9a-0978a8dad10f/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Critters Puzzle</title>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div id="main-col">
+      <div id="title-row">
+        <div id="world-label">
+          <img id="world-icon" src="ui/forest.png" alt="">
+          <img id="world-img" src="ui/World.png" alt="World">
+          <span id="world-num">1</span>
+        </div>
+        <div id="world-progress"></div>
+        <!-- Actions à droite : maison (menu de sélection) + réglages. -->
+        <div id="title-actions">
+          <button id="home-btn" class="pill pill-blue pill-round" aria-label="Levels">
+            <img id="home-icon" src="ui/PictoIcon_Home_1.Png" alt="">
+          </button>
+          <button id="settings-btn" class="pill pill-blue pill-round" aria-label="Settings">
+            <img id="settings-icon" src="ui/PictoIcon_Setting_1.Png" alt="">
+          </button>
+        </div>
+      </div>
+      <div id="board-wrap">
+        <canvas id="board"></canvas>
+        <div id="board-input"></div>
+        <img id="tutor-hand" src="ui/Hand.png" alt="">
+      </div>
+    </div>
+    <!-- Rail de boutons (à droite en paysage, dessous en portrait). -->
+    <div id="button-rail">
+      <!-- Emplacement partagé : HINT pendant le jeu, NEXT une fois le niveau résolu
+           (jamais les deux à la fois → même place, superposés). -->
+      <div id="cta-slot">
+        <button id="hint-btn" class="pill pill-orange has-slot rail-pill" aria-label="Hint (watch ad)">
+          <span class="pill-slot"><img id="hint-icon" src="ui/Itemicon_Movie.Png" alt="" draggable="false"></span>
+          <span id="hint-text" class="pill-label">HINT</span>
+        </button>
+        <button id="next-btn" class="pill has-slot rail-pill hidden" aria-label="Next level">
+          <span class="pill-slot"><svg id="next-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h13.5M12.5 5.5 19 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span id="next-text" class="pill-label">NEXT</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="level-intro">
+    <div id="level-intro-backdrop"></div>
+    <div id="level-intro-banner">
+      <img id="level-intro-icon" alt="">
+      <div id="level-intro-title">HARD LEVEL</div>
+    </div>
+  </div>
+
+  <div id="new-world">
+    <img id="new-world-icon" src="ui/forest.png" alt="">
+    <div id="new-world-text">NEW WORLD</div>
+  </div>
+
+  <div id="settings-modal">
+    <div id="settings-backdrop"></div>
+    <div id="settings-panel">
+      <button id="settings-close" aria-label="Close">×</button>
+      <button id="mute-btn" aria-label="Toggle sound">
+        <img id="sound-icon" src="ui/PictoIcon_Sound_On.Png" alt="">
+      </button>
+      <div id="settings-credits">
+        "Moonlight Beach" Kevin MacLeod (incompetech.com)<br>
+        Licensed under Creative Commons: By Attribution 4.0 License<br>
+        http://creativecommons.org/licenses/by/4.0/
+        <div id="settings-credits-icons">
+          Forest, buildings &amp; cannon icons by Freepik – Flaticon<br>
+          Sea icons by iconixar – Flaticon<br>
+          Stadium icons by monkik – Flaticon
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu de sélection des niveaux (overlay DOM ; cartes construites par buildLevelMenu).
+       Barre du haut (progression globale + réglages) et CTA PLAY collants. -->
+  <div id="level-menu" aria-hidden="true">
+    <div id="lm-top">
+      <div id="lm-top-inner">
+        <div id="lm-total"><img src="ui/Checkmark.png" alt="" draggable="false"><span id="lm-total-num">0</span><span id="lm-total-of"></span></div>
+        <button id="lm-settings" class="pill pill-blue pill-round" aria-label="Settings"><img src="ui/PictoIcon_Setting_1.Png" alt="" draggable="false"></button>
+      </div>
+    </div>
+    <div id="level-menu-inner"></div>
+    <div id="lm-cta-bar">
+      <button id="lm-cta" class="pill has-slot" aria-label="Play"><img id="lm-cta-thumb" class="pill-slot" alt="" draggable="false"><span id="lm-cta-label" class="pill-label">PLAY</span></button>
+    </div>
+  </div>
+</div>
+
+<video id="hidden-video" loop muted playsinline autoplay preload="auto"></video>
+<audio id="bgm" loop preload="auto">
+  <source src="sounds/Moonlight_Beach.ogg" type="audio/ogg">
+</audio>
+<audio id="sfx-victory" preload="auto" src="sounds/victory.mp3"></audio>
+
+<script src="data.js"></script>
+<script>
+window.addEventListener('keydown', ev => {
+  if (['ArrowDown', 'ArrowUp', ' '].includes(ev.key)) ev.preventDefault();
+});
+// Molette bloquée (pas de scroll de page), SAUF dans le menu de sélection qui défile.
+window.addEventListener('wheel', ev => {
+  if (ev.target && ev.target.closest && ev.target.closest('#level-menu')) return;
+  ev.preventDefault();
+}, { passive: false });
+
+(function () {
+  // Marqueur de build (console) — le fix clip-d'union est INVISIBLE (mêmes coins arrondis),
+  // donc impossible de distinguer les versions à l'œil. Ouvre la console (F12) → ce log
+  // confirme que tu tournes bien la version « union-clip / étage 3 ».
+  try { console.log('%c CRITTERS BUILD: union-clip (étage 3) ', 'background:#0a7;color:#fff;padding:2px 8px;border-radius:4px;font-weight:bold'); } catch (e) {}
+  window.CRITTERS_BUILD = 'union-clip-etage3';
+  // ===== MODE DEBUG =====
+  // Mettre à false avant la mise en prod.
+  // true  : cheats clavier N/P actifs (niveau suivant/précédent) + jeu mute par défaut.
+  // false : prod — cheats désactivés, son actif normalement.
+  const DEBUG = false;
+
+  // Toutes les scénettes vivent dans le sous-dossier videos/. Les entrées LEVELS
+  // ne portent que le nom de fichier ; VIDEO_DIR est préfixé au chargement.
+  const VIDEO_DIR = "videos/";
+
+  // ===== Localisation (i18n) =====
+  // Le jeu cible Poki (international). On traduit le texte effectivement lu par
+  // le joueur : bouton NEXT, bouton HINT, bandeaux d'intro « HARD/BONUS LEVEL »,
+  // l'interstitiel « NEW WORLD » et le PLAY du menu de sélection. Langues à script
+  // latin uniquement (police d'affichage Mont DEMO : les accents des titres passent
+  // sur la police de repli en 900, voir @font-face dans styles.css).
+  // Détection : ?lang=xx (override QA) sinon navigator.language, repli anglais.
+  // (Les chaînes de la popup Settings — crédits, aria-labels — ne sont PAS
+  // localisées : reliquat non affiché en jeu + attribution de licence en anglais.)
+  const STRINGS = window.CRITTERS_DATA.STRINGS;
+  const LANG = (function () {
+    try {
+      const q = new URLSearchParams(location.search).get("lang");
+      const raw = (q || navigator.language || "en").toLowerCase().slice(0, 2);
+      return STRINGS[raw] ? raw : "en";
+    } catch (e) { return "en"; }
+  })();
+  function t(key) { return (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.en[key] || ""; }
+
+  // Réduit la taille de police d'un élément jusqu'à ce que son contenu tienne
+  // dans maxWidth (px) : garantit qu'aucune traduction ne déborde de son bouton
+  // ou de son bandeau (mots longs : « ÜBERSPRINGEN », « LIVELLO DIFFICILE »…).
+  // Réinitialise d'abord à la taille CSS pour pouvoir re-fitter après un resize.
+  function fitText(el, maxWidth) {
+    if (!el || !(maxWidth > 0)) return;
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize) || 16;
+    let guard = 80;
+    while (el.scrollWidth > maxWidth && size > 7 && guard-- > 0) {
+      size -= 1;
+      el.style.fontSize = size + "px";
+    }
+  }
+
+  const LEVELS = window.CRITTERS_DATA.LEVELS;
+
+  // Calcule la taille de grille de base pour un niveau regular/bonus (1-indexé).
+  // Logique par biome/world — les niveaux hard ET bonus ont leur taille dans LEVELS (champ size) :
+  //   World 1 Forêt  (L1–4)   : base 3×3
+  //   World 2 Mer    (L5–9)   : base 3×3
+  //   World 3 Sport  (L10–15) : base 4×4
+  //   World 4 Ville  (L16–22) : base 4×4
+  //   World 5 Stunts (L23–29) : base 5×5
+  // Pour ajouter un niveau : ajouter une entrée dans LEVELS.
+  // Regular → taille auto. Hard/bonus → mettre size: N dans l'entrée LEVELS.
+  function gridSizeForLevel(level) {
+    if (level <= 9)  return 3;   // W1 Forêt + W2 Mer
+    if (level <= 22) return 4;   // W3 Sport + W4 Ville
+    return 5;                     // W5 Stunts et au-delà
+  }
+
+  const video = document.getElementById("hidden-video");
+  const boardCanvas = document.getElementById("board");
+  // alpha: true → la marge autour du plateau (canvas agrandi) reste transparente
+  // et laisse voir le décor / une pièce draguée par-dessus.
+  const boardCtx = boardCanvas.getContext("2d", { alpha: true });
+  // [F4] Support de CanvasRenderingContext2D.filter (blur) : présent partout SAUF
+  // Safari/iOS < 16.4 (la propriété n'existe pas → le flou serait un no-op et le glow /
+  // l'ombre du bloc dragué s'afficheraient à bord dur). On détecte une fois et on saute
+  // proprement cet effet là où il n'est pas supporté (voir drawGroupUnderlays) — purement
+  // cosmétique, aucune incidence sur le gameplay. Le highlight utilise shadowBlur (OK partout).
+  const CTX_FILTER_OK = ("filter" in boardCtx);
+  const boardInput = document.getElementById("board-input");
+  const worldNum = document.getElementById("world-num");
+  const worldIcon = document.getElementById("world-icon");
+  const worldProgress = document.getElementById("world-progress");
+  const nextBtn = document.getElementById("next-btn");
+  const nextText = document.getElementById("next-text");
+  let nextRevealTimer = null; // apparition différée du NEXT après l'anim de victoire
+  const tutorHand = document.getElementById("tutor-hand");
+  const levelIntro = document.getElementById("level-intro");
+  const levelIntroIcon = document.getElementById("level-intro-icon");
+  const levelIntroTitle = document.getElementById("level-intro-title");
+  let levelIntroTimer = null;
+  const newWorld = document.getElementById("new-world");
+  const newWorldIcon = document.getElementById("new-world-icon");
+  const newWorldText = document.getElementById("new-world-text");
+  const hintText = document.getElementById("hint-text");
+  let newWorldTimer = null;
+
+  // Icône représentant chaque world (Forêt, Mer, Sport, Ville, Stunts).
+  const WORLD_ICON = { 1: "ui/forest.png", 2: "ui/sea.png", 3: "ui/sport.png", 4: "ui/city.png", 5: "ui/stunts.png" };
+
+  let levelIdx = 0;
+  let size = 3;
+  let tiles = [];
+  let blockOf = [];
+  let blocks = [];
+  // Tout le plateau est rendu sur un seul canvas (boardCanvas) : requis par
+  // l'outillage Poki (enregistrement playtest, captures) qui suppose un canvas
+  // unique. frameCanvas est un tampon hors écran qui reçoit la frame vidéo.
+  let frameCanvas = null;
+  let frameCtx = null;
+  let frameSide = 0;
+  // Tampon hors écran pour la PERSPECTIVE du bloc dragué (voir renderBoard) : le bloc
+  // est rendu à plat dedans, puis reprojeté sur le canvas en bandes affines formant
+  // un trapèze (vraie perspective non-affine, impossible avec ctx.transform seul).
+  // Jamais inséré dans le DOM → invisible pour le recorder Poki (comme frameCanvas).
+  let tiltCanvas = null;
+  let tiltCtx = null;
+  // Tampon du GLOW d'outline additif de la tuile manipulée : silhouette du bloc
+  // teintée blanc chaud (recoloration via source-in de l'alpha du tampon perspective),
+  // puis blittée floutée en `lighter`. Hors DOM (invisible au recorder Poki).
+  // PERF : ce tampon est désormais PRÉ-FLOUTÉ 1× par drag (le flou ne dépend que de la
+  // silhouette du bloc, constante pendant le geste) puis blitté tel quel par frame —
+  // plus de ctx.filter=blur par frame (op la plus lourde sur GPU mobile / Safari iOS).
+  let glowCanvas = null;
+  let glowCtx = null;
+  // Idem pour l'OMBRE portée du bloc tenu : silhouette sombre pré-floutée 1× par drag
+  // (fxScratch = tampon net temporaire servant à recolorer avant le flou).
+  let shadowFxCanvas = null, shadowFxCtx = null;
+  let fxScratchCanvas = null, fxScratchCtx = null;
+  // Clé d'invalidation des tampons pré-floutés du drag (bloc + dimensions du tampon).
+  let dragFxKey = null, dragFxM = 0, dragFxBW = 0, dragFxBH = 0;
+  // Cache du FOND du plateau (grout + slots creusés) : strictement statique dans un
+  // niveau (ne dépend que de size/TILE_PX), rendu 1× puis blitté par frame au lieu
+  // d'une double boucle size×size (fill+clip+gradient par cellule) chaque frame.
+  let bgCanvas = null, bgCtx = null, bgDirty = true;
+  // Tampons PRÉ-FLOUTÉS du glow de survol/sélection (courant + sortant en cross-fade) :
+  // le shadowBlur du contour (jusqu'à 4 strokes flous/frame en survolant pendant un
+  // drag) est rendu 1× par cible puis blitté — c'était le pire coût mobile signalé.
+  let hlGlowCur = null, hlGlowOut = null;
+  // Le canvas couvre TOUT le viewport (voir layoutCanvas). renderScale = pixels
+  // backing par pixel CSS : le plateau (frameSide backing) mappe boardCSSw CSS px,
+  // et renderBoard translate à la position réelle du plateau × renderScale. Une
+  // pièce draguée peut donc aller n'importe où sans être rognée.
+  let renderScale = 1;
+  let selectedAnchor = -1;
+  let solved = false;
+  let busy = false;
+  let gameplayStarted = false;
+  let pokiAvailable = false;
+  let dragState = null;
+  let dragOverPos = -1;
+  // Tilt « Hearthstone » du bloc dragué : vitesse lissée du drag → perspective
+  // (trapèze) calculée par frame dans renderBoard (dragQuad).
+  let tiltVX = 0, tiltVY = 0;          // vitesse lissée (px CSS / frame)
+  let tiltPrevDx = 0, tiltPrevDy = 0;  // offset du drag à la frame précédente
+  let tiltActive = false;              // pour amorcer prev à l'entrée d'un drag
+  // Cases mises en avant (sélection/survol) : sert au lerp du grossissement du
+  // highlight (grossit ET rétrécit en douceur au lieu d'apparaître/disparaître d'un
+  // coup). `hlKey` identifie la cible courante (détecte un changement de cible),
+  // `hlCells` ses cases, `hlStart` le début du fondu d'entrée. `hlOut` = highlight
+  // SORTANT en fondu (repart de son échelle courante `from` vers 1) → le scale-down
+  // est lerpé, et un changement de cible fait un cross-fade (l'ancien rétrécit
+  // pendant que le nouveau grossit).
+  let hlKey = null;
+  let hlCells = null;
+  let hlStart = 0;
+  let hlOut = null; // { cells, from, start } ou null
+  let swapAnim = null;
+  let swapTimer = null; // id du setTimeout de fin de swap/retour (pour l'annuler si on ressaisit)
+  let shakeAnim = null;
+  let winAnim = null;
+  let linkFx = null;
+  let pendingStartBump = null;
+  let winSparkles = [];
+  let winStars = [];     // étoiles « pop » de victoire soumises à la gravité (voir flashWin)
+  let winStarsEnd = 0;   // fin de la gerbe (performance.now) : rendu plein débit jusque-là
+  let inputMeasured = { tap: false, drag: false };
+  // Mode de jeu du niveau courant : "swap" (puzzle classique, déplacement de
+  // cases) ou "rotate" (mode bonus : cases en place mais pivotées, à remettre
+  // droites au tap). Défini dans buildBoard d'après lv.bonus.
+  let mode = "swap";
+  let rot = [];       // orientation logique de chaque case : 0..3 crans de 90° horaire
+  let dispBase = [];  // angle affiché (radians, continu) figé au début de l'anim de rotation
+  let rotStart = [];  // timestamp de début d'anim de rotation, ou null
+  let rotateDownPos = -1;
+  let rotatePointerId = null;
+  // Main de tutoriel : affichée tant que le joueur n'a pas fait l'action montrée
+  // (swap au niveau 1, tap-rotation au 1er bonus). Deux gestes : "slide" (glisse
+  // du haut-centre vers le haut-gauche) et "tap" (scale down/up sur place). Au
+  // retrait, fondu de sortie piloté en JS (on fige l'état courant de l'anim en
+  // boucle puis on transitionne l'opacité vers 0).
+  let tutorActive = false;
+  let tutorHideTimer = null;
+  function clearTutorInline() {
+    const s = tutorHand.style;
+    s.animation = ""; s.transition = ""; s.opacity = "";
+    s.transform = ""; s.left = ""; s.top = "";
+  }
+  function setTutorHand(on, kind) {
+    if (tutorHideTimer) { clearTimeout(tutorHideTimer); tutorHideTimer = null; }
+    if (on) {
+      tutorActive = true;
+      clearTutorInline();
+      tutorHand.classList.remove("slide", "tap");
+      tutorHand.classList.add("show", kind === "tap" ? "tap" : "slide");
+    } else {
+      if (!tutorActive) return;
+      tutorActive = false;
+      // Fige l'état courant (l'anim en boucle est arrêtée) puis fond vers 0.
+      const cs = getComputedStyle(tutorHand);
+      const op = cs.opacity, tr = cs.transform, lf = cs.left, tp = cs.top;
+      tutorHand.style.animation = "none";
+      tutorHand.style.left = lf;
+      tutorHand.style.top = tp;
+      tutorHand.style.transform = tr;
+      tutorHand.style.opacity = op;
+      void tutorHand.offsetWidth; // reflow avant la transition
+      tutorHand.style.transition = "opacity " + TUTOR_FADE_MS + "ms ease";
+      tutorHand.style.opacity = "0";
+      tutorHideTimer = setTimeout(() => {
+        tutorHand.classList.remove("show", "slide", "tap");
+        clearTutorInline();
+        tutorHideTimer = null;
+      }, TUTOR_FADE_MS + 30);
+    }
+  }
+
+  const bgm = document.getElementById("bgm");
+  const BGM_VOLUME = 0.5;
+  const sfxVictory = document.getElementById("sfx-victory");
+  const appEl = document.getElementById("app");
+  const settingsBtn = document.getElementById("settings-btn");
+  const homeBtn = document.getElementById("home-btn");
+  const settingsModal = document.getElementById("settings-modal");
+  const settingsClose = document.getElementById("settings-close");
+  const settingsBackdrop = document.getElementById("settings-backdrop");
+  const muteBtn = document.getElementById("mute-btn");
+  const soundIcon = document.getElementById("sound-icon");
+  const hintBtn = document.getElementById("hint-btn");
+  let bgmStarted = false;     // 1er play() du BGM réussi (déclenché par un geste joueur)
+  let adInProgress = false;   // pub (commercial ou rewarded) en cours
+  let hintTimer = null;       // timer d'apparition du bouton HINT (après HINT_DELAY_MS)
+  const HINT_DELAY_MS = 10000; // le HINT n'apparaît qu'au bout de 10 s sur un niveau
+  // Indice en cours d'animation (2 temps quand le groupe doit d'abord se décaler) : bloque
+  // les gestes du joueur, sinon un clic couperait l'enchaînement (settle interrompu dans
+  // onPointerDown) et l'indice payé par la pub ne s'appliquerait qu'à moitié.
+  let hintLock = false;
+  // Emphase visuelle de l'indice (retour QA : « on n'a pas le temps de le voir ») :
+  // { t0, moveStart, moveDur, movers:Set(pièces qui s'attachent), others:Set(pièces
+  // délogées) }. Les tuiles grossissent sur place (levée), glissent lentement, puis se
+  // reposent. null hors indice. Voir playHintMove / hintRotate / renderBoard.
+  let hintFx = null;
+  let hintRotPos = -1; // mode bonus : case que l'indice fait pivoter (rotation plus lente)
+  // Voile sombre sur tout l'écran pendant l'animation d'indice, sauf ses tuiles (retour
+  // Sébastien) : hintDimOn = cible, hintDim = opacité relative courante (fondu 0→1).
+  let hintDimOn = false, hintDim = 0, hintDimT = 0;
+  // Fin d'indice (ou abandon) : rend les entrées et retire le voile.
+  function endHint() { hintLock = false; hintDimOn = false; }
+  // Menu de sélection (voir openLevelMenu). Tant qu'il est ouvert il couvre le plateau :
+  // rendu canvas suspendu et vidéo du plateau en pause (seul l'aperçu du menu joue).
+  let menuOpen = false;
+  let menuPreview = null;     // <video> de la carte courante du menu
+  let renderDirty = false;    // force un redessin à la fermeture du menu (canvas gelé dessous)
+  let winCelebrated = true;   // transition « fini → suivant » du menu déjà jouée pour cette victoire
+  let levelWasDone = false;   // niveau courant déjà fini à son lancement (rejeu depuis le menu)
+
+  // Cache le HINT et programme son apparition (scale up + bounce) après 10 s.
+  // Rappelée à chaque loadLevel : annule le timer précédent et repart de zéro.
+  function scheduleHintReveal() {
+    clearTimeout(hintTimer);
+    hintBtn.classList.remove("reveal");
+    hintBtn.classList.add("hidden");
+    hintTimer = setTimeout(() => {
+      if (solved) return; // niveau déjà résolu entre-temps → pas d'indice
+      hintBtn.classList.remove("hidden");
+      hintBtn.classList.add("reveal"); // déclenche l'anim d'apparition
+    }, HINT_DELAY_MS);
+  }
+  let isMuted = DEBUG; // en mode DEBUG, le jeu démarre mute
+
+  // Reflète l'état mute sur l'icône du bouton dans la popup.
+  function syncSoundUI() {
+    soundIcon.src = isMuted ? "ui/PictoIcon_Sound_Off.Png" : "ui/PictoIcon_Sound_On.Png";
+  }
+  bgm.muted = isMuted;
+  syncSoundUI();
+
+  function startBGM() {
+    // Déjà démarré : simple resynchro. Appelé à chaque contact avec le plateau, ça répare
+    // aussi une lecture coupée par le navigateur (retour d'arrière-plan sur mobile), et
+    // depuis un geste joueur, où play() est toujours autorisé.
+    if (bgmStarted) { syncBGM(); return; }
+    bgm.volume = BGM_VOLUME;
+    bgm.play().then(() => { bgmStarted = true; syncBGM(); }).catch(() => {});
+  }
+
+  // Jingle de victoire (sounds/victory.mp3, 1,2 s, remonté de +6 dB à l'intégration : il
+  // était plus faible que la musique). La victoire tombe ~0,3 s APRÈS le dernier geste
+  // (fin du glissement) : hors geste, iOS refuse play() sur un élément jamais joué. On le
+  // « débloque » donc en silence au 1er geste joueur (contact plateau, bouton HINT) —
+  // PAS depuis startBGM, aussi appelé au boot hors geste (le déblocage n'y compterait pas).
+  let sfxUnlocked = false;
+  function unlockSfx() {
+    if (sfxUnlocked) return;
+    sfxUnlocked = true;
+    sfxVictory.muted = true;
+    const p = sfxVictory.play();
+    if (p && p.then) p.then(() => {
+      // Ne coupe pas un vrai jingle lancé entre-temps (playVictorySound le remet à muted = false).
+      if (sfxVictory.muted) { sfxVictory.pause(); sfxVictory.currentTime = 0; sfxVictory.muted = false; }
+    }, () => { sfxVictory.muted = false; sfxUnlocked = false; });
+  }
+  let duckTimer = null;
+  function playVictorySound() {
+    if (isMuted || adInProgress || document.hidden) return;
+    sfxVictory.muted = false;
+    try { sfxVictory.currentTime = 0; } catch (e) {}
+    sfxVictory.play().catch(() => {});
+    // La musique s'efface le temps du jingle puis revient (sans effet sur iOS, où le volume
+    // d'un <audio> est en lecture seule : le jingle y passe simplement par-dessus).
+    bgm.volume = BGM_VOLUME * 0.3;
+    clearTimeout(duckTimer);
+    duckTimer = setTimeout(() => { bgm.volume = BGM_VOLUME; }, 1300);
+  }
+
+  // UNE seule règle décide de l'état du BGM : il joue ssi il a été démarré, que le son
+  // n'est pas coupé, qu'aucune pub ne passe et que la page est visible ; sinon il est en
+  // pause. Rappelée à chaque changement d'une de ces conditions (mute, début/fin de pub,
+  // visibilité). Remplace des états croisés qui se contredisaient (bug QA Poki « le son
+  // ne revient pas après mute puis unmute ») : couper le son puis fermer les réglages
+  // (→ pub) mettait le BGM en pause sans le reprendre (car mute), et rétablir le son ne
+  // faisait que `muted = false` sur un BGM à l'arrêt → plus jamais de musique.
+  function syncBGM() {
+    if (bgmStarted && !isMuted && !adInProgress && !document.hidden) {
+      if (bgm.paused) bgm.play().catch(() => {});
+    } else if (!bgm.paused) {
+      try { bgm.pause(); } catch (e) {}
+    }
+  }
+
+  // Ouverture / fermeture de la popup réglages.
+  // À l'ouverture on clôt la session de gameplay (gameplayStop) ; à la fermeture, si on
+  // retourne en jeu, pub interstitielle (commercialBreak) — exigences QA Poki. Pas de pub
+  // en revenant au menu (réglages ouverts par son engrenage) ni sur un niveau résolu :
+  // Poki ne la veut qu'en sortie de pause vers le gameplay (le menu la tire au lancement).
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (hintLock) return; // indice en cours : entrées bloquées
+    if (settingsModal.classList.contains("show")) return;
+    settingsModal.classList.add("show");
+    stopGameplay();
+    if (!bgmStarted && !isMuted) startBGM();
+  });
+  function closeSettings(e) {
+    if (e) e.stopPropagation();
+    if (!settingsModal.classList.contains("show")) return; // déjà fermé → pas de pub parasite
+    settingsModal.classList.remove("show");
+    if (!menuOpen && !solved) commercialBreak();
+  }
+  settingsClose.addEventListener("click", closeSettings);
+  settingsBackdrop.addEventListener("click", closeSettings);
+
+  muteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    isMuted = !isMuted;
+    bgm.muted = isMuted;
+    syncSoundUI();
+    if (isMuted) {
+      poki(sdk => sdk.measure && sdk.measure('sound', 'mute', 'interact'));
+      try { sfxVictory.pause(); } catch (e) {}
+    }
+    startBGM(); // 1er démarrage, ou resynchro : met en pause / reprend la musique
+  });
+
+  // TILE_PX = pixels backing par case. BASE_TILE_PX est le plafond (= résolution
+  // d'origine) ; buildBoard recalcule TILE_PX selon la taille d'affichage × DPR
+  // pour ne pas sur-échantillonner les grandes grilles sur écran standard — le
+  // coût par frame reste ~constant au lieu de croître en size².
+  const BASE_TILE_PX = 256;
+  const MAX_BACKING = 1280;
+  let TILE_PX = BASE_TILE_PX;
+  // Style des tuiles (mode swap ET rotation), dérivé de TILE_PX dans layoutCanvas
+  // (module-level pour être accessible aussi depuis drawLinkFx, hors renderBoard).
+  let GAP = 0, TR = 0, DEPTH = 0, SLOT_INSET = 0, SLOT_R = 0, BLEED = 0;
+  // Gradients d'épaisseur (paintTileDepth) mis en CACHE : invariants dans un niveau
+  // (ne dépendent que de DEPTH), reconstruits par layoutCanvas → plus aucun
+  // createLinearGradient par tuile par frame (grosse source d'allocation/GC). Définis en
+  // Y RELATIF (0..hauteur) et réutilisés via une translation Y du contexte au tracé.
+  let depthGradBottom = null, depthGradTop = null;
+  // Objet SCRATCH réutilisé par cellLinks/linksFromSet : leur résultat est TOUJOURS
+  // consommé immédiatement (drawTile copie en primitives, blockUnionPath le lit dans la
+  // même itération) → un seul objet partagé évite d'allouer un littéral 8-clés par tuile
+  // par frame. Ne JAMAIS conserver la référence retournée au-delà de l'appel.
+  const linkScratch = { lT:false, lB:false, lL:false, lR:false, dTL:false, dTR:false, dBR:false, dBL:false };
+  const BG_GROUT = "#d7c6a0";  // divisions entre les slots (grout)
+  const BG_SLOT  = "#ece1c4";  // creux du slot (floor)
+  const TILE_BACK = "#c9b489"; // « dos » plein de tuile (visible aux coins en rotation)
+  const SEP_W = 3;
+  const SEL_W = 6;
+  // Glow lumineux additif (blanc légèrement jaune) partagé : halo de la tuile
+  // manipulée ET highlight cible/sélection (remplace l'ancien vert). Composé en
+  // `lighter` (additif) → effet lumineux. RGB sans alpha, l'alpha est ajouté au besoin.
+  const GLOW_RGB = "255, 248, 214";
+  const DRAG_THRESHOLD = 12;
+  const MAX_CANVAS_DIM = 4096; // plafond de sécurité du canvas plein écran (voir layoutCanvas)
+  // Plafond de SUR-ÉCHANTILLONNAGE du plateau (perf). renderScale = pixels backing par
+  // px CSS du plateau ; le backing plein écran = viewport × renderScale² → tout le coût
+  // par frame (clearRect, N tuiles, strips perspective, compositing du calque alpha) croît
+  // en renderScale². Sur écran high-DPR (mobile retina) renderScale grimpe à 2,1-3,0, mais
+  // la vidéo source ne fait que 720² : au-delà de ~2,0 sur un board mobile (≈360 px CSS)
+  // on remplit le backing de pixels que la vidéo n'a pas → coût pur, gain visuel nul.
+  // 2,0 ≈ résolution native de la vidéo (lossless) ; baisser (1,6-1,7) échange un peu de
+  // netteté contre du FPS. Desktop DPR1 non affecté (renderScale y vaut déjà 1). Réglable
+  // pour A/B sur les data playtest Poki. Borné aussi par MAX_CANVAS_DIM (sécurité navigateur).
+  const MAX_RENDER_SCALE = 2.0;
+  const DRAG_SCALE = 1.08;   // grossissement de la pièce tenue (drag)
+  // Tilt « carte Hearthstone » du bloc tenu : il penche EN PERSPECTIVE selon la
+  // vitesse du drag (inertie). Modèle = rotation rigide 3D (yaw depuis vx, pitch
+  // depuis vy) d'un rectangle plat, puis UNE seule division de perspective partagée
+  // → l'image d'un rectangle tourné sous une projection centrale est TOUJOURS un
+  // trapèze convexe équilibré (jamais un cerf-volant). L'inclinaison est bornée sur
+  // le VECTEUR (yaw,pitch) — un drag à 45° penche autant qu'un drag axial de même
+  // vitesse, dans la direction du geste. Pas de roll (source d'asymétrie). La
+  // perspective est non-affine : rendue en bandes (drawQuadImage), pas via transform.
+  const TILT_SMOOTH = 0.10;    // lissage de la vitesse (0..1 ; bas = plus mou/traînant → retour à plat plus lent, tilt visible plus longtemps)
+  const TILT_MAX_DEG = 10;     // inclinaison max de la carte (yaw+pitch combinés bornés)
+  const TILT_VEL_GAIN = 0.012; // radians par (px CSS/frame) de vitesse lissée
+  const TILT_FOCAL = 2.2;      // distance caméra = TILT_FOCAL × max(HW,HH) — grand = plus plat
+  const TILT_STRIPS = 24;      // nb de bandes de la reprojection (compromis qualité/coût) — 40→24
+                               // = ~40 % d'appels drawImage/frame en moins pendant le drag
+                               // (poste call-bound le plus dense). Remonter vers 32 si des
+                               // FACETTES apparaissent sur le trapèze (risque accru depuis que
+                               // TILT_MAX_DEG a été augmenté → angles plus marqués). Réglable A/B.
+  const HILITE_SCALE = 1.06; // grossissement de la case cible/sélectionnée (contour vert)
+  const HILITE_MS = 130;     // durée du lerp d'apparition du highlight
+  // Rayon FIXE (× TILE_PX) du flou de l'ombre portée pré-floutée du bloc tenu. L'ancien
+  // shadowBlur variait avec le lift (0,07→0,27) ; on floute une fois à une valeur médiane
+  // et on module l'ALPHA + l'OFFSET par frame (le grossissement du flou avec le lift est
+  // à peine perceptible, mais le refaire chaque frame coûtait cher sur mobile).
+  const SHADOW_FX_BLUR = 0.16;
+  const SWAP_MS = 260;
+  const LINK_MS = 520;       // durée totale de l'effet de fusion (lueur dorée + étoiles)
+  const LINK_BUMP_MS = 260;  // durée du pop du groupe qui vient de fusionner
+  const SHAKE_MS = 320;
+  const WIN_ANIM_MS = 1600;      // durée totale de l'anim de complétion (couvre les étincelles)
+  const WIN_BANNER_PAUSE = 1200; // pause après l'anim avant d'afficher NEXT
+  // Gerbe d'étoiles de victoire (flashWin / drawWinStars).
+  const WIN_STAR_COUNT = 42;
+  // × frameSide par s². Avec des vitesses de 1,25 à 2,15 × frameSide/s : apex 0,3 à 0,9
+  // plateau au-dessus du départ, et ~1,4 à 2 s à l'écran (à 3,6 tout était tombé en 1,5 s,
+  // bien avant l'arrivée du NEXT à 2,8 s).
+  const WIN_STAR_GRAVITY = 2.5;
+  const WIN_STAR_COLORS = ["#ffd23f", "#ffe680", "#ffb21e", "#fff4c2", "#ffc93c"];
+  // Sommets d'une étoile à 5 branches de rayon 1 (pointe en haut), précalculés : le tracé
+  // par frame n'est que des multiplications (ni trigo ni allocation).
+  const STAR_UNIT = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, k = (i % 2) ? 0.47 : 1;
+    STAR_UNIT.push(Math.cos(a) * k, Math.sin(a) * k);
+  }
+  const ROT_MS = 220;            // durée de l'anim de rotation d'une case (mode bonus)
+  const HALF_PI = Math.PI / 2;
+  // Niveaux tutoriels (index global) : agencement scripté + main animée. Voir buildBoard.
+  const TUTORIAL_LEVEL = 0;       // niveau 1 (swap) : main qui glisse
+  const BONUS_TUTORIAL_LEVEL = 2; // 1er bonus (rotation) : main qui tape
+  const TUTOR_FADE_MS = 320;      // durée du fondu de sortie de la main
+
+  function poki(fn) {
+    if (!pokiAvailable) return null;
+    try { return fn(window.PokiSDK); } catch (e) { return null; }
+  }
+
+  // ===== Publicités Poki (commercialBreak + rewardedBreak) =====
+  // Pendant une pub, le son du jeu DOIT être coupé et la vidéo mise en pause
+  // (exigence Poki) ; on reprend tout à la fin. Les deux types passent par
+  // pauseForAd/resumeAfterAd. adInProgress empêche les double-déclenchements et coupe
+  // le clavier (blockKeysDuringAd).
+  function pauseForAd() {
+    adInProgress = true;
+    syncBGM(); // → pause
+    try { sfxVictory.pause(); } catch (e) {}
+    try { video.pause(); } catch (e) {}
+    // Le bouton qui a lancé la pub (HINT, PLAY, fermeture des réglages…) garderait le
+    // focus : on le lui retire pour qu'aucune touche ne puisse le réactiver.
+    const f = document.activeElement;
+    if (f && f !== document.body && appEl.contains(f) && f.blur) f.blur();
+  }
+  function resumeAfterAd() {
+    adInProgress = false;
+    ensureVideoPlay();
+    syncBGM(); // reprend si le son est actif et la page visible
+  }
+
+  // Pendant une pub, le clavier ne doit plus agir sur le jeu (retour QA Poki) : ni nos
+  // raccourcis (Échap du menu, cheats DEBUG), ni l'activation native du bouton qui a le
+  // focus (Entrée/Espace sur HINT, maison, réglages, cartes du menu…), ni Tab. Écouteurs
+  // en CAPTURE sur window : ils passent avant tous les autres et avant l'action par
+  // défaut. Seules les touches destinées au jeu sont bloquées (focus sur la page ou dans
+  // #app) : un élément de la pub elle-même (conteneur du SDK) garde son clavier.
+  function blockKeysDuringAd(ev) {
+    if (!adInProgress) return;
+    const t = ev.target;
+    if (t !== document.body && t !== document.documentElement && t !== document &&
+        !(t && t.nodeType === 1 && appEl.contains(t))) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+  }
+  ["keydown", "keypress", "keyup"].forEach(type => window.addEventListener(type, blockKeysDuringAd, true));
+
+  // Pub interstitielle entre deux niveaux (pas de récompense). `done` est rappelé
+  // après la pub (ou immédiatement si le SDK est absent en test local).
+  function commercialBreak(done) {
+    if (adInProgress) return;
+    pauseForAd();
+    const finish = () => { resumeAfterAd(); if (done) done(); };
+    const p = poki(sdk => sdk.commercialBreak && sdk.commercialBreak());
+    if (p && typeof p.then === "function") p.then(finish, finish);
+    else finish(); // SDK absent (test local) → pas de pub, on enchaîne directement
+  }
+
+  // Pub récompensée (indice HINT, déblocage d'un niveau verrouillé du menu).
+  // `onReward` n'est appelé QUE si la pub a bien été regardée jusqu'au bout
+  // (success === true) ; sinon `onFail` (facultatif : petit retour visuel). En test
+  // local (DEBUG, sans SDK) on accorde quand même la récompense pour tester le flux.
+  function rewardedBreak(onReward, onFail) {
+    if (adInProgress) return;
+    pauseForAd();
+    const finish = (success) => {
+      resumeAfterAd();
+      if (success) { if (onReward) onReward(); }
+      else if (onFail) onFail();
+    };
+    const p = poki(sdk => sdk.rewardedBreak && sdk.rewardedBreak());
+    if (p && typeof p.then === "function") p.then(finish, () => finish(false));
+    else finish(DEBUG); // SDK absent → pas de récompense en prod ; accordée en DEBUG
+  }
+
+  // Termine proprement la session de gameplay Poki. Ne déclenche gameplayStop
+  // QUE si un gameplayStart a été émis (gameplayStarted) — sinon on émettrait un
+  // stop non apparié, ou (pire) deux gameplayStart consécutifs sans stop entre
+  // eux quand le joueur prend une pub en plein jeu. À appeler avant tout ce qui
+  // interrompt la partie : victoire, indice (pub récompensée), ouverture des réglages.
+  function stopGameplay() {
+    if (!gameplayStarted) return;
+    gameplayStarted = false;
+    poki(sdk => sdk.gameplayStop && sdk.gameplayStop());
+  }
+
+  function ensureVideoPlay() {
+    // Menu ouvert : il couvre le plateau → sa vidéo reste en pause (une seule vidéo
+    // décodée à la fois) et c'est l'aperçu de la carte courante qui joue.
+    if (menuOpen) { if (menuPreview) menuPreview.play().catch(() => {}); return; }
+    video.muted = true; video.play().catch(() => {});
+  }
+
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function isSolvedState() {
+    for (let i = 0; i < tiles.length; i++) if (tiles[i] !== i) return false;
+    return true;
+  }
+  function hasAnyAdjacentLink() {
+    const N = size;
+    for (let pos = 0; pos < tiles.length; pos++) {
+      const c = pos % N, r = (pos / N) | 0;
+      const piece = tiles[pos];
+      const pc = piece % N, pr = (piece / N) | 0;
+      if (c < N - 1) {
+        const npiece = tiles[pos + 1];
+        const npc = npiece % N, npr = (npiece / N) | 0;
+        if (npr === pr && npc === pc + 1) return true;
+      }
+      if (r < N - 1) {
+        const npiece = tiles[pos + N];
+        const npc = npiece % N, npr = (npiece / N) | 0;
+        if (npc === pc && npr === pr + 1) return true;
+      }
+    }
+    return false;
+  }
+
+  function recomputeBlocks() {
+    const N = size;
+    blockOf = new Array(N * N).fill(-1);
+    blocks = [];
+    for (let start = 0; start < N * N; start++) {
+      if (blockOf[start] !== -1) continue;
+      const blockId = blocks.length;
+      const block = [];
+      const queue = [start];
+      blockOf[start] = blockId;
+      while (queue.length) {
+        const p = queue.shift();
+        block.push(p);
+        const c = p % N, r = (p / N) | 0;
+        const piece = tiles[p];
+        const pc = piece % N, pr = (piece / N) | 0;
+        const tryNeighbor = (nc, nr, expC, expR) => {
+          if (nc < 0 || nc >= N || nr < 0 || nr >= N) return;
+          const np = nr * N + nc;
+          if (blockOf[np] !== -1) return;
+          const npiece = tiles[np];
+          const npc = npiece % N, npr = (npiece / N) | 0;
+          if (npc === expC && npr === expR) {
+            blockOf[np] = blockId;
+            queue.push(np);
+          }
+        };
+        tryNeighbor(c + 1, r, pc + 1, pr);
+        tryNeighbor(c - 1, r, pc - 1, pr);
+        tryNeighbor(c, r + 1, pc,     pr + 1);
+        tryNeighbor(c, r - 1, pc,     pr - 1);
+      }
+      blocks.push(block);
+    }
+  }
+
+  // Mode bonus : chaque case est son propre bloc (aucune fusion). Les
+  // séparateurs sont donc tracés sur les 4 côtés de chaque case et aucune
+  // sélection de bloc n'est mise en évidence.
+  function setupRotateBlocks() {
+    const n = size * size;
+    blockOf = new Array(n);
+    blocks = [];
+    for (let i = 0; i < n; i++) { blockOf[i] = i; blocks.push([i]); }
+  }
+
+  function trySwap(srcAnchor, destAnchor) {
+    const block = blocks[blockOf[srcAnchor]];
+    const N = size;
+    const sC = srcAnchor % N, sR = (srcAnchor / N) | 0;
+    const dC = destAnchor % N, dR = (destAnchor / N) | 0;
+    const offC = dC - sC, offR = dR - sR;
+    if (offC === 0 && offR === 0) return null;
+
+    const destPositions = [];
+    for (const p of block) {
+      const c = (p % N) + offC;
+      const r = ((p / N) | 0) + offR;
+      if (c < 0 || c >= N || r < 0 || r >= N) return null;
+      destPositions.push(r * N + c);
+    }
+
+    const Sset = new Set(block);
+    const Tset = new Set(destPositions);
+    const displaced = destPositions.filter(t => !Sset.has(t));
+    const gaps = block.filter(s => !Tset.has(s));
+
+    const next = tiles.slice();
+    for (let i = 0; i < block.length; i++) {
+      next[destPositions[i]] = tiles[block[i]];
+    }
+    displaced.sort((a, b) => a - b);
+    gaps.sort((a, b) => a - b);
+    for (let i = 0; i < displaced.length; i++) {
+      next[gaps[i]] = tiles[displaced[i]];
+    }
+    return next;
+  }
+
+  // onDone (facultatif) : rappelé une fois le coup validé (fin du glissement, fusion et
+  // victoire traitées), sauf si ce coup termine le niveau. Sert à enchaîner les 2 temps
+  // d'un indice (décalage du groupe, puis pièce attachée). dur (facultatif) : durée du
+  // glissement (SWAP_MS par défaut ; plus longue et en ease-in-out pour un indice).
+  function animateAndCommit(newTiles, dragInfo, onDone, dur) {
+    busy = true;
+    const d = dur || SWAP_MS;
+    const isHint = !!hintFx;
+    // Tutoriel niveau 1 : un swap a été effectué → la main part en fondu.
+    if (tutorActive) setTutorHand(false);
+    // On valide tout de suite le nouvel agencement et on retient la case
+    // d'origine de chaque pièce : le rendu interpole de l'origine vers la case
+    // finale pendant SWAP_MS.
+    const prevCellOfPiece = new Array(size * size);
+    for (let p = 0; p < size * size; p++) prevCellOfPiece[tiles[p]] = p;
+    const beforeLinks = linkedPieceSet();
+    tiles = newTiles;
+    recomputeBlocks();
+    // dragInfo (drop d'un drag) : les pièces draguées partent de la position de
+    // relâchement (offset), pas de leur slot. L'offset décroît vers 0 sur SWAP_MS.
+    swapAnim = {
+      start: performance.now(),
+      dur: d,
+      hint: isHint,
+      prevCell: prevCellOfPiece,
+      dragPieces: dragInfo ? dragInfo.pieces : null,
+      dragOffX: dragInfo ? dragInfo.offX : 0,
+      dragOffY: dragInfo ? dragInfo.offY : 0,
+    };
+    clearTimeout(swapTimer);
+    swapTimer = setTimeout(() => {
+      swapTimer = null;
+      swapAnim = null;
+      busy = false;
+      if (isHint) hintFx = null; // tuiles arrivées : jointures et échelle normales
+      const won = isSolvedState();
+      // Effet de fusion sur le(s) groupe(s) ayant gagné un lien — sauf à la
+      // victoire, où l'anim de complétion prend le relais.
+      // Feedback de fusion, y compris sur le coup qui termine le niveau. À la
+      // victoire, le bump est laissé à l'anim de complétion (garde !winAnim) ;
+      // la lueur dorée + étoiles jouent quand même.
+      if (won) triggerWin();
+      maybeStartLinkFx(beforeLinks);
+      if (onDone && !won) onDone();
+    }, d + 20);
+  }
+
+  // Drag relâché SANS swap (hors plateau, sur sa propre case, décalage invalide,
+  // ou annulation) : les pièces draguées reviennent à leur slot en GLISSANT depuis
+  // la position de relâchement (offset px CSS), au lieu de sauter d'un coup. On
+  // réutilise swapAnim en anim identité (tiles inchangés → aucun déplacement de
+  // slot) ; seul l'offset des dragPieces se résorbe sur SWAP_MS et l'échelle
+  // revient de DRAG_SCALE à 1 (voir drawTile). Pas de setTutorHand/triggerWin ici :
+  // rien n'a bougé, le tutoriel reste affiché.
+  function animateReturn(pieces, offCssX, offCssY) {
+    if (!pieces || !pieces.size) return;
+    busy = true;
+    const prevCellOfPiece = new Array(size * size);
+    for (let p = 0; p < size * size; p++) prevCellOfPiece[tiles[p]] = p;
+    swapAnim = {
+      start: performance.now(),
+      dur: SWAP_MS,
+      hint: false,
+      prevCell: prevCellOfPiece,
+      dragPieces: pieces,
+      dragOffX: offCssX,
+      dragOffY: offCssY,
+    };
+    clearTimeout(swapTimer);
+    swapTimer = setTimeout(() => { swapTimer = null; swapAnim = null; busy = false; }, SWAP_MS + 20);
+  }
+
+  // Liens « pièce ↔ voisine correcte » présents dans l'agencement courant,
+  // indexés par pièce (donc immunisés au simple déplacement d'un bloc déjà
+  // fusionné, contrairement à une comparaison par position de case).
+  function linkedPieceSet() {
+    const N = size;
+    const cellOf = new Array(N * N);
+    for (let pos = 0; pos < N * N; pos++) cellOf[tiles[pos]] = pos;
+    const s = new Set();
+    for (let piece = 0; piece < N * N; piece++) {
+      const pc = piece % N, pr = (piece / N) | 0;
+      const cell = cellOf[piece];
+      const cc = cell % N, cr = (cell / N) | 0;
+      if (pc < N - 1 && cc < N - 1 && cellOf[piece + 1] === cell + 1) s.add("h" + piece);
+      if (pr < N - 1 && cr < N - 1 && cellOf[piece + N] === cell + N) s.add("v" + piece);
+    }
+    return s;
+  }
+
+  // Déclenche l'effet si de nouveaux liens sont apparus depuis `beforeLinks`.
+  // Bump le(s) bloc(s) entier(s) concerné(s).
+  function maybeStartLinkFx(beforeLinks) {
+    const N = size;
+    const afterLinks = linkedPieceSet();
+    const cellOf = new Array(N * N);
+    for (let pos = 0; pos < N * N; pos++) cellOf[tiles[pos]] = pos;
+    const blockIds = new Set();
+    afterLinks.forEach(key => {
+      if (beforeLinks.has(key)) return;
+      blockIds.add(blockOf[cellOf[parseInt(key.slice(1), 10)]]);
+    });
+    if (!blockIds.size) return;
+    const cells = [];
+    for (let pos = 0; pos < N * N; pos++) {
+      if (blockIds.has(blockOf[pos])) cells.push(pos);
+    }
+    startLinkFx(cells);
+  }
+
+  // bumpOnly = true : seulement le pop du groupe (pas de lueur ni d'étoiles).
+  // Sert au démarrage pour signaler des tuiles déjà liées sans le feedback doré,
+  // réservé lui à une fusion provoquée par le joueur.
+  function startLinkFx(cells, bumpOnly) {
+    let minC = size, minR = size, maxC = -1, maxR = -1;
+    for (const pos of cells) {
+      const c = pos % size, r = (pos / size) | 0;
+      if (c < minC) minC = c;
+      if (c > maxC) maxC = c;
+      if (r < minR) minR = r;
+      if (r > maxR) maxR = r;
+    }
+    const cx = ((minC + maxC + 1) / 2) * TILE_PX;
+    const cy = ((minR + maxR + 1) / 2) * TILE_PX;
+    const radius = Math.max(maxC - minC + 1, maxR - minR + 1) * TILE_PX * 0.5;
+    const particles = [];
+    if (!bumpOnly) {
+      const count = 8 + Math.min(12, cells.length * 2);
+      for (let i = 0; i < count; i++) {
+        const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.7;
+        const dist = radius * (0.45 + Math.random() * 0.4);
+        const speed = TILE_PX * (0.6 + Math.random() * 0.9);
+        particles.push({
+          x: cx + Math.cos(ang) * dist,
+          y: cy + Math.sin(ang) * dist,
+          vx: Math.cos(ang) * speed,
+          vy: Math.sin(ang) * speed,
+          r: TILE_PX * (0.07 + Math.random() * 0.06),
+          rot: Math.random() * Math.PI * 2,
+          vr: (Math.random() - 0.5) * 5,
+          delay: Math.random() * 90,
+        });
+      }
+    }
+    linkFx = {
+      start: performance.now(),
+      cells: new Set(cells),
+      cx, cy, particles,
+      bumpOnly: !!bumpOnly,
+      dur: bumpOnly ? LINK_BUMP_MS : LINK_MS,
+    };
+  }
+
+  function buildBoard() {
+    const n = size * size;
+    mode = LEVELS[levelIdx].bonus ? "rotate" : "swap";
+
+    tiles = [];
+    for (let i = 0; i < n; i++) tiles.push(i);
+    rot = new Array(n).fill(0);
+    dispBase = new Array(n).fill(0);
+    rotStart = new Array(n).fill(null);
+
+    if (mode === "rotate") {
+      // Mode bonus : les cases restent à leur bonne position mais sont pivotées
+      // dans un sens qui n'est pas le bon (1 à 3 crans de 90°). Le joueur les
+      // remet droites en tapant dessus. Pas de mélange de position.
+      for (let i = 0; i < n; i++) {
+        rot[i] = 1 + Math.floor(Math.random() * 3);
+        dispBase[i] = rot[i] * HALF_PI;
+      }
+      if (levelIdx === BONUS_TUTORIAL_LEVEL) {
+        // Tutoriel bonus (1er bonus, 3×3) : la case centrale est déjà droite
+        // (rot 0) et la case juste au-dessus est à un seul tap horaire d'être
+        // droite (rot 3 → +1 = 4 ≡ 0). La main animée tape dessus ; le reste des
+        // cases reste pivoté (en désordre), le joueur les redresse ensuite.
+        const cc = (size / 2) | 0;
+        const center = cc * size + cc;
+        const above = center - size;
+        rot[center] = 0;            dispBase[center] = 0;
+        rot[above] = 3;             dispBase[above] = 3 * HALF_PI;
+      }
+    } else if (levelIdx === TUTORIAL_LEVEL) {
+      // Tutoriel (niveau 1) : seules les deux cases du haut à gauche sont
+      // scriptées — pièce 1 en position 0, pièce 0 en position 1 (interverties),
+      // pour que le swap montré par la main les remette en place. Le reste du
+      // plateau (pièces 2..n-1) est mélangé normalement (en désordre). Comme pour
+      // les niveaux Regular on évite tout lien adjacent au départ : ça garantit
+      // aussi que les deux cases du haut sont des blocs isolés → swap propre.
+      const rest = [];
+      for (let i = 2; i < n; i++) rest.push(i);
+      let attempts = 0;
+      do {
+        shuffleArray(rest);
+        tiles[0] = 1;
+        tiles[1] = 0;
+        for (let k = 0; k < rest.length; k++) tiles[2 + k] = rest[k];
+        attempts++;
+      } while (hasAnyAdjacentLink() && attempts < 500);
+    } else {
+      let attempts = 0;
+      do {
+        shuffleArray(tiles);
+        attempts++;
+      } while (isSolvedState() && attempts < 500);
+    }
+
+    selectedAnchor = -1;
+    solved = false;
+    busy = false;
+    gameplayStarted = false;
+    dragState = null;
+    dragOverPos = -1;
+    rotateDownPos = -1;
+    rotatePointerId = null;
+    clearTimeout(swapTimer);
+    swapTimer = null;
+    swapAnim = null;
+    shakeAnim = null;
+    winAnim = null;
+    linkFx = null;
+    pendingStartBump = null;
+    winSparkles = [];
+    winStars = [];
+    inputMeasured = { tap: false, drag: false };
+    hintLock = false;
+    hintFx = null;
+    hintRotPos = -1;
+    hintDimOn = false;
+    hintDim = 0;
+    clearTimeout(nextRevealTimer);
+    nextBtn.classList.remove("reveal");
+    nextBtn.classList.add("hidden");
+    boardInput.classList.remove("drag-active");
+
+    layoutCanvas();
+
+    if (mode === "rotate") {
+      setupRotateBlocks();
+    } else {
+      recomputeBlocks();
+      // Tuiles déjà liées au départ (blocs > 1) : on programme un simple bump
+      // (sans lueur ni étoiles — le doré est réservé au feedback d'une action
+      // joueur), déclenché au 1er rendu une fois la vidéo prête.
+      const pre = [];
+      for (let pos = 0; pos < n; pos++) if (blocks[blockOf[pos]].length > 1) pre.push(pos);
+      pendingStartBump = pre.length ? pre : null;
+    }
+    ensureVideoPlay();
+  }
+
+  // Dimensionne le canvas PLEIN ÉCRAN + la résolution du plateau. Appelé par
+  // buildBoard (changement de niveau → grille) et au resize.
+  // - Résolution plateau : cible taille_affichée × DPR (net sur retina), plafonnée
+  //   à MAX_BACKING, d'où la taille de case (plancher 96, plafond BASE_TILE_PX).
+  //   Sur écran standard (DPR 1) les grandes grilles ne sont pas sur-échantillonnées.
+  // - renderScale = frameSide / boardCSSw : le mapping réel backing↔CSS du plateau.
+  //   On l'applique au VIEWPORT entier pour le backing du canvas → le plateau, dessiné
+  //   à sa position réelle × renderScale, est net et aligné, et une pièce draguée peut
+  //   sortir n'importe où sans être rognée. Plafond MAX_CANVAS_DIM pour les très grands
+  //   écrans (le canvas ne couvrira pas 100% du viewport au-delà, cas rare et sans gravité).
+  function layoutCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const boardCSSw = boardInput.clientWidth || 600;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const targetBacking = Math.min(Math.round(boardCSSw * dpr), MAX_BACKING);
+    TILE_PX = Math.min(BASE_TILE_PX, Math.max(96, Math.round(targetBacking / size)));
+    frameSide = size * TILE_PX;
+    renderScale = frameSide / boardCSSw;
+    // Le backing du canvas = viewport × renderScale (le CSS #board est 100% du
+    // viewport, donc l'échelle affichée = 1/renderScale et le plateau, peint à
+    // br.left×renderScale, tombe pile sur #board-input). Il ne faut SURTOUT PAS
+    // écrêter cw/ch séparément à MAX_CANVAS_DIM : la box CSS resterait plein
+    // viewport, le navigateur étirerait le backing plafonné → échelle ≠ renderScale
+    // → plateau désaligné/déformé et divergent du hit-test (cellFromClient reste en
+    // px CSS). On borne donc renderScale UNIFORMÉMENT (une seule échelle) si le
+    // backing dépasserait MAX_CANVAS_DIM (limite dure des navigateurs, parfois 4096
+    // sur mobile) — le plateau perd un peu de netteté sur écran géant mais reste net,
+    // aligné et non déformé. On redérive alors TILE_PX/frameSide.
+    // Plus contraignant des deux plafonds : MAX_RENDER_SCALE (perf, anti sur-échantillonnage
+    // au-delà de la vidéo 720²) et MAX_CANVAS_DIM (sécurité backing ≤ 4096 sur un axe).
+    const maxScale = Math.min(MAX_RENDER_SCALE, MAX_CANVAS_DIM / Math.max(vw, vh));
+    if (renderScale > maxScale) {
+      TILE_PX = Math.max(1, Math.floor(boardCSSw * maxScale / size));
+      frameSide = size * TILE_PX;
+      renderScale = frameSide / boardCSSw;
+    }
+    if (!frameCanvas) {
+      frameCanvas = document.createElement("canvas");
+      frameCtx = frameCanvas.getContext("2d", { alpha: false });
+    }
+    if (frameCanvas.width !== frameSide) {
+      frameCanvas.width = frameSide;
+      frameCanvas.height = frameSide;
+    }
+    const cw = Math.round(vw * renderScale);
+    const ch = Math.round(vh * renderScale);
+    if (boardCanvas.width !== cw || boardCanvas.height !== ch) {
+      boardCanvas.width = cw;
+      boardCanvas.height = ch;
+    }
+    // Style des tuiles (voir déclarations). GAP = interstice fin ; TR = rayon discret ;
+    // DEPTH = épaisseur ; SLOT_INSET/SLOT_R = slots concentriques ; BLEED = anti-couture.
+    GAP = Math.max(2, Math.round(TILE_PX * 0.014));
+    TR = Math.max(3, Math.round(TILE_PX * 0.05));
+    DEPTH = Math.max(3, Math.round(TILE_PX * 0.06));
+    SLOT_INSET = Math.max(1, Math.round(TILE_PX * 0.006));
+    SLOT_R = Math.max(2, TR + GAP - SLOT_INSET);
+    BLEED = Math.max(0.5, TILE_PX * 0.004);
+    // Gradients d'épaisseur reconstruits ici (dépendent de DEPTH) → réutilisés tels quels
+    // par paintTileDepth, en Y relatif. Un CanvasGradient est portable entre contextes
+    // (boardCtx et le tampon tiltCtx du bloc dragué) — vérifié.
+    depthGradBottom = boardCtx.createLinearGradient(0, 0, 0, DEPTH * 1.5);
+    depthGradBottom.addColorStop(0, "rgba(34,20,6,0)");
+    depthGradBottom.addColorStop(1, "rgba(34,20,6,0.42)");
+    depthGradTop = boardCtx.createLinearGradient(0, 0, 0, DEPTH * 0.85);
+    depthGradTop.addColorStop(0, "rgba(255,255,255,0.20)");
+    depthGradTop.addColorStop(1, "rgba(255,255,255,0)");
+    // Les caches de rendu dépendent de TILE_PX/frameSide → invalidation au relayout.
+    bgDirty = true;
+    dragFxKey = null;
+    if (hlGlowCur) hlGlowCur.key = null;
+    if (hlGlowOut) hlGlowOut.key = null;
+  }
+
+  // Convertit des coordonnées écran en index de case sur la grille uniforme.
+  function cellFromClient(clientX, clientY) {
+    const rect = boardInput.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) return -1;
+    const c = Math.min(size - 1, (x / (rect.width / size)) | 0);
+    const r = Math.min(size - 1, (y / (rect.height / size)) | 0);
+    return r * size + c;
+  }
+
+  function onPointerDown(e) {
+    if (solved || hintLock) return;
+    // Un lerp de dépose/retour (swapAnim seul) est purement visuel : l'agencement
+    // est déjà validé (tiles committés). On autorise donc à ressaisir une tuile
+    // pendant ce settle plutôt que d'ignorer le clic — sinon un reclic rapide
+    // juste après le relâchement était perdu. On fige l'anim en cours (et son
+    // timer) et on repart proprement sur un nouveau geste. Les autres états busy
+    // (anim de victoire, verrou de rotation finale) restent bloquants.
+    if (busy) {
+      // On n'interrompt pas un settle qui vient de résoudre le niveau : le timer
+      // en attente doit déclencher la victoire (sinon elle serait perdue).
+      if (swapAnim && !winAnim && !isSolvedState()) {
+        clearTimeout(swapTimer);
+        swapTimer = null;
+        swapAnim = null;
+        busy = false;
+      } else {
+        return;
+      }
+    }
+    const pos = cellFromClient(e.clientX, e.clientY);
+    if (pos === -1) return;
+    unlockSfx();
+    startBGM();
+    // [F1] Premier geste joueur : moment idéal pour débloquer la vidéo si son autoplay
+    // muet off-screen a été refusé au boot (WebView in-app / Low Power iOS). Idempotent
+    // et .catch-é → sans effet si la vidéo joue déjà. Évite un plateau vide au démarrage.
+    ensureVideoPlay();
+    if (!gameplayStarted) {
+      gameplayStarted = true;
+      poki(sdk => sdk.gameplayStart && sdk.gameplayStart());
+    }
+    // Mode bonus : pas de drag ni de sélection, on retient juste la case visée
+    // et on la fait pivoter au relâchement (si le pointeur n'a pas changé de case).
+    if (mode === "rotate") {
+      rotateDownPos = pos;
+      rotatePointerId = e.pointerId;
+      try { boardInput.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+      return;
+    }
+    // Si on ressaisit un bloc fraîchement fusionné pendant que la lueur dorée joue
+    // encore (LINK_MS), on la coupe : sinon le contour doré resterait ancré aux
+    // anciens slots pendant que les faces suivent le drag (glow détaché).
+    if (linkFx && !linkFx.bumpOnly) linkFx = null;
+    dragState = {
+      pointerId: e.pointerId,
+      sourcePos: pos,
+      startX: e.clientX,
+      startY: e.clientY,
+      dx: 0,
+      dy: 0,
+      moved: false,
+    };
+    try { boardInput.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  }
+
+  function onPointerMove(e) {
+    if (!dragState || e.pointerId !== dragState.pointerId) return;
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+    if (!dragState.moved) {
+      if ((Math.abs(dx) + Math.abs(dy)) <= DRAG_THRESHOLD) return;
+      dragState.moved = true;
+      selectedAnchor = -1;
+      boardInput.classList.add("drag-active");
+    }
+    dragState.dx = dx;
+    dragState.dy = dy;
+    const overPos = cellFromClient(e.clientX, e.clientY);
+    dragOverPos = (overPos !== -1 && blockOf[overPos] !== blockOf[dragState.sourcePos])
+      ? overPos : -1;
+  }
+
+  function onPointerUp(e) {
+    if (mode === "rotate") {
+      if (e.pointerId !== rotatePointerId) return;
+      const downPos = rotateDownPos;
+      rotateDownPos = -1;
+      rotatePointerId = null;
+      try { boardInput.releasePointerCapture(e.pointerId); } catch (err) {}
+      // On pivote toujours la case source, même si le pointeur a dérivé hors d'elle
+      // (drag interprété comme un tap sur l'origine) — ergonomie demandée.
+      if (downPos !== -1 && !solved && !busy) {
+        if (!inputMeasured.tap) {
+          inputMeasured.tap = true;
+          poki(sdk => sdk.measure && sdk.measure('input', 'tap', 'used'));
+        }
+        rotateTile(downPos);
+      }
+      return;
+    }
+    if (!dragState || e.pointerId !== dragState.pointerId) return;
+    const wasDrag = dragState.moved;
+    const sourcePos = dragState.sourcePos;
+    const dragDx = dragState.dx;
+    const dragDy = dragState.dy;
+    dragState = null;
+    try { boardInput.releasePointerCapture(e.pointerId); } catch (err) {}
+    boardInput.classList.remove("drag-active");
+    dragOverPos = -1;
+
+    if (wasDrag) {
+      if (!inputMeasured.drag) {
+        inputMeasured.drag = true;
+        poki(sdk => sdk.measure && sdk.measure('input', 'drag', 'used'));
+      }
+      const targetPos = cellFromClient(e.clientX, e.clientY);
+      selectedAnchor = -1;
+      // On autorise une cible appartenant au bloc source : c'est un simple
+      // décalage du bloc. trySwap vérifie les bornes et renvoie null si le
+      // décalage ferait sortir une case du plateau (auquel cas on shake).
+      const validTarget = targetPos !== -1 && targetPos !== sourcePos;
+      const next = validTarget ? trySwap(sourcePos, targetPos) : null;
+      const draggedPieces = new Set(blocks[blockOf[sourcePos]].map(p => tiles[p]));
+      if (next) {
+        // On fait démarrer l'anim de swap depuis la position où le joueur a
+        // relâché le bloc (case + décalage du drag), pas depuis son slot : sinon
+        // le bloc saute d'abord à sa case avant d'animer.
+        // Offset stocké en px CSS (pas backing) : renderBoard le multiplie par le
+        // renderScale COURANT → l'anim de dépose reste correcte même si un resize
+        // change l'échelle pendant les SWAP_MS (mobile : barre d'URL, rotation).
+        animateAndCommit(next, { pieces: draggedPieces, offX: dragDx, offY: dragDy });
+      } else {
+        // Pas de swap (relâché hors plateau, sur sa propre case, ou décalage
+        // invalide) : la pièce REVIENT en glissant vers son slot (lerp), pas d'un
+        // coup. Sur un décalage invalide on shake aussi la cible bloquée.
+        if (validTarget) shakeTile(targetPos);
+        animateReturn(draggedPieces, dragDx, dragDy);
+      }
+    } else {
+      if (!inputMeasured.tap) {
+        inputMeasured.tap = true;
+        poki(sdk => sdk.measure && sdk.measure('input', 'tap', 'used'));
+      }
+      handleTap(sourcePos);
+    }
+  }
+
+  function onPointerCancel(e) {
+    if (mode === "rotate") {
+      if (e.pointerId === rotatePointerId) { rotateDownPos = -1; rotatePointerId = null; }
+      return;
+    }
+    if (!dragState || e.pointerId !== dragState.pointerId) return;
+    const wasDrag = dragState.moved;
+    const sourcePos = dragState.sourcePos;
+    const dragDx = dragState.dx, dragDy = dragState.dy;
+    dragState = null;
+    boardInput.classList.remove("drag-active");
+    dragOverPos = -1;
+    selectedAnchor = -1;
+    // Drag annulé (pointercancel) : la pièce revient en glissant, pas d'un coup.
+    if (wasDrag) {
+      const draggedPieces = new Set(blocks[blockOf[sourcePos]].map(p => tiles[p]));
+      animateReturn(draggedPieces, dragDx, dragDy);
+    }
+  }
+
+  function handleTap(pos) {
+    if (selectedAnchor === -1) {
+      selectedAnchor = pos;
+      return;
+    }
+    if (blockOf[pos] === blockOf[selectedAnchor]) {
+      selectedAnchor = -1;
+      return;
+    }
+    const next = trySwap(selectedAnchor, pos);
+    selectedAnchor = -1;
+    if (!next) {
+      shakeTile(pos);
+      return;
+    }
+    animateAndCommit(next);
+  }
+
+  function shakeTile(pos) {
+    shakeAnim = { pos: pos, start: performance.now() };
+  }
+
+  // Mode bonus : fait pivoter une case d'un cran de 90° horaire. L'angle affiché
+  // est continu (figé dans dispBase au début de l'anim) pour enchaîner les taps
+  // rapides sans à-coup. Le niveau est gagné quand toutes les cases sont droites.
+  function rotateTile(pos) {
+    const now = performance.now();
+    // Tutoriel bonus : un tap-rotation a été fait → la main part en fondu.
+    if (tutorActive) setTutorHand(false);
+    // dispBase = angle affiché à l'instant du tap (figé), même si une anim est
+    // en cours. rot est un compteur de crans **continu** (jamais modulo) : la
+    // cible d'angle vaut toujours rot*90°, donc l'angle au repos retombe
+    // forcément sur un multiple de 90° (corrige le blocage hors-grille des
+    // double-taps rapides).
+    const beforeLinks = alignedLinkSet();
+    dispBase[pos] = currentAngle(pos, now);
+    rot[pos] += 1;
+    rotStart[pos] = now;
+    const afterLinks = alignedLinkSet();
+    let gainedLink = false;
+    afterLinks.forEach(k => { if (!beforeLinks.has(k)) gainedLink = true; });
+    const won = allAligned();
+    if (won) busy = true; // verrouille l'entrée le temps que la dernière case finisse de pivoter
+    // L'effet de fusion (lueur dorée + étoiles + bump, comme le mode classique)
+    // n'apparaît qu'une fois la rotation visuellement terminée.
+    setTimeout(() => {
+      if (won) triggerWin();
+      if (gainedLink && (won || !solved)) {
+        const cells = alignedGroupCells(pos);
+        if (cells.length > 1) startLinkFx(cells);
+      }
+    }, ROT_MS);
+  }
+  function allAligned() {
+    for (let i = 0; i < rot.length; i++) if (rot[i] % 4 !== 0) return false;
+    return true;
+  }
+  // Angle affiché d'une case (radians). Au repos : la cible logique rot*90°.
+  // Pendant l'anim : interpolation de dispBase vers cette même cible, donc le
+  // point d'arrivée est toujours un multiple exact de 90°.
+  // Durée de rotation d'une case : plus lente pour celle de l'indice (lisibilité).
+  function rotDurOf(pos) { return pos === hintRotPos ? HINT_ROT_MS : ROT_MS; }
+  function currentAngle(pos, now) {
+    const target = rot[pos] * HALF_PI;
+    const start = rotStart[pos];
+    if (start === null) return target;
+    const t = (now - start) / rotDurOf(pos);
+    if (t >= 1) return target;
+    if (t <= 0) return dispBase[pos]; // départ différé (indice : la case grossit d'abord)
+    return dispBase[pos] + (target - dispBase[pos]) * easeOut(t);
+  }
+  // Mode bonus : une case est « alignée » (donc fusionnable avec ses voisines
+  // alignées) quand elle est droite (rot multiple de 4) et qu'elle ne pivote pas.
+  function rotAligned(pos, now) {
+    if (rot[pos] % 4 !== 0) return false;
+    if (rotStart[pos] !== null && (now - rotStart[pos]) < rotDurOf(pos)) return false;
+    return true;
+  }
+  // Liens d'alignement logiques (rot%4) entre cases voisines — sert à détecter
+  // l'apparition d'un nouveau lien après une rotation (mode bonus).
+  function alignedLinkSet() {
+    const N = size;
+    const s = new Set();
+    for (let pos = 0; pos < N * N; pos++) {
+      if (rot[pos] % 4 !== 0) continue;
+      const c = pos % N, r = (pos / N) | 0;
+      if (c < N - 1 && rot[pos + 1] % 4 === 0) s.add(pos * 2);
+      if (r < N - 1 && rot[pos + N] % 4 === 0) s.add(pos * 2 + 1);
+    }
+    return s;
+  }
+  // Composante connexe de cases droites (alignées, non animées) contenant `seed`.
+  function alignedGroupCells(seed) {
+    const now = performance.now();
+    const N = size;
+    const inGroup = new Set();
+    const stack = [seed];
+    while (stack.length) {
+      const p = stack.pop();
+      if (inGroup.has(p) || !rotAligned(p, now)) continue;
+      inGroup.add(p);
+      const c = p % N, r = (p / N) | 0;
+      if (c < N - 1) stack.push(p + 1);
+      if (c > 0)     stack.push(p - 1);
+      if (r < N - 1) stack.push(p + N);
+      if (r > 0)     stack.push(p - N);
+    }
+    return [...inGroup];
+  }
+
+  function triggerWin() {
+    if (solved) return; // garde : un timer de swap/rotation et un indice peuvent se croiser
+    solved = true;
+    endHint();
+    clearTimeout(hintTimer); // annule une éventuelle apparition en attente
+    hintBtn.classList.remove("reveal");
+    hintBtn.classList.add("hidden"); // plus d'indice une fois le niveau résolu
+    stopGameplay();
+    // Complétion comptée même avec des indices : c'est le joueur qui a fini le niveau.
+    poki(sdk => sdk.measure && sdk.measure('level', String(levelIdx + 1), 'complete'));
+    // Le niveau est acquis (fini) et la reprise pointe déjà
+    // sur le prochain niveau non fini. Le joueur passe par le menu avant de le lancer →
+    // sans ça, fermer l'onglet sur le menu ferait rejouer le niveau qu'il vient de finir.
+    markDone(levelIdx);
+    const resumeIdx = nextUndone();
+    saveProgress(resumeIdx < LEVELS.length ? resumeIdx : 0);
+    // Le menu ouvert par NEXT jouera la transition « fini → suivant »… sauf pour un niveau
+    // REFAIT (déjà fini au lancement) : rien de nouveau à célébrer (pas de coche à tamponner
+    // ni de carte à débloquer), le menu s'ouvre directement sur la progression réelle.
+    winCelebrated = levelWasDone;
+    flashWin();
+    playVictorySound();
+    clearTimeout(nextRevealTimer);
+    nextRevealTimer = setTimeout(showWinBanner, WIN_ANIM_MS + WIN_BANNER_PAUSE);
+  }
+
+  // ===== HINT : indice (pub récompensée regardée jusqu'au bout) =====
+  // UN coup d'aide : on rattache au PLUS GROS groupe une pièce qui lui revient dans la
+  // solution, prise de préférence SEULE, sinon dans la plus petite formation possible (on
+  // ne démonte jamais un gros groupe pour aider). Toute sa FORMATION se déplace avec elle
+  // quand elle tient dans le plateau (retour QA : s'il ne reste que des formations, on les
+  // échange entières au lieu d'en arracher une tuile), sinon la pièce seule ; les tuiles
+  // délogées comblent le trou (même mécanique qu'un coup joueur) → fusion dorée, et
+  // victoire si c'était la dernière. Si la place de la pièce tombe HORS du plateau (groupe
+  // collé au bord, du côté où elle s'attache), le groupe se décale d'abord d'UNE case vers
+  // l'intérieur, puis la pièce s'attache. Ce décalage tient toujours : si la pièce a une
+  // voisine de ce côté dans la solution, le groupe n'occupe pas toute la largeur (ou
+  // hauteur) et a donc une case de marge de l'autre côté.
+  // Chaque coup est LISIBLE (retour QA « on n'a pas le temps de le voir ») : les tuiles
+  // concernées grossissent sur place (levée), glissent lentement, puis se reposent.
+  // Mode rotation (bonus) : une case voisine du plus gros groupe de cases droites grossit
+  // puis se redresse lentement (sens horaire) ; aucune case droite → la plus centrale.
+  const HINT_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  // Rythme (retour Sébastien : « à peine sorti de la pub ça part déjà à fond ») : pause
+  // après la pub (le joueur se recale sur le plateau), levée, glissement lent.
+  const HINT_START_DELAY_MS = 700; // rien ne bouge juste après la pub (entrées bloquées)
+  const HINT_LIFT_MS = 850;  // levée : les tuiles grossissent sur place avant de bouger
+  const HINT_POP_MS = 300;   // grossissement (ressort) au début de la levée
+  const HINT_MOVE_MS = 950;  // glissement de l'indice (ease-in-out, ~3,5× un coup normal)
+  const HINT_ROT_MS = 900;   // rotation de l'indice (mode bonus)
+  const HINT_STEP_GAP_MS = 250; // pause entre le décalage du groupe et l'attache
+  const HINT_SCALE = 1.14;   // grossissement des tuiles de l'indice
+  const HINT_DIM_ALPHA = 0.5;    // opacité du voile sombre (le reste de l'écran)
+  const HINT_DIM_FADE_MS = 250;  // fondu d'entrée / de sortie du voile
+  function applyHint() {
+    if (solved || hintLock) return;
+    // Entrées bloquées DÈS la fin de la pub (plateau, HINT, maison, réglages) et jusqu'à
+    // la fin de l'indice ; buildBoard / triggerWin les rendent.
+    hintLock = true;
+    // Coupe tout geste en cours (un doigt a pu rester sur le plateau pendant la pub).
+    dragState = null;
+    dragOverPos = -1;
+    selectedAnchor = -1;
+    rotateDownPos = -1;
+    rotatePointerId = null;
+    boardInput.classList.remove("drag-active");
+    shakeAnim = null;
+    if (tutorActive) setTutorHand(false);
+    // Pause : juste après la pub, le joueur doit d'abord retrouver le plateau.
+    setTimeout(() => {
+      if (!hintLock || solved) return; // niveau changé / fini entre-temps
+      const started = mode === "rotate" ? hintRotate() : hintSwap();
+      if (!started) endHint();
+    }, HINT_START_DELAY_MS);
+  }
+
+  // Renvoient true si un coup d'indice est lancé (il rendra les entrées à la fin).
+  function hintSwap() {
+    if (isSolvedState()) return false; // coup gagnant en cours de validation (timer de swap)
+    const N = size;
+    const cellOf = new Array(N * N);
+    for (let p = 0; p < N * N; p++) cellOf[tiles[p]] = p;
+    // 1) Groupe cible : le plus gros ; à égalité, celui qui a le plus de pièces déjà à
+    //    leur place exacte, puis celui de la plus petite pièce (choix déterministe).
+    let g = -1, gPlaced = -1, gMin = Infinity;
+    for (let id = 0; id < blocks.length; id++) {
+      const b = blocks[id];
+      let placed = 0, min = Infinity;
+      for (const p of b) {
+        if (tiles[p] === p) placed++;
+        if (tiles[p] < min) min = tiles[p];
+      }
+      if (g === -1 || b.length > blocks[g].length ||
+          (b.length === blocks[g].length && (placed > gPlaced || (placed === gPlaced && min < gMin)))) {
+        g = id; gPlaced = placed; gMin = min;
+      }
+    }
+    // 2) Candidates : pièces voisines (dans la solution) d'une pièce du groupe, hors du
+    //    groupe ; cible = case voisine sur le PLATEAU dans le même sens. Ordre : plus petite
+    //    formation d'origine (pièce seule d'abord), puis cible dans le plateau (pas de
+    //    décalage du groupe), puis formation déplaçable entière, puis moins de casse chez
+    //    les tuiles délogées, puis n° de pièce (choix déterministe).
+    let best = null, bestKey = null;
+    for (const p of blocks[g]) {
+      const a = tiles[p];
+      const ac = a % N, ar = (a / N) | 0;
+      for (const [dc, dr] of HINT_DIRS) {
+        const nc = ac + dc, nr = ar + dr;
+        if (nc < 0 || nc >= N || nr < 0 || nr >= N) continue;
+        const piece = nr * N + nc;
+        if (blockOf[cellOf[piece]] === g) continue;
+        const grp = blocks[blockOf[cellOf[piece]]].length;
+        const move = hintAttachMove(piece, a, dc, dr); // null : cible hors plateau
+        const key = [grp, move ? 0 : 1, (grp > 1 && !(move && move.whole)) ? 1 : 0,
+                     move ? move.hit : Infinity, piece];
+        let better = !best;
+        for (let i = 0; !better && i < key.length; i++) {
+          if (key[i] !== bestKey[i]) { better = key[i] < bestKey[i]; break; }
+        }
+        if (better) { best = { piece, anchor: a, dc, dr, move }; bestKey = key; }
+      }
+    }
+    if (!best) return false;
+    hintLock = true;
+    const done = endHint;
+    if (best.move) { playHintMove(best.move, done); return true; }
+    // 3) Place hors plateau : le groupe se décale d'une case à l'opposé de la pièce (même
+    //    mécanique qu'un coup joueur), courte pause, puis la pièce (et sa formation) s'attache.
+    const aPos = cellOf[best.anchor];
+    const shifted = trySwap(aPos, (((aPos / N) | 0) - best.dr) * N + (aPos % N) - best.dc);
+    if (!shifted) return false; // impossible en théorie (voir plus haut)
+    playHintMove(hintMoveOf(shifted, blocks[g]), () => {
+      setTimeout(() => {
+        if (!hintLock || solved) return; // niveau changé entre-temps
+        const m = hintAttachMove(best.piece, best.anchor, best.dc, best.dr);
+        if (!m || !m.next) { endHint(); return; } // déjà attachée par le décalage
+        playHintMove(m, done);
+      }, HINT_STEP_GAP_MS);
+    });
+    return true;
+  }
+
+  // Décrit un coup d'indice : agencement suivant, pièces qui s'attachent (movers) et
+  // pièces délogées (others), plus `hit` = taille de la plus grosse formation touchée
+  // parmi les délogées (moins c'est, moins on casse).
+  function hintMoveOf(next, moverCells) {
+    const movers = new Set(moverCells.map(p => tiles[p]));
+    const others = new Set();
+    let hit = 0;
+    for (let p = 0; p < tiles.length; p++) {
+      if (next[p] === tiles[p] || movers.has(tiles[p])) continue;
+      others.add(tiles[p]);
+      hit = Math.max(hit, blocks[blockOf[p]].length);
+    }
+    return { next, movers, others, whole: moverCells.length > 1, hit };
+  }
+
+  // Coup qui attache `piece` contre `anchor` (pièce du groupe cible) dans la direction
+  // (dc, dr) de la solution, sur l'agencement COURANT : la formation entière de la pièce
+  // si elle tient dans le plateau (sa place relative au groupe ne peut pas chevaucher le
+  // groupe : les deux sont justes dans la solution), sinon la pièce seule.
+  // null : cible hors plateau. { next: null } : déjà attachée.
+  function hintAttachMove(piece, anchor, dc, dr) {
+    const N = size;
+    const aPos = tiles.indexOf(anchor), bPos = tiles.indexOf(piece);
+    const tc = (aPos % N) + dc, tr = ((aPos / N) | 0) + dr;
+    if (tc < 0 || tc >= N || tr < 0 || tr >= N) return null;
+    const target = tr * N + tc;
+    if (target === bPos) return { next: null };
+    const whole = trySwap(bPos, target);
+    if (whole) return hintMoveOf(whole, blocks[blockOf[bPos]]);
+    const next = tiles.slice();
+    next[bPos] = tiles[target];
+    next[target] = piece;
+    return hintMoveOf(next, [bPos]);
+  }
+
+  // Joue un coup d'indice en 3 temps : les tuiles concernées grossissent sur place
+  // (HINT_LIFT_MS, sur l'ANCIEN agencement → jointures justes), puis le coup est validé et
+  // glisse lentement (HINT_MOVE_MS, ease-in-out) en redescendant à l'échelle 1 ; à
+  // l'arrivée, fusion dorée habituelle (animateAndCommit → maybeStartLinkFx).
+  function playHintMove(move, onDone) {
+    const now = performance.now();
+    hintFx = { t0: now, moveStart: now + HINT_LIFT_MS, moveDur: HINT_MOVE_MS,
+               movers: move.movers, others: move.others };
+    hintDimOn = true;
+    busy = true;
+    setTimeout(() => {
+      if (!hintFx || hintFx.movers !== move.movers) return; // niveau changé entre-temps
+      hintFx.moveStart = performance.now();
+      animateAndCommit(move.next, null, onDone, HINT_MOVE_MS);
+    }, HINT_LIFT_MS);
+  }
+
+  function hintRotate() {
+    const N = size, now = performance.now();
+    const straight = p => rot[p] % 4 === 0;
+    // Plus gros groupe de cases droites (état logique, animations comprises).
+    const seen = new Array(N * N).fill(false);
+    let group = null;
+    for (let s = 0; s < N * N; s++) {
+      if (seen[s] || !straight(s)) continue;
+      const cells = new Set(), stack = [s];
+      seen[s] = true;
+      while (stack.length) {
+        const p = stack.pop();
+        cells.add(p);
+        const c = p % N, r = (p / N) | 0;
+        for (const [dc, dr] of HINT_DIRS) {
+          const nc = c + dc, nr = r + dr;
+          if (nc < 0 || nc >= N || nr < 0 || nr >= N) continue;
+          const q = nr * N + nc;
+          if (!seen[q] && straight(q)) { seen[q] = true; stack.push(q); }
+        }
+      }
+      if (!group || cells.size > group.size) group = cells;
+    }
+    // Case à redresser : la voisine tordue du groupe qui touche le plus de ses cases
+    // (bouche les creux) ; aucune case droite → la plus centrale.
+    const center = (N - 1) / 2;
+    let target = -1, bestScore = -Infinity;
+    for (let p = 0; p < N * N; p++) {
+      if (straight(p)) continue;
+      const c = p % N, r = (p / N) | 0;
+      let score = 0;
+      if (group) {
+        for (const [dc, dr] of HINT_DIRS) {
+          const nc = c + dc, nr = r + dr;
+          if (nc >= 0 && nc < N && nr >= 0 && nr < N && group.has(nr * N + nc)) score++;
+        }
+        if (!score) continue;
+      } else {
+        score = -(Math.abs(c - center) + Math.abs(r - center));
+      }
+      if (score > bestScore) { bestScore = score; target = p; }
+    }
+    if (target === -1) return false;
+    hintLock = true;
+    busy = true; // pas de tap pendant la levée et la rotation
+    // La case grossit d'abord sur place (levée), puis pivote lentement jusqu'à droite
+    // (sens horaire) en redescendant à l'échelle 1 — même lecture qu'en mode swap.
+    hintFx = { t0: now, moveStart: now + HINT_LIFT_MS, moveDur: HINT_ROT_MS,
+               movers: new Set([tiles[target]]), others: new Set() };
+    hintDimOn = true;
+    hintRotPos = target;
+    dispBase[target] = currentAngle(target, now);
+    rot[target] = Math.ceil(rot[target] / 4) * 4;
+    rotStart[target] = now + HINT_LIFT_MS;
+    const won = allAligned();
+    setTimeout(() => {
+      hintFx = null;
+      if (won) triggerWin();
+      else { busy = false; endHint(); }
+      const cells = alignedGroupCells(target);
+      hintRotPos = -1;
+      // Case redressée seule : simple pop, pour que le joueur voie ce qui a changé.
+      startLinkFx(cells.length > 1 ? cells : [target], cells.length < 2);
+    }, HINT_LIFT_MS + HINT_ROT_MS + 20);
+    return true;
+  }
+
+  function flashWin() {
+    busy = true;
+    const now = performance.now();
+    winAnim = { start: now };
+    // Étincelles dispersées sur le plateau, densité proportionnelle à sa taille.
+    winSparkles = [];
+    const count = Math.round(frameSide / 42);
+    for (let i = 0; i < count; i++) {
+      winSparkles.push({
+        x: Math.random() * frameSide,
+        y: Math.random() * frameSide,
+        r: 16 + Math.random() * 26,
+        delay: Math.random() * 700,
+        dur: 480 + Math.random() * 420,
+        rot: Math.random() * Math.PI,
+      });
+    }
+    // Gerbe d'étoiles « pop » soumises à la gravité : elles jaillissent du plateau vers le
+    // haut puis retombent sur tout l'écran (canvas plein écran, dessinées hors du clip du
+    // cadre). Une grosse vague du centre + une 2e, plus large, un poil après. Unités en
+    // frameSide (même rendu quelle que soit la taille du plateau), vitesses en /s.
+    const U = frameSide;
+    winStars = [];
+    for (let i = 0; i < WIN_STAR_COUNT; i++) {
+      const wave2 = i >= WIN_STAR_COUNT * 0.62;
+      const ang = -Math.PI / 2 + (Math.random() - 0.5) * (wave2 ? 1.4 : 1.0); // vers le haut
+      const spd = U * (1.25 + Math.random() * 0.9);
+      winStars.push({
+        t0: now + (wave2 ? 150 + Math.random() * 130 : Math.random() * 70),
+        x: U * (0.5 + (Math.random() - 0.5) * (wave2 ? 0.8 : 0.3)),
+        y: U * (wave2 ? 0.7 + Math.random() * 0.2 : 0.5 + (Math.random() - 0.5) * 0.16),
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        r: U * (0.024 + Math.random() * 0.028),
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() < 0.5 ? -1 : 1) * (2 + Math.random() * 4),
+        life: 2000 + Math.random() * 600,
+        color: WIN_STAR_COLORS[(Math.random() * WIN_STAR_COLORS.length) | 0],
+      });
+    }
+    winStarsEnd = now + 280 + 2600;
+  }
+  // NEXT apparaît à la place du HINT (même emplacement du rail), même anim d'entrée.
+  function showWinBanner() {
+    nextRevealTimer = null;
+    if (!solved) return;
+    nextBtn.classList.remove("hidden");
+    nextBtn.classList.add("reveal");
+  }
+
+  function startRenderLoop() {
+    // rAF plutôt que requestVideoFrameCallback : la source #hidden-video est
+    // invisible (1px, opacity 0), donc rVFC ne se déclenche pas de façon fiable.
+    // Plafond ~30 fps quand rien n'est animé : la scénette est en 24 fps, inutile
+    // de redessiner à la fréquence de l'écran (60/120/144 Hz) — ça gaspille le GPU
+    // (lag/chauffe sur PC haute fréquence). Pendant une animation (swap, drag,
+    // shake, victoire, rotation) on repasse à plein débit pour rester fluide.
+    const IDLE_FRAME_MS = 1000 / 30;
+    // Pendant une anim/un drag on rend « à plein débit », mais borné à ~60 fps : sur un
+    // écran 120/144 Hz (mobiles récents) rien ne justifie 2-2,4× plus de frames — chacune
+    // recompose le canvas plein écran + les effets du drag. Seuil un poil sous 1/60 pour
+    // qu'un écran 60 Hz (cadence 16,67 ms, jitter compris) ne retombe jamais à 30 fps.
+    const ANIM_FRAME_MS = 1000 / 62;
+    const VIDEO_FPS = 24; // les scénettes sont en 24 fps
+    let lastRender = 0, lastVideoFrame = -1;
+    const tick = (now) => {
+      requestAnimationFrame(tick);
+      // Menu de sélection ouvert : il couvre entièrement le plateau → rien à dessiner.
+      if (menuOpen) return;
+      const rotActive = mode === "rotate" && rotStart &&
+        rotStart.some(s => s !== null && (now - s) < ROT_MS);
+      const animating = swapAnim || shakeAnim || winAnim || linkFx || winStars.length || hintFx ||
+        (hintDimOn ? hintDim < 1 : hintDim > 0) || // fondu du voile de l'indice
+        (dragState && dragState.moved) || rotActive ||
+        // Highlight : plein débit UNIQUEMENT pendant un lerp (entrée OU sortie), pas
+        // toute la durée de la sélection (qui peut durer longtemps → sinon on recompose
+        // pour rien). Couvre le fondu d'entrée du courant ET le fondu de sortie sortant.
+        (hlKey !== null && (now - hlStart) < HILITE_MS) ||
+        (hlOut !== null && (now - hlOut.start) < HILITE_MS);
+      if (!animating) {
+        if ((now - lastRender) < IDLE_FRAME_MS) return;
+        // En idle, ne redessiner que si une NOUVELLE frame vidéo est disponible :
+        // le canvas est désormais plein écran, inutile de le recomposer 30×/s pour
+        // une image vidéo identique (la scénette est en 24 fps). Réduit la conso/chauffe.
+        const vf = (video.currentTime * VIDEO_FPS) | 0;
+        if (vf === lastVideoFrame && !renderDirty) return;
+        lastVideoFrame = vf;
+        renderDirty = false;
+      } else if ((now - lastRender) < ANIM_FRAME_MS) {
+        return; // anim/drag : plafond ~60 fps (voir ANIM_FRAME_MS)
+      }
+      lastRender = now;
+      renderBoard();
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function easeOut(t) { return 1 - (1 - t) * (1 - t); }
+  function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t); }
+  // Ease avec léger dépassement (ressort) : le swap/retour « claque » en place au
+  // lieu de finir mou. Dépasse un peu au-delà de 1 vers t≈0,8 puis revient à 1.
+  function easeOutBack(t) {
+    const c1 = 1.45, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+  function linkBump(t) { return 1 + 0.12 * Math.sin(t * Math.PI); }
+
+  // Reprojette le sous-rectangle (sx,sy,sw,sh) d'une image sur un QUADRILATÈRE
+  // (coins TL,TR,BL,BR en coords du contexte courant) via des bandes horizontales
+  // affines. Chaque bande est un parallélogramme (drawImage + transform), et
+  // l'ensemble approxime le trapèze/quad → vraie perspective, impossible avec un
+  // seul ctx.transform (affine = ne peut pas rétrécir un bord opposé). Le contexte
+  // garde sa transformation courante (translate plateau) : on COMPOSE via g.transform.
+  function drawQuadImage(g, img, sx, sy, sw, sh, TL, TR, BL, BR, strips) {
+    // Les fines lignes claires horizontales entre bandes sont un DÉFICIT DE COUVERTURE
+    // (alpha), pas un trou géométrique : lissage bilinéaire ON, chaque bande est un
+    // drawImage séparé dont les lignes source haut/bas sont edge-clampées et dont les
+    // bords destination fractionnaires sont anti-aliasés (alpha < 1). Sur un tampon à
+    // fond transparent, les deux bords feutrés de bandes voisines ne se recomposent pas
+    // à alpha=1 → le plateau clair transparaît en fine ligne. L'ancien recouvrement
+    // (source seule, en bas seulement, ~sous-pixel en destination) ne faisait que
+    // DÉPLACER la couture au lieu de la couvrir.
+    //
+    // Correctif : débordement SYMÉTRIQUE en haut ET en bas de chaque bande intérieure,
+    // la destination ÉTENDUE de la même quantité (pilotée par les fractions source
+    // réellement échantillonnées va/vb → aucune dérive d'échelle verticale). Les bandes
+    // se recouvrent alors d'AU MOINS 1 px DESTINATION : le bord clampé/feutré de chaque
+    // bande est peint SOUS le corps opaque de la voisine → plus de creux de couverture.
+    // Recouvrement borné en px source ET destination → correct quel que soit le scale/DPR.
+    // Les bandes extrêmes restent au ras du bitmap (Math.max/min) → silhouette externe
+    // (coins arrondis, source de l'ombre portée) inchangée.
+    const stripSrcH = sh / strips;               // hauteur source d'une bande
+    // px destination par px source, estimé sur le bord gauche du quad (quasi rectangulaire
+    // à ≤ 8° → une estimation suffit ; borné pour éviter une division par ~0).
+    const dstPerSrc = Math.hypot(BL.x - TL.x, BL.y - TL.y) / sh || 1;
+    const bleed = Math.max(1, 1 / (dstPerSrc || 1)); // ≥ 1 px source ET ≥ 1 px destination
+    for (let i = 0; i < strips; i++) {
+      const top = i > 0 ? bleed : 0;             // débordement vers le haut (sauf 1re bande)
+      const bot = i < strips - 1 ? bleed : 0;    // débordement vers le bas (sauf dernière)
+      // Sous-rect source débordé en haut/bas, clampé aux bords réels du bitmap.
+      const ssy = Math.max(sy, sy + i * stripSrcH - top);
+      const sBot = Math.min(sy + sh, sy + (i + 1) * stripSrcH + bot);
+      const ssh = sBot - ssy;
+      if (ssh <= 0) continue;
+      // Fractions verticales (0..1 sur sh) des bords RÉELLEMENT échantillonnés : la
+      // destination suit exactement le débordement source → pas de dérive d'échelle.
+      const va = (ssy - sy) / sh;
+      const vb = (ssy + ssh - sy) / sh;
+      const lx0 = TL.x + (BL.x - TL.x) * va, ly0 = TL.y + (BL.y - TL.y) * va;
+      const rx0 = TR.x + (BR.x - TR.x) * va, ry0 = TR.y + (BR.y - TR.y) * va;
+      const lx1 = TL.x + (BL.x - TL.x) * vb, ly1 = TL.y + (BL.y - TL.y) * vb;
+      // Affine mappant la bande source → coins destination (u = axe X source largeur sw,
+      // w = axe Y source hauteur ssh).
+      const m11 = (rx0 - lx0) / sw, m12 = (ry0 - ly0) / sw;
+      const m21 = (lx1 - lx0) / ssh, m22 = (ly1 - ly0) / ssh;
+      const dx = lx0 - m11 * sx - m21 * ssy;
+      const dy = ly0 - m12 * sx - m22 * ssy;
+      g.save();
+      g.transform(m11, m12, m21, m22, dx, dy);
+      g.drawImage(img, sx, ssy, sw, ssh, sx, ssy, sw, ssh);
+      g.restore();
+    }
+  }
+
+  // Centre (en coords plateau) d'un ensemble de cases (Set ou Array), pour faire
+  // grossir un bloc entier autour de son centre commun (pas case par case, sinon
+  // seams). Sert au grossissement de la pièce tenue et de la case sélectionnée.
+  function blockCenterOf(positions) {
+    let sc = 0, sr = 0, n = 0;
+    positions.forEach(p => { sc += p % size; sr += (p / size) | 0; n++; });
+    n = n || 1;
+    return { cx: (sc / n + 0.5) * TILE_PX, cy: (sr / n + 0.5) * TILE_PX };
+  }
+
+  // Tracé d'un rectangle à coins arrondis (clip du cadre du plateau).
+  function roundRectPath(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Chemin d'une tuile (mode swap), case (x,y) de côté s. Bords liés à une voisine
+  // (lT/lR/lB/lL) = à ras (fusion) ; bords exposés = insérés du GAP (révèle le slot).
+  // Coins : CONVEXE (2 bords exposés) → arrondi rayon TR ; CONCAVE (2 bords liés mais
+  // la diagonale dTL/dTR/dBR/dBL absente = coin intérieur d'un bloc en L/T) → entaille
+  // carrée du GAP, alignée sur les inserts des voisines (règle le coin qui dépasse) ;
+  // intérieur/mixte → droit. Un bloc fusionné forme ainsi un contour continu propre.
+  // `bleed` : les bords LIÉS débordent de `bleed` px au-delà de la case → deux tuiles
+  // fusionnées se chevauchent d'un poil, ce qui masque la couture d'anti-aliasing
+  // (sinon visible entre pièces d'un même groupe, surtout à l'échelle/au drag).
+  // NB : ne fait PAS beginPath (le caller le fait) → on peut accumuler plusieurs
+  // tuiles dans un même chemin pour tracer l'UNION d'un bloc (ombre/bordure de groupe).
+  function tilePath(ctx, x, y, s, lT, lR, lB, lL, dTL, dTR, dBR, dBL, GAP, TR, bleed) {
+    bleed = bleed || 0;
+    const L = x + (lL ? -bleed : GAP), Rr = x + s - (lR ? -bleed : GAP);
+    const T = y + (lT ? -bleed : GAP), B = y + s - (lB ? -bleed : GAP);
+    const conTL = !lT && !lL, ccTL = lT && lL && !dTL;
+    const conTR = !lT && !lR, ccTR = lT && lR && !dTR;
+    const conBR = !lB && !lR, ccBR = lB && lR && !dBR;
+    const conBL = !lB && !lL, ccBL = lB && lL && !dBL;
+    ctx.moveTo(L + (conTL ? TR : (ccTL ? GAP : 0)), T);
+    if (conTR) { ctx.lineTo(Rr - TR, T); ctx.arcTo(Rr, T, Rr, T + TR, TR); }
+    else if (ccTR) { ctx.lineTo(Rr - GAP, T); ctx.lineTo(Rr - GAP, T + GAP); ctx.lineTo(Rr, T + GAP); }
+    else { ctx.lineTo(Rr, T); }
+    if (conBR) { ctx.lineTo(Rr, B - TR); ctx.arcTo(Rr, B, Rr - TR, B, TR); }
+    else if (ccBR) { ctx.lineTo(Rr, B - GAP); ctx.lineTo(Rr - GAP, B - GAP); ctx.lineTo(Rr - GAP, B); }
+    else { ctx.lineTo(Rr, B); }
+    if (conBL) { ctx.lineTo(L + TR, B); ctx.arcTo(L, B, L, B - TR, TR); }
+    else if (ccBL) { ctx.lineTo(L + GAP, B); ctx.lineTo(L + GAP, B - GAP); ctx.lineTo(L, B - GAP); }
+    else { ctx.lineTo(L, B); }
+    if (conTL) { ctx.lineTo(L, T + TR); ctx.arcTo(L, T, L + TR, T, TR); }
+    else if (ccTL) { ctx.lineTo(L, T + GAP); ctx.lineTo(L + GAP, T + GAP); ctx.lineTo(L + GAP, T); }
+    else { ctx.lineTo(L, T); }
+    ctx.closePath();
+  }
+
+  // Liens (fusion) + diagonales d'une case (mode-aware). Source : blockOf en swap,
+  // rotAligned en rotation. Sert à drawTile, aux unions de groupe ET à drawLinkFx.
+  function cellLinks(pos, now) {
+    const c = pos % size, r = (pos / size) | 0, mb = blockOf[pos];
+    const s = linkScratch; // scratch partagé, consommé immédiatement par l'appelant
+    if (mode === "rotate") {
+      const a = rotAligned(pos, now);
+      s.lT = a && r > 0        && rotAligned(pos - size, now);
+      s.lB = a && r < size - 1 && rotAligned(pos + size, now);
+      s.lL = a && c > 0        && rotAligned(pos - 1,    now);
+      s.lR = a && c < size - 1 && rotAligned(pos + 1,    now);
+      s.dTL = r > 0        && c > 0        && rotAligned(pos - size - 1, now);
+      s.dTR = r > 0        && c < size - 1 && rotAligned(pos - size + 1, now);
+      s.dBR = r < size - 1 && c < size - 1 && rotAligned(pos + size + 1, now);
+      s.dBL = r < size - 1 && c > 0        && rotAligned(pos + size - 1, now);
+      return s;
+    }
+    s.lT = r > 0        && blockOf[pos - size] === mb;
+    s.lB = r < size - 1 && blockOf[pos + size] === mb;
+    s.lL = c > 0        && blockOf[pos - 1]    === mb;
+    s.lR = c < size - 1 && blockOf[pos + 1]    === mb;
+    s.dTL = r > 0        && c > 0        && blockOf[pos - size - 1] === mb;
+    s.dTR = r > 0        && c < size - 1 && blockOf[pos - size + 1] === mb;
+    s.dBR = r < size - 1 && c < size - 1 && blockOf[pos + size + 1] === mb;
+    s.dBL = r < size - 1 && c > 0        && blockOf[pos + size - 1] === mb;
+    return s;
+  }
+
+  // Indice en cours : coupe (dans le scratch `k`) les liens entre une tuile et une voisine
+  // d'un autre ensemble — formation qui s'attache (1), tuiles délogées (2), immobiles (0).
+  // Un lien n'est vrai que si la voisine est dans le plateau, donc les indices sont sûrs.
+  function hintClassOf(piece) {
+    return hintFx.movers.has(piece) ? 1 : (hintFx.others.has(piece) ? 2 : 0);
+  }
+  function hintFilterLinks(k, pos) {
+    const N = size, c0 = hintClassOf(tiles[pos]);
+    if (k.lT && hintClassOf(tiles[pos - N]) !== c0) k.lT = false;
+    if (k.lB && hintClassOf(tiles[pos + N]) !== c0) k.lB = false;
+    if (k.lL && hintClassOf(tiles[pos - 1]) !== c0) k.lL = false;
+    if (k.lR && hintClassOf(tiles[pos + 1]) !== c0) k.lR = false;
+    if (k.dTL && hintClassOf(tiles[pos - N - 1]) !== c0) k.dTL = false;
+    if (k.dTR && hintClassOf(tiles[pos - N + 1]) !== c0) k.dTR = false;
+    if (k.dBR && hintClassOf(tiles[pos + N + 1]) !== c0) k.dBR = false;
+    if (k.dBL && hintClassOf(tiles[pos + N - 1]) !== c0) k.dBL = false;
+  }
+
+  // Liens d'une case restreints à un ENSEMBLE de cases donné (au lieu de blockOf) :
+  // deux cases sont liées ssi toutes deux dans le set. Sert à rendre un highlight
+  // « isolé » — p. ex. une seule tuile cible qui appartient pourtant à un bloc :
+  // avec le set = {pos}, aucun voisin n'est lié → tuile arrondie autonome propre.
+  function linksFromSet(pos, set) {
+    const c = pos % size, r = (pos / size) | 0;
+    const s = linkScratch; // même scratch partagé (consommé immédiatement)
+    s.lT = r > 0        && set.has(pos - size);
+    s.lB = r < size - 1 && set.has(pos + size);
+    s.lL = c > 0        && set.has(pos - 1);
+    s.lR = c < size - 1 && set.has(pos + 1);
+    s.dTL = r > 0        && c > 0        && set.has(pos - size - 1);
+    s.dTR = r > 0        && c < size - 1 && set.has(pos - size + 1);
+    s.dBR = r < size - 1 && c < size - 1 && set.has(pos + size + 1);
+    s.dBL = r < size - 1 && c > 0        && set.has(pos + size - 1);
+    return s;
+  }
+
+  // Chemin UNION d'un bloc (ses cases décalées de dx,dy) en un seul path (le caller
+  // fait beginPath via cette fonction) → une seule forme pour l'ombre / la bordure /
+  // le glow de groupe (pas de superposition par tuile → ni bandes ni couture interne).
+  // `linkSet` (optionnel) : calcule les liens par appartenance à cet ensemble plutôt
+  // que via cellLinks/blockOf (pour un highlight isolé sur une seule tuile). Pour un
+  // bloc entier passé comme set, le résultat est identique à cellLinks (mode swap).
+  function blockUnionPath(ctx, cells, dx, dy, now, linkSet) {
+    ctx.beginPath();
+    cells.forEach(pos => {
+      const c = pos % size, r = (pos / size) | 0;
+      const k = linkSet ? linksFromSet(pos, linkSet) : cellLinks(pos, now);
+      tilePath(ctx, c * TILE_PX + dx, r * TILE_PX + dy, TILE_PX,
+        k.lT, k.lR, k.lB, k.lL, k.dTL, k.dTR, k.dBR, k.dBL, GAP, TR, BLEED);
+    });
+  }
+
+  // Helpers de tuile HISSÉS au niveau module (auparavant 3 closures recréées PAR TUILE
+  // PAR FRAME dans drawTile → grosse source d'allocation/GC). Reçoivent tout en paramètres.
+  function beginTilePath(g, x, y, lT, lR, lB, lL, dTL, dTR, dBR, dBL) {
+    g.beginPath();
+    tilePath(g, x, y, TILE_PX, lT, lR, lB, lL, dTL, dTR, dBR, dBL, GAP, TR, BLEED);
+  }
+  function drawTileFace(g, px, py, x, y, exL, exR, exT, exB) {
+    g.drawImage(frameCanvas,
+      px * TILE_PX - exL, py * TILE_PX - exT, TILE_PX + exL + exR, TILE_PX + exT + exB,
+      x - exL, y - exT, TILE_PX + exL + exR, TILE_PX + exT + exB);
+  }
+  // Épaisseur (bord bas exposé sombre + fin reflet haut). Utilise les gradients CACHÉS
+  // (depthGradBottom/Top, Y relatif) via une translation Y → aucune allocation par frame.
+  // Épaisseur (bord bas exposé sombre + fin reflet haut). Gradients CACHÉS (depthGradBottom/Top,
+  // Y relatif) positionnés par une translation Y qui s'annule EXACTEMENT (T(0,oy)·T(0,−oy)=I,
+  // vrai sous n'importe quel CTM) → PAS de save/restore. Un save/restore copie tout l'état du
+  // contexte (transform + CLIP compris) : c'est cher. Mesuré (7×7, appels directs) : le variant
+  // save/restore coûtait ~0,125 ms/frame CPU, celui-ci ~0,077 ms (−38 %), rendu PIXEL-IDENTIQUE
+  // (getImageData : 0 canal différent). L'ancien save/restore de paintTileDepth était la cause
+  // de la régression FPS de l'« Étage 1 » (médiane ET moyenne en baisse = coût uniforme ajouté).
+  function paintTileDepth(g, linkedTop, linkedBottom, tx, ty, tw, th) {
+    if (!linkedBottom) {
+      const oy = ty + th - DEPTH * 1.5;
+      g.translate(0, oy);
+      g.fillStyle = depthGradBottom;
+      g.fillRect(tx, 0, tw, DEPTH * 1.5);
+      g.fillStyle = "rgba(20,12,4,0.5)";
+      g.fillRect(tx, DEPTH * 1.5 - Math.max(2, DEPTH * 0.28), tw, Math.max(2, DEPTH * 0.28));
+      g.translate(0, -oy);
+    }
+    if (!linkedTop) {
+      g.translate(0, ty);
+      g.fillStyle = depthGradTop;
+      g.fillRect(tx, 0, tw, DEPTH * 0.85);
+      g.translate(0, -ty);
+    }
+  }
+
+  // --- Caches de rendu (PERF) : les flous gaussiens et le fond du plateau ne changent
+  //     pas d'une frame à l'autre ; on les calcule une fois et on les blitte. ---
+
+  function sizeCanvas(cv, w, h) { if (cv.width !== w) cv.width = w; if (cv.height !== h) cv.height = h; }
+
+  // Fond du plateau (grout + slots creusés arrondis) rendu 1× dans bgCanvas. Statique
+  // dans un niveau → invalidé seulement par layoutCanvas (bgDirty) ou un changement de
+  // taille. Remplace la double boucle size×size (fill+clip+gradient/cellule) par frame.
+  function ensureBoardBg() {
+    if (!bgCanvas) { bgCanvas = document.createElement("canvas"); bgCtx = bgCanvas.getContext("2d"); }
+    if (bgCanvas.width !== frameSide) { sizeCanvas(bgCanvas, frameSide, frameSide); bgDirty = true; }
+    if (!bgDirty) return;
+    bgDirty = false;
+    const g = bgCtx;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, frameSide, frameSide);
+    g.fillStyle = BG_GROUT;
+    g.fillRect(0, 0, frameSide, frameSide);
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const sx = c * TILE_PX + SLOT_INSET, sy = r * TILE_PX + SLOT_INSET;
+        const sw = TILE_PX - 2 * SLOT_INSET, sh = TILE_PX - 2 * SLOT_INSET;
+        roundRectPath(g, sx, sy, sw, sh, SLOT_R);
+        g.fillStyle = BG_SLOT;
+        g.fill();
+        g.save();
+        roundRectPath(g, sx, sy, sw, sh, SLOT_R);
+        g.clip();
+        const grad = g.createLinearGradient(0, sy, 0, sy + DEPTH);
+        grad.addColorStop(0, "rgba(120,96,54,0.13)");
+        grad.addColorStop(1, "rgba(120,96,54,0)");
+        g.fillStyle = grad;
+        g.fillRect(sx, sy, sw, DEPTH);
+        g.restore();
+      }
+    }
+  }
+
+  // Pré-floute (1× par drag) l'OMBRE et le GLOW du bloc tenu à partir de la silhouette
+  // du tampon perspective (tiltCanvas), avec une marge M pour que le flou ne soit pas
+  // rogné. Les deux tampons sont ensuite blittés tels quels par frame (voir
+  // drawGroupUnderlays), sans aucun flou par frame.
+  function buildDragFx() {
+    if (!glowCanvas) { glowCanvas = document.createElement("canvas"); glowCtx = glowCanvas.getContext("2d"); }
+    if (!shadowFxCanvas) { shadowFxCanvas = document.createElement("canvas"); shadowFxCtx = shadowFxCanvas.getContext("2d"); }
+    if (!fxScratchCanvas) { fxScratchCanvas = document.createElement("canvas"); fxScratchCtx = fxScratchCanvas.getContext("2d"); }
+    const BW = tiltCanvas.width, BH = tiltCanvas.height;
+    const rGlow = TILE_PX * 0.055;
+    const rShadow = TILE_PX * SHADOW_FX_BLUR;
+    const M = Math.ceil(Math.max(rGlow, rShadow) * 2.2 + 4);
+    dragFxM = M; dragFxBW = BW; dragFxBH = BH;
+    const W = BW + 2 * M, H = BH + 2 * M;
+    sizeCanvas(fxScratchCanvas, W, H);
+    sizeCanvas(glowCanvas, W, H);
+    sizeCanvas(shadowFxCanvas, W, H);
+    const s = fxScratchCtx;
+    // GLOW (blanc chaud) : silhouette recolorée nette, puis floutée dans glowCanvas.
+    s.setTransform(1, 0, 0, 1, 0, 0);
+    s.globalCompositeOperation = "source-over";
+    s.clearRect(0, 0, W, H);
+    s.drawImage(tiltCanvas, M, M);
+    s.globalCompositeOperation = "source-in";
+    s.fillStyle = "rgb(" + GLOW_RGB + ")";
+    s.fillRect(0, 0, W, H);
+    s.globalCompositeOperation = "source-over";
+    glowCtx.setTransform(1, 0, 0, 1, 0, 0);
+    glowCtx.clearRect(0, 0, W, H);
+    glowCtx.filter = "blur(" + rGlow.toFixed(1) + "px)";
+    glowCtx.drawImage(fxScratchCanvas, 0, 0);
+    glowCtx.filter = "none";
+    // OMBRE (sombre) : même silhouette recolorée sombre, floutée dans shadowFxCanvas.
+    s.clearRect(0, 0, W, H);
+    s.drawImage(tiltCanvas, M, M);
+    s.globalCompositeOperation = "source-in";
+    s.fillStyle = "rgb(26,18,6)";
+    s.fillRect(0, 0, W, H);
+    s.globalCompositeOperation = "source-over";
+    shadowFxCtx.setTransform(1, 0, 0, 1, 0, 0);
+    shadowFxCtx.clearRect(0, 0, W, H);
+    shadowFxCtx.filter = "blur(" + rShadow.toFixed(1) + "px)";
+    shadowFxCtx.drawImage(fxScratchCanvas, 0, 0);
+    shadowFxCtx.filter = "none";
+  }
+
+  function makeGlowBuf() {
+    const cv = document.createElement("canvas");
+    return { canvas: cv, ctx: cv.getContext("2d"), key: null, bx: 0, by: 0, M: 0 };
+  }
+
+  // Pré-floute (1× par cible survolée/sélectionnée) le contour lumineux du highlight
+  // dans un tampon dédié (bbox des cases + marge du flou). Reproduit exactement les 2
+  // strokes + shadowBlur d'avant, mais hors de la boucle : blitté ensuite par frame,
+  // mis à l'échelle (lerp) et en alpha. `buf.key` évite le recalcul tant que la cible
+  // ne change pas (sinon jusqu'à 4 strokes flous par frame en survolant pendant un drag).
+  function buildHlGlow(buf, cells, now) {
+    let minC = size, maxC = -1, minR = size, maxR = -1;
+    cells.forEach(p => {
+      const c = p % size, r = (p / size) | 0;
+      if (c < minC) minC = c; if (c > maxC) maxC = c;
+      if (r < minR) minR = r; if (r > maxR) maxR = r;
+    });
+    const blurR = TILE_PX * 0.20;
+    const M = Math.ceil(blurR * 2.2 + SEL_W * 2 + 4);
+    const bx = minC * TILE_PX, by = minR * TILE_PX;
+    const bw = (maxC - minC + 1) * TILE_PX, bh = (maxR - minR + 1) * TILE_PX;
+    const W = bw + 2 * M, H = bh + 2 * M;
+    sizeCanvas(buf.canvas, W, H);
+    buf.bx = bx; buf.by = by; buf.M = M;
+    const g = buf.ctx;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, W, H);
+    // Décalage : la case (minC,minR) tombe à (M,M) dans le tampon.
+    g.setTransform(1, 0, 0, 1, M - bx, M - by);
+    blockUnionPath(g, cells, 0, 0, now, new Set(cells));
+    g.shadowColor = "rgba(" + GLOW_RGB + ", 0.95)";
+    g.shadowBlur = blurR;
+    g.strokeStyle = "rgba(" + GLOW_RGB + ", 0.9)";
+    g.lineWidth = 2 * SEL_W;
+    g.lineJoin = "round";
+    g.stroke();
+    g.stroke(); // 2e passe → glow plus dense (identique à l'ancien drawHlGlow)
+    g.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  function renderBoard() {
+    if (!video.videoWidth || !boardCtx || !frameCtx) return;
+    const now = performance.now();
+    // Bump des tuiles déjà liées au démarrage (sans lueur ni étoiles), déclenché
+    // une fois la vidéo prête à être rendue.
+    if (pendingStartBump) {
+      startLinkFx(pendingStartBump, true);
+      pendingStartBump = null;
+    }
+    const vw = video.videoWidth, vh = video.videoHeight;
+    const sqSide = Math.min(vw, vh);
+    const sqX = (vw - sqSide) / 2;
+    const sqY = (vh - sqSide) / 2;
+
+    // Décodage vidéo : une seule lecture par frame vers le canvas tampon.
+    frameCtx.drawImage(video, sqX, sqY, sqSide, sqSide, 0, 0, frameSide, frameSide);
+
+    // Canvas plein écran : on efface tout (transparent) puis on translate à la
+    // position RÉELLE du plateau (lue en direct → suit resize / barre d'URL mobile),
+    // convertie en backing via renderScale. Tout le reste raisonne ensuite en
+    // coordonnées plateau (0..frameSide) comme avant.
+    boardCtx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+    const br = boardInput.getBoundingClientRect();
+    const offX = Math.round(br.left * renderScale);
+    const offY = Math.round(br.top * renderScale);
+    boardCtx.save();
+    boardCtx.translate(offX, offY);
+
+    const selBlock = (selectedAnchor === -1) ? -1 : blockOf[selectedAnchor];
+
+    let swapK = 1;
+    if (swapAnim) {
+      const t = (now - swapAnim.start) / swapAnim.dur;
+      const tc = t < 0 ? 0 : (t < 1 ? t : 1);
+      // Coup normal : ressort qui claque en place. Indice : ease-in-out, lent et lisible.
+      swapK = swapAnim.hint ? easeInOut(tc) : easeOutBack(tc);
+    }
+
+    // Indice : les tuiles concernées grossissent sur place (ressort, HINT_POP_MS), gardent
+    // leur taille pendant la levée puis redescendent à 1 sur la 2e moitié du trajet. Deux
+    // pivots, chacun au centroïde COURANT de son ensemble : la formation qui s'attache
+    // (movers) et les tuiles délogées (others) → chaque ensemble grossit d'un seul tenant.
+    let hintS = 1, hMx = 0, hMy = 0, hOx = 0, hOy = 0;
+    if (hintFx) {
+      hintS = 1 + (HINT_SCALE - 1) * easeOutBack(Math.min(1, (now - hintFx.t0) / HINT_POP_MS));
+      const k = (now - hintFx.moveStart) / hintFx.moveDur;
+      if (k > 0.45) hintS = 1 + (hintS - 1) * (1 - easeOut(Math.min(1, (k - 0.45) / 0.55)));
+      let mn = 0, on = 0;
+      for (let pos = 0; pos < tiles.length; pos++) {
+        const pc = tiles[pos];
+        const isM = hintFx.movers.has(pc);
+        if (!isM && !hintFx.others.has(pc)) continue;
+        let cc = pos % size, cr = (pos / size) | 0;
+        if (swapAnim) {
+          const prev = swapAnim.prevCell[pc];
+          const pC = prev % size, pR = (prev / size) | 0;
+          cc = pC + (cc - pC) * swapK; cr = pR + (cr - pR) * swapK;
+        }
+        const cx = (cc + 0.5) * TILE_PX, cy = (cr + 0.5) * TILE_PX;
+        if (isM) { hMx += cx; hMy += cy; mn++; } else { hOx += cx; hOy += cy; on++; }
+      }
+      if (mn) { hMx /= mn; hMy /= mn; }
+      if (on) { hOx /= on; hOy /= on; }
+    }
+
+    // Centroïde du bloc en cours de dépose/retour (pièces draguées), à leur position
+    // INTERPOLÉE courante → pivot de GROUPE pour le grossissement qui se résorbe
+    // (sinon chaque case scalerait autour de son propre centre = seams transitoires).
+    let settleCx = 0, settleCy = 0, hasSettle = false;
+    if (swapAnim && swapAnim.dragPieces) {
+      let sx = 0, sy = 0, n = 0;
+      for (let pos = 0; pos < tiles.length; pos++) {
+        const pc = tiles[pos];
+        if (!swapAnim.dragPieces.has(pc)) continue;
+        const prev = swapAnim.prevCell[pc];
+        const prevC = prev % size, prevR = (prev / size) | 0;
+        const dC = pos % size, dR = (pos / size) | 0;
+        sx += (prevC + (dC - prevC) * swapK + 0.5) * TILE_PX + swapAnim.dragOffX * renderScale * (1 - swapK);
+        sy += (prevR + (dR - prevR) * swapK + 0.5) * TILE_PX + swapAnim.dragOffY * renderScale * (1 - swapK);
+        n++;
+      }
+      if (n) { settleCx = sx / n; settleCy = sy / n; hasSettle = true; }
+    }
+
+    let dragSet = null, dragOffX = 0, dragOffY = 0;
+    let dragQuad = null;
+    if (dragState && dragState.moved) {
+      dragSet = new Set(blocks[blockOf[dragState.sourcePos]]);
+      dragOffX = dragState.dx * renderScale;
+      dragOffY = dragState.dy * renderScale;
+
+      // Perspective inertielle : vitesse instantanée du drag (delta d'offset px CSS
+      // entre frames) lissée en passe-bas. À l'amorce d'un drag on cale prev = courant
+      // (pas de pop). yaw/pitch en découlent ; retombent à 0 quand le doigt s'arrête.
+      if (!tiltActive) {
+        tiltActive = true; tiltVX = 0; tiltVY = 0;
+        tiltPrevDx = dragState.dx; tiltPrevDy = dragState.dy;
+      }
+      const instVX = dragState.dx - tiltPrevDx, instVY = dragState.dy - tiltPrevDy;
+      tiltPrevDx = dragState.dx; tiltPrevDy = dragState.dy;
+      tiltVX += (instVX - tiltVX) * TILT_SMOOTH;
+      tiltVY += (instVY - tiltVY) * TILT_SMOOTH;
+      // Angles d'inclinaison (petits) : yaw autour de l'axe vertical (depuis vx),
+      // pitch autour de l'axe horizontal (depuis vy). On borne le VECTEUR (yaw,pitch)
+      // à TILT_MAX_DEG → un drag diagonal penche autant qu'un drag axial, dans le
+      // sens du geste (pas de sur-inclinaison en coin).
+      let yaw = tiltVX * TILT_VEL_GAIN;   // +vx (droite) → bord droit
+      let pitch = tiltVY * TILT_VEL_GAIN; // +vy (descente) → bord bas (même convention que yaw)
+      const MAX_TILT = TILT_MAX_DEG * Math.PI / 180;
+      const mag = Math.hypot(yaw, pitch);
+      if (mag > MAX_TILT) { const k = MAX_TILT / mag; yaw *= k; pitch *= k; }
+      const cyaw = Math.cos(yaw), syaw = Math.sin(yaw);
+      const cpit = Math.cos(pitch), spit = Math.sin(pitch);
+
+      // Bbox du bloc (coords plateau) + les 4 coins du quadrilatère de destination.
+      // Le bloc est rendu à plat dans un tampon [bx0,by0,BW,BH], puis reprojeté sur
+      // ces coins → vraie perspective, autour du centre bbox décalé du drag.
+      let minC = size, maxC = -1, minR = size, maxR = -1;
+      dragSet.forEach(p => {
+        const cc = p % size, rr = (p / size) | 0;
+        if (cc < minC) minC = cc; if (cc > maxC) maxC = cc;
+        if (rr < minR) minR = rr; if (rr > maxR) maxR = rr;
+      });
+      const PAD = Math.max(2, Math.ceil(TILE_PX * 0.04));
+      const bx0 = minC * TILE_PX - PAD, by0 = minR * TILE_PX - PAD;
+      const BW = (maxC - minC + 1) * TILE_PX + 2 * PAD;
+      const BH = (maxR - minR + 1) * TILE_PX + 2 * PAD;
+      const HW = BW / 2, HH = BH / 2;
+      const pcx = bx0 + HW + dragOffX, pcy = by0 + HH + dragOffY;
+      const S = DRAG_SCALE;
+      const F = TILT_FOCAL * Math.max(HW, HH); // distance caméra ∝ taille (résolution-safe)
+      // Coin (sx,sy ∈ {-1,+1}, sy=+1 = bord BAS) : rotation rigide 3D (yaw puis pitch)
+      // → UNE division de perspective partagée (même facteur m sur x ET y → le coin qui
+      // recule rétrécit ET glisse vers le point de fuite, cohérent) → grossissement → pivot.
+      const corner = (sx, sy) => {
+        const lx0 = sx < 0 ? -HW : HW, ly0 = sy < 0 ? -HH : HH;
+        const x1 = lx0 * cyaw, zy = lx0 * syaw;   // yaw autour de Y
+        const y1 = ly0 * cpit, zp = ly0 * spit;   // pitch autour de X (même convention z que yaw → axes cohérents)
+        const z = zy + zp;
+        const denom = F - z, m = F / (denom > 1e-3 ? denom : 1e-3);
+        return { x: pcx + x1 * m * S, y: pcy + y1 * m * S };
+      };
+      dragQuad = {
+        TL: corner(-1, -1), TR: corner(1, -1), BL: corner(-1, 1), BR: corner(1, 1),
+        bx0, by0, BW: Math.ceil(BW), BH: Math.ceil(BH),
+      };
+    } else {
+      tiltActive = false;
+      dragFxKey = null; // fin de drag → le prochain reconstruit ses tampons pré-floutés
+    }
+
+    let shakePos = -1, shakeX = 0;
+    if (shakeAnim) {
+      const st = (now - shakeAnim.start) / SHAKE_MS;
+      if (st >= 1) shakeAnim = null;
+      else { shakePos = shakeAnim.pos; shakeX = Math.sin(st * Math.PI * 5) * 7 * (1 - st); }
+    }
+
+    if (winAnim && now - winAnim.start > WIN_ANIM_MS) {
+      winAnim = null;
+    }
+
+    // (GAP/TR/DEPTH/SLOT_INSET/SLOT_R/BLEED + couleurs = module-level, calculés dans
+    //  layoutCanvas, pour être aussi accessibles à drawLinkFx.)
+
+    // Fond du plateau : grout + un slot creusé par cellule → on voit les emplacements
+    // des tuiles (au lieu d'un fond blanc uni). Statique dans un niveau : rendu 1× dans
+    // bgCanvas (ensureBoardBg) puis blitté ici (voir couche de base plus bas).
+
+    // Highlight (sélection par tap OU survol pendant un drag ; le survol prime).
+    // Cible = un ensemble de cases + une clé. Un changement de clé fait partir
+    // l'ancien highlight en fondu de SORTIE (hlOut, repart de son échelle courante
+    // vers 1) → le scale-down est lerpé et un changement de cible fait un cross-fade.
+    //
+    // Survol pendant un drag : on met en avant UNIQUEMENT la tuile cible directement
+    // survolée (`dragOverPos`), pas tout son bloc → le joueur voit précisément la
+    // case qui va s'échanger. La sélection par tap, elle, met en avant le bloc entier
+    // (la pièce qu'on s'apprête à déplacer).
+    let wantCells = null, wantKey = null;
+    if (dragOverPos !== -1) { wantCells = [dragOverPos]; wantKey = "t" + dragOverPos; }
+    else if (selBlock !== -1) { wantCells = blocks[selBlock]; wantKey = "b" + selBlock; }
+    if (wantKey !== hlKey) {
+      if (hlKey !== null) {
+        // L'ancien highlight part en fondu depuis son échelle courante (pas de saut).
+        const fromScale = 1 + (HILITE_SCALE - 1) * easeOut(Math.min(1, (now - hlStart) / HILITE_MS));
+        hlOut = { cells: hlCells, key: hlKey, from: fromScale, start: now };
+        // Le tampon pré-flouté courant devient le SORTANT (mêmes cases → aucun recalcul) ;
+        // on récupère l'ancien sortant pour la nouvelle cible (reconstruit à la demande).
+        const freed = hlGlowOut;
+        hlGlowOut = hlGlowCur;
+        hlGlowCur = freed;
+        if (hlGlowCur) hlGlowCur.key = null;
+      }
+      hlKey = wantKey; hlCells = wantCells; hlStart = now;
+      // La cible revient alors qu'elle finissait de s'estomper → on annule sa sortie
+      // (sinon double glow sur les mêmes cases pendant ~HILITE_MS) et on récupère son
+      // tampon déjà construit (dans le sortant) pour éviter un recalcul.
+      if (hlOut && hlOut.key === hlKey) {
+        hlOut = null;
+        const t = hlGlowCur; hlGlowCur = hlGlowOut; hlGlowOut = t;
+      }
+    }
+    const hlCenter = hlCells ? blockCenterOf(hlCells) : null;
+    const hs = hlCells
+      ? 1 + (HILITE_SCALE - 1) * easeOut(Math.min(1, (now - hlStart) / HILITE_MS))
+      : 1;
+    const hlCellSet = hlCells ? new Set(hlCells) : null;
+    // Highlight sortant : rétrécit de `from` vers 1 et son glow s'estompe sur HILITE_MS.
+    let hlOutCenter = null, hlOutScale = 1, hlOutAlpha = 0, hlOutCellSet = null;
+    if (hlOut) {
+      const ot = (now - hlOut.start) / HILITE_MS;
+      if (ot >= 1) { hlOut = null; }
+      else {
+        hlOutCenter = blockCenterOf(hlOut.cells);
+        hlOutScale = 1 + (hlOut.from - 1) * (1 - easeOut(ot));
+        hlOutAlpha = 1 - ot;
+        hlOutCellSet = new Set(hlOut.cells);
+      }
+    }
+
+    // Une case « flottante » (draguée, en glissement de swap, en retour vers son
+    // slot, ou mise en avant par la sélection/survol) est dessinée par-dessus et
+    // NON rognée par le cadre.
+    const isFloating = (pos, piece) => {
+      if (dragSet && dragSet.has(pos)) return true;
+      if (swapAnim && swapAnim.prevCell[piece] !== pos) return true;
+      // Pièces qui reviennent (anim identité, offset qui se résorbe) : elles ne
+      // changent pas de slot mais doivent rester au-dessus et non rognées.
+      if (swapAnim && swapAnim.dragPieces && swapAnim.dragPieces.has(piece)) return true;
+      // Tuiles de l'indice (levée comprise, avant qu'elles ne bougent) : au-dessus, non rognées.
+      if (hintFx && (hintFx.movers.has(piece) || hintFx.others.has(piece))) return true;
+      // Cases qui « pompent » (bump de fusion) : dessinées au-dessus pour que le
+      // grossissement déborde proprement sur les voisines (pas de moitié rognée).
+      if (linkFx && linkFx.cells.has(pos)) return true;
+      // Cases mises en avant (highlight courant OU sortant) : au-dessus, non rognées.
+      if (hlCellSet && hlCellSet.has(pos)) return true;
+      if (hlOutCellSet && hlOutCellSet.has(pos)) return true;
+      return false;
+    };
+
+    // (cellLinks + blockUnionPath sont module-level — voir plus haut — pour être aussi
+    //  utilisables par drawLinkFx, hors renderBoard. Le highlight lerpé/cross-fade est
+    //  calculé plus haut, juste avant isFloating.)
+
+    // g = contexte cible (défaut boardCtx). flat = rendu « à plat » pour le tampon de
+    // perspective : on saute alors le décalage/grossissement du drag (appliqués à la
+    // reprojection du quad, pas ici) → la tuile est dessinée à sa case, échelle 1.
+    function drawTile(pos, g, flat, pass) {
+      g = g || boardCtx;
+      const piece = tiles[pos];
+      const inDrag = dragSet ? dragSet.has(pos) : false;
+      const px = piece % size, py = (piece / size) | 0;
+      const destC = pos % size, destR = (pos / size) | 0;
+      let x = destC * TILE_PX, y = destR * TILE_PX;
+
+      if (swapAnim) {
+        const prev = swapAnim.prevCell[piece];
+        const prevC = prev % size, prevR = (prev / size) | 0;
+        x = (prevC + (destC - prevC) * swapK) * TILE_PX;
+        y = (prevR + (destR - prevR) * swapK) * TILE_PX;
+        // Pièces draguées : on part de la position de relâchement (case + offset
+        // du drag) et l'offset se résorbe au fil de l'anim. dragOffX/Y sont en px
+        // CSS → × renderScale courant (robuste à un resize pendant l'anim).
+        if (swapAnim.dragPieces && swapAnim.dragPieces.has(piece)) {
+          x += swapAnim.dragOffX * renderScale * (1 - swapK);
+          y += swapAnim.dragOffY * renderScale * (1 - swapK);
+        }
+      }
+      if (inDrag && !flat) { x += dragOffX; y += dragOffY; }
+      if (pos === shakePos) x += shakeX;
+
+      // Grossissement + pivot selon l'état de la case (autour d'un centre de GROUPE
+      // pour que les blocs grossissent d'un seul tenant). Le bloc dragué (inDrag) est
+      // rendu à plat (flat) dans le tampon puis reprojeté en perspective → ici scale 1.
+      let scale = 1, pivotX = x + TILE_PX / 2, pivotY = y + TILE_PX / 2;
+      if (swapAnim && swapAnim.dragPieces && swapAnim.dragPieces.has(piece)) {
+        // Retour progressif à l'échelle 1 après le drop (continuité du grossissement),
+        // autour du centroïde de GROUPE (settleCx/Cy) → pas de seams transitoires.
+        scale = 1 + (DRAG_SCALE - 1) * (1 - swapK);
+        if (hasSettle) { pivotX = settleCx; pivotY = settleCy; }
+      } else if (hintS !== 1 && (hintFx.movers.has(piece) || hintFx.others.has(piece))) {
+        // Indice : grossissement autour du centroïde courant de son ensemble.
+        scale = hintS;
+        if (hintFx.movers.has(piece)) { pivotX = hMx; pivotY = hMy; }
+        else { pivotX = hOx; pivotY = hOy; }
+      } else if (hlCellSet && hlCellSet.has(pos) && hlCenter) {
+        // Highlight courant : grossissement LERPÉ (hs) autour du centre du groupe.
+        scale = hs; pivotX = hlCenter.cx; pivotY = hlCenter.cy;
+      } else if (hlOutCellSet && hlOutCellSet.has(pos) && hlOutCenter) {
+        // Highlight SORTANT : rétrécit vers 1 (scale-down lerpé), même pivot de groupe.
+        scale = hlOutScale; pivotX = hlOutCenter.cx; pivotY = hlOutCenter.cy;
+      } else if (linkFx && !winAnim && linkFx.cells.has(pos)) {
+        const bt = (now - linkFx.start) / LINK_BUMP_MS;
+        // Bump du GROUPE autour de son centre commun (pas chaque case autour du
+        // sien) → le bloc fusionné « pompe » d'un seul tenant, sans coutures.
+        // Pas de bump à la victoire (garde !winAnim) : l'anim de complétion prend le relais.
+        if (bt > 0 && bt < 1) { scale = linkBump(bt); pivotX = linkFx.cx; pivotY = linkFx.cy; }
+      }
+      // (La victoire n'utilise plus de vague de pop par case → glint global, voir drawWinOverlay.)
+
+      const scaling = scale !== 1;
+      if (scaling) {
+        g.save();
+        g.translate(pivotX, pivotY);
+        g.scale(scale, scale);
+        g.translate(-pivotX, -pivotY);
+      }
+
+      // Liens + diagonales (fusion) : déterminent inset/arrondi/épaisseur/entailles.
+      // Une case mise en avant est rendue ISOLÉE (liens restreints à l'ensemble du
+      // highlight) → une tuile cible unique s'arrondit toute seule même si elle
+      // appartient à un bloc. Pour un bloc entier (sélection), identique à cellLinks.
+      const k = (hlCellSet && hlCellSet.has(pos)) ? linksFromSet(pos, hlCellSet)
+              : (hlOutCellSet && hlOutCellSet.has(pos)) ? linksFromSet(pos, hlOutCellSet)
+              : cellLinks(pos, now);
+      // Indice (swap) : une tuile ne se soude qu'aux tuiles de SON ensemble (formation qui
+      // s'attache / délogées / immobiles) tant que le coup n'est pas arrivé — l'agencement
+      // est validé au départ du glissement, la tuile paraîtrait sinon déjà collée au groupe.
+      if (hintFx && mode !== "rotate") hintFilterLinks(k, pos);
+      // Liens copiés en PRIMITIVES : le retour de cellLinks/linksFromSet est le scratch
+      // partagé réutilisé → on le vide ici dans des locaux, plus aucune dépendance à sa
+      // durée de vie, zéro allocation par tuile. Les helpers de tracé sont module-level.
+      const linkedTop = k.lT, linkedBottom = k.lB, linkedLeft = k.lL, linkedRight = k.lR;
+      const dTL = k.dTL, dTR = k.dTR, dBR = k.dBR, dBL = k.dBL;
+      const iL = linkedLeft ? 0 : GAP, iR = linkedRight ? 0 : GAP;
+      const iT = linkedTop ? 0 : GAP,  iB = linkedBottom ? 0 : GAP;
+      const tx = x + iL, ty = y + iT, tw = TILE_PX - iL - iR, th = TILE_PX - iT - iB;
+      // BLEED sur les bords liés (face étendue source+dest → recouvrement continu, pas de
+      // couture d'anti-aliasing entre tuiles fusionnées). Passé à drawTileFace.
+      const exL = linkedLeft ? BLEED : 0, exR = linkedRight ? BLEED : 0;
+      const exT = linkedTop ? BLEED : 0, exB = linkedBottom ? BLEED : 0;
+
+      // CLIP D'UNION du calque de base (voir renderBoard). Au lieu d'un clip arrondi PAR
+      // TUILE — chaque clip non-rectangulaire = un masque stencil GPU, cher sur mobile,
+      // ×N tuiles/frame = LA vraie cause de la régression 57→46 (le CPU n'y est pour rien,
+      // 0,24 ms mesuré ; ni le fill-rate, MAX_RENDER_SCALE sans effet) — on accumule la
+      // forme de toutes les tuiles de base en UN chemin (pass "collect"), on clippe UNE
+      // fois, puis on peint faces+épaisseur SANS clip par tuile (pass "draw"). Rendu
+      // identique : chaque face ∩ union = sa propre forme. Les tuiles de base sont toujours
+      // à l'échelle 1 (les grossies/animées sont "flottantes" → couche 3, clip classique).
+      if (pass === "collect") {
+        tilePath(g, x, y, TILE_PX, linkedTop, linkedRight, linkedBottom, linkedLeft, dTL, dTR, dBR, dBL, GAP, TR, BLEED);
+        return;
+      }
+      if (pass === "draw") {
+        drawTileFace(g, px, py, x, y, exL, exR, exT, exB);
+        paintTileDepth(g, linkedTop, linkedBottom, tx, ty, tw, th);
+        return;
+      }
+
+      if (mode === "rotate") {
+        // --- MODE BONUS (rotation) : même look que swap (tuile arrondie + épaisseur),
+        // mais c'est l'IMAGE qui pivote DANS le cadre arrondi FIXE. Le clip tilePath
+        // empêche l'image pivotée de déborder sur les voisines (remplace l'ancien clip
+        // carré à la case). Fusion des cases alignées comme en swap (liens via
+        // rotAligned). Pas d'ombre portée (pas de drag), pas de sélection en rotation.
+        g.save();
+        beginTilePath(g, x, y, linkedTop, linkedRight, linkedBottom, linkedLeft, dTL, dTR, dBR, dBL);
+        g.clip();
+        // Dos plein de la tuile : à ~45° l'image pleine ne couvre pas les coins,
+        // ce fond évite un trou (la tuile paraît un objet solide qui pivote).
+        g.fillStyle = TILE_BACK;
+        g.fillRect(x, y, TILE_PX, TILE_PX);
+        const rotAnimating = rotStart[pos] !== null && (now - rotStart[pos]) < ROT_MS;
+        if (rotAnimating || rot[pos] % 4 !== 0) {
+          const rcx = x + TILE_PX / 2, rcy = y + TILE_PX / 2;
+          g.save();
+          g.translate(rcx, rcy);
+          g.rotate(currentAngle(pos, now));
+          g.drawImage(frameCanvas, px * TILE_PX, py * TILE_PX, TILE_PX, TILE_PX,
+            -TILE_PX / 2, -TILE_PX / 2, TILE_PX, TILE_PX);
+          g.restore();
+        } else {
+          drawTileFace(g, px, py, x, y, exL, exR, exT, exB);
+        }
+        paintTileDepth(g, linkedTop, linkedBottom, tx, ty, tw, th);
+        g.restore();
+      } else {
+        // --- MODE SWAP : tuile arrondie, insérée dans son slot, avec épaisseur. ---
+        // (L'ombre portée et le contour vert/glow sont dessinés au niveau du GROUPE
+        // dans drawGroupUnderlays, sous les faces → une seule forme, pas de bandes
+        // ni de couture/jonction cassée.)
+        // Tuile PLEINEMENT INTÉRIEURE d'un bloc (4 liens + 4 diagonales), non grossie :
+        // sa tilePath est un simple rectangle étendu de BLEED = EXACTEMENT le rect dessiné
+        // par drawTileFace, et paintTileDepth ne peint rien (aucun bord exposé) → le clip
+        // est un no-op. On saute save/beginPath/clip/paintTileDepth/restore (coût call-bound
+        // par frame, sur les gros blocs fusionnés). Ces tuiles sont toujours à ≥1 case du
+        // bord (lien haut ⇒ r>0, etc.) → le clip du cadre ne les touche pas non plus.
+        if (!scaling && linkedTop && linkedBottom && linkedLeft && linkedRight
+            && dTL && dTR && dBR && dBL) {
+          drawTileFace(g, px, py, x, y, exL, exR, exT, exB);
+        } else {
+          g.save();
+          beginTilePath(g, x, y, linkedTop, linkedRight, linkedBottom, linkedLeft, dTL, dTR, dBR, dBL);
+          g.clip();
+          drawTileFace(g, px, py, x, y, exL, exR, exT, exB);
+          paintTileDepth(g, linkedTop, linkedBottom, tx, ty, tw, th);
+          g.restore();
+        }
+      }
+
+      if (scaling) g.restore();
+    }
+
+    // Ombre du bloc dragué + contour/glow des blocs mis en avant, dessinés UNE FOIS
+    // par bloc SOUS les faces. PERF : ombre, glow du bloc tenu et glow de highlight sont
+    // désormais des tampons PRÉ-FLOUTÉS (voir buildDragFx/buildHlGlow) simplement blittés
+    // ici — plus aucun flou gaussien (shadowBlur / ctx.filter) par frame.
+    function drawGroupUnderlays() {
+      if (CTX_FILTER_OK && dragSet && dragQuad && tiltCanvas) {
+        const q = dragQuad;
+        const lift = Math.min(1, Math.hypot(dragOffX, dragOffY) / (TILE_PX * 1.4));
+        const cx = (q.TL.x + q.TR.x + q.BL.x + q.BR.x) / 4;
+        const cy = (q.TL.y + q.TR.y + q.BL.y + q.BR.y) / 4;
+        // Tampons sombre (ombre) + blanc chaud (glow) reconstruits 1× par drag depuis la
+        // silhouette du bloc (constante pendant le geste). Clé = bloc tenu + dims tampon.
+        const key = dragState.sourcePos + ":" + tiltCanvas.width + "x" + tiltCanvas.height;
+        if (dragFxKey !== key) { buildDragFx(); dragFxKey = key; }
+        const M = dragFxM;
+        const bw = (dragFxBW + 2 * M) * DRAG_SCALE;
+        const bh = (dragFxBH + 2 * M) * DRAG_SCALE;
+        const bx = cx - bw / 2, by = cy - bh / 2;
+        // Ombre : blit du tampon sombre pré-flouté ; alpha + offset vertical ∝ lift
+        // (le rayon de flou est fixe, cf. SHADOW_FX_BLUR — différence quasi imperceptible).
+        if (!window.__noShadow) {
+        boardCtx.save();
+        boardCtx.globalAlpha = 0.24 + 0.26 * lift;
+        boardCtx.drawImage(shadowFxCanvas, bx, by + TILE_PX * (0.05 + 0.16 * lift), bw, bh);
+        boardCtx.restore();
+        }
+        // Glow d'outline additif : blit du tampon blanc chaud pré-flouté en `lighter`.
+        if (!window.__noGlow) {
+        boardCtx.save();
+        boardCtx.globalCompositeOperation = "lighter";
+        boardCtx.globalAlpha = 0.85 + 0.15 * lift;
+        boardCtx.drawImage(glowCanvas, bx, by, bw, bh);
+        boardCtx.restore();
+        }
+      }
+      if (mode !== "rotate") {
+        // Contour lumineux du highlight : tampon pré-flouté (2 strokes + shadowBlur rendus
+        // 1× dans buildHlGlow) blitté SOUS les faces en `lighter`, mis à l'échelle (lerp)
+        // et en alpha. Le SORTANT (fondu) d'abord, le courant par-dessus → cross-fade
+        // et scale-down continus. Reconstruit uniquement quand la cible change (buf.key).
+        const ensureHl = (which, cells, key) => {
+          let buf = which === "cur" ? hlGlowCur : hlGlowOut;
+          if (!buf) { buf = makeGlowBuf(); if (which === "cur") hlGlowCur = buf; else hlGlowOut = buf; }
+          if (buf.key !== key) { buildHlGlow(buf, cells, now); buf.key = key; }
+          return buf;
+        };
+        const blitHl = (buf, center, scale, alpha) => {
+          if (!buf || !center || alpha <= 0) return;
+          boardCtx.save();
+          boardCtx.globalCompositeOperation = "lighter";
+          boardCtx.globalAlpha = alpha;
+          boardCtx.translate(center.cx, center.cy);
+          boardCtx.scale(scale, scale);
+          boardCtx.translate(-center.cx, -center.cy);
+          // Le tampon a été rendu avec la case (minC,minR) à (M,M) → coin en (bx-M,by-M).
+          boardCtx.drawImage(buf.canvas, buf.bx - buf.M, buf.by - buf.M);
+          boardCtx.restore();
+        };
+        if (hlOut && hlOutCellSet && hlOutCenter && hlOutAlpha > 0) {
+          blitHl(ensureHl("out", hlOut.cells, hlOut.key), hlOutCenter, hlOutScale, hlOutAlpha);
+        }
+        if (hlCells && hlCenter) {
+          blitHl(ensureHl("cur", hlCells, hlKey), hlCenter, hs, 1);
+        }
+      }
+    }
+
+    // Rayon du cadre concentrique avec les slots/tuiles des coins (TR + GAP).
+    const boardRadius = TR + GAP;
+
+    // 1) Couche de base (cases non flottantes) + fond, rognés au cadre arrondi.
+    boardCtx.save();
+    roundRectPath(boardCtx, 0, 0, frameSide, frameSide, boardRadius);
+    boardCtx.clip();
+    ensureBoardBg();
+    boardCtx.drawImage(bgCanvas, 0, 0);
+    if (mode === "rotate") {
+      // Rotation (bonus, petites grilles) : clip par tuile conservé — l'image pivote et a
+      // besoin de son propre clip ; peu de tuiles, gain de l'union marginal.
+      for (let pos = 0; pos < tiles.length; pos++) {
+        if (!isFloating(pos, tiles[pos])) drawTile(pos);
+      }
+    } else {
+      // CLIP D'UNION : 1 seul clip pour tout le calque de base au lieu de N clips arrondis
+      // par tuile (poste GPU dominant sur mobile). Passe 1 = accumuler les formes ; passe 2
+      // = peindre faces+épaisseur sous ce clip unique. Voir drawTile (pass collect/draw).
+      boardCtx.save();
+      boardCtx.beginPath();
+      let anyBase = false;
+      for (let pos = 0; pos < tiles.length; pos++) {
+        if (!isFloating(pos, tiles[pos])) { drawTile(pos, boardCtx, false, "collect"); anyBase = true; }
+      }
+      if (anyBase) {
+        boardCtx.clip();
+        for (let pos = 0; pos < tiles.length; pos++) {
+          if (!isFloating(pos, tiles[pos])) drawTile(pos, boardCtx, false, "draw");
+        }
+      }
+      boardCtx.restore();
+    }
+    boardCtx.restore();
+
+    // Bloc dragué — rendu À PLAT dans le tampon hors écran (coords plateau → tampon
+    // via translate) AVANT l'ombre, pour que celle-ci utilise l'alpha réel du bloc
+    // (coins arrondis / gaps transparents → pas de rectangle noir). La reprojection
+    // en perspective sur le plateau se fait plus bas (couche des flottantes).
+    if (dragSet && dragQuad) {
+      if (!tiltCanvas) {
+        tiltCanvas = document.createElement("canvas");
+        tiltCtx = tiltCanvas.getContext("2d");
+      }
+      const BW = dragQuad.BW, BH = dragQuad.BH;
+      if (tiltCanvas.width !== BW) tiltCanvas.width = BW;
+      if (tiltCanvas.height !== BH) tiltCanvas.height = BH;
+      tiltCtx.setTransform(1, 0, 0, 1, 0, 0);
+      tiltCtx.clearRect(0, 0, BW, BH);
+      tiltCtx.setTransform(1, 0, 0, 1, -dragQuad.bx0, -dragQuad.by0);
+      for (let pos = 0; pos < tiles.length; pos++) {
+        if (dragSet.has(pos)) drawTile(pos, tiltCtx, true);
+      }
+      tiltCtx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    // 2) Underlays de GROUPE (ombre du bloc dragué, bordure verte + glow des blocs
+    //    mis en avant) — dessinés SOUS les faces flottantes, non rognés.
+    drawGroupUnderlays();
+
+    // 3) Cases flottantes NON rognées (peuvent déborder du cadre) : d'abord les
+    //    mises en avant / glissements, puis la pièce draguée tout au-dessus.
+    // Voile sombre de l'indice : sur TOUT l'écran (canvas plein écran, au-dessus du décor
+    // DOM), sous les tuiles de l'indice dessinées juste après → elles seules restent
+    // éclairées. Fondu d'entrée/sortie linéaire sur HINT_DIM_FADE_MS.
+    const dimStep = hintDimT ? Math.min(100, now - hintDimT) / HINT_DIM_FADE_MS : 0;
+    hintDimT = now;
+    hintDim = hintDimOn ? Math.min(1, hintDim + dimStep) : Math.max(0, hintDim - dimStep);
+    if (hintDim > 0) {
+      boardCtx.save();
+      boardCtx.setTransform(1, 0, 0, 1, 0, 0);
+      boardCtx.fillStyle = "rgba(12, 18, 28, " + (HINT_DIM_ALPHA * hintDim).toFixed(3) + ")";
+      boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+      boardCtx.restore();
+    }
+
+    // La formation de l'indice (movers) passe PAR-DESSUS les tuiles qu'elle déloge.
+    const hintTop = hintFx ? hintFx.movers : null;
+    for (let pos = 0; pos < tiles.length; pos++) {
+      const piece = tiles[pos];
+      if (isFloating(pos, piece) && !(dragSet && dragSet.has(pos)) && !(hintTop && hintTop.has(piece))) drawTile(pos);
+    }
+    if (hintTop) for (let pos = 0; pos < tiles.length; pos++) if (hintTop.has(tiles[pos])) drawTile(pos);
+    if (dragSet && dragQuad && !window.__noFaces) {
+      // Reprojection en PERSPECTIVE (bandes affines → trapèze) du tampon sur le
+      // plateau. Grossissement + rotation sont déjà encodés dans les 4 coins.
+      drawQuadImage(boardCtx, tiltCanvas, 0, 0, dragQuad.BW, dragQuad.BH,
+        dragQuad.TL, dragQuad.TR, dragQuad.BL, dragQuad.BR, TILT_STRIPS);
+    }
+
+    // 3) Effets (fusion, victoire) rognés au cadre.
+    if (linkFx || winAnim) {
+      boardCtx.save();
+      roundRectPath(boardCtx, 0, 0, frameSide, frameSide, boardRadius);
+      boardCtx.clip();
+      if (linkFx) drawLinkFx(now);
+      if (winAnim) drawWinOverlay(now - winAnim.start);
+      boardCtx.restore();
+    }
+
+    // 4) Étoiles de victoire, NON rognées : elles jaillissent hors du plateau et retombent
+    //    sur tout l'écran (canvas plein écran). Bas de l'écran en coordonnées plateau.
+    if (winStars.length) {
+      if (now > winStarsEnd) winStars = [];
+      else drawWinStars(now, boardCanvas.height - offY);
+    }
+
+    boardCtx.restore(); // annule translate(offX, offY)
+  }
+
+  // Étoiles de victoire : trajectoire balistique pure (x0 + vx·t, y0 + vy·t + ½·g·t²),
+  // rotation, « pop » d'apparition (ressort) et fondu en fin de vie. Aucun état modifié par
+  // frame ni allocation : tout se déduit du temps. Contour chaud (lisible même sur le fond
+  // jaune du world 5) + petit reflet blanc → étoile « bonbon » bombée, dans le style du jeu.
+  function drawWinStars(now, bottom) {
+    const g = boardCtx;
+    const G = WIN_STAR_GRAVITY * frameSide;
+    g.lineJoin = "round";
+    for (let i = 0; i < winStars.length; i++) {
+      const s = winStars[i];
+      const ms = now - s.t0;
+      if (ms <= 0 || ms >= s.life) continue;
+      const t = ms / 1000;
+      const x = s.x + s.vx * t;
+      const y = s.y + s.vy * t + 0.5 * G * t * t;
+      if (y - s.r > bottom) continue; // tombée sous l'écran
+      const r = s.r * (ms < 180 ? easeOutBack(ms / 180) : 1);
+      const fadeFrom = s.life * 0.7;
+      g.globalAlpha = ms > fadeFrom ? 1 - (ms - fadeFrom) / (s.life - fadeFrom) : 1;
+      const th = s.rot + s.vr * t, c = Math.cos(th), sn = Math.sin(th);
+      g.beginPath();
+      for (let k = 0; k < 20; k += 2) {
+        const ux = STAR_UNIT[k], uy = STAR_UNIT[k + 1];
+        const px = x + (ux * c - uy * sn) * r, py = y + (ux * sn + uy * c) * r;
+        if (k === 0) g.moveTo(px, py); else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.lineWidth = r * 0.22;
+      g.strokeStyle = "rgba(201, 104, 0, 0.75)";
+      g.stroke();
+      g.fillStyle = s.color;
+      g.fill();
+      g.beginPath();
+      g.arc(x - r * 0.2, y - r * 0.22, r * 0.17, 0, Math.PI * 2);
+      g.fillStyle = "rgba(255, 255, 255, 0.85)";
+      g.fill();
+    }
+    g.globalAlpha = 1;
+  }
+
+  // Calques de l'anim de complétion, dessinés par-dessus les cases sur le même
+  // canvas (Poki ne capture qu'un seul canvas pour ses replays playtest).
+  function drawWinOverlay(elapsed) {
+    // Flash blanc bref à l'instant de la victoire.
+    if (elapsed < 200) {
+      boardCtx.fillStyle = "rgba(255,255,255," + (0.45 * (1 - elapsed / 200)) + ")";
+      boardCtx.fillRect(0, 0, frameSide, frameSide);
+    }
+
+    // GLINT global : une bande lumineuse diagonale vive et nette balaie TOUT le
+    // plateau (comme le reflet du bouton HINT), en deux passages rapprochés. Remplace
+    // l'ancienne vague de pop par case (jugée moche).
+    for (let pass = 0; pass < 2; pass++) {
+      const sweep = (elapsed - pass * 230) / 620;
+      if (sweep < 0 || sweep > 1.12) continue;
+      const w = 0.11;
+      const c0 = Math.max(0, Math.min(1, sweep - w));
+      const c1 = Math.max(0, Math.min(1, sweep));
+      const c2 = Math.max(0, Math.min(1, sweep + w));
+      const grad = boardCtx.createLinearGradient(0, 0, frameSide, frameSide);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(c0, "rgba(255,255,255,0)");
+      grad.addColorStop(c1, "rgba(255,253,238," + (pass === 0 ? 0.72 : 0.48) + ")");
+      grad.addColorStop(c2, "rgba(255,255,255,0)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      boardCtx.fillStyle = grad;
+      boardCtx.fillRect(0, 0, frameSide, frameSide);
+    }
+
+    // Étincelles scintillantes.
+    for (let i = 0; i < winSparkles.length; i++) {
+      const s = winSparkles[i];
+      const st = (elapsed - s.delay) / s.dur;
+      if (st <= 0 || st >= 1) continue;
+      const a = Math.sin(st * Math.PI);
+      drawSparkle(s.x, s.y, s.r * (0.35 + 0.65 * a), s.rot, a);
+    }
+  }
+
+  // Étoile à 4 branches avec halo doux.
+  function drawSparkle(cx, cy, r, rot, alpha) {
+    boardCtx.save();
+    boardCtx.translate(cx, cy);
+    boardCtx.rotate(rot);
+    boardCtx.globalAlpha = alpha;
+    boardCtx.shadowColor = "rgba(255,240,180,0.9)";
+    boardCtx.shadowBlur = r * 0.6;
+    boardCtx.fillStyle = "#fff7d6";
+    boardCtx.beginPath();
+    const inner = r * 0.16;
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2;
+      boardCtx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      const a2 = a + Math.PI / 4;
+      boardCtx.lineTo(Math.cos(a2) * inner, Math.sin(a2) * inner);
+    }
+    boardCtx.closePath();
+    boardCtx.fill();
+    boardCtx.restore();
+  }
+
+  // Effet de fusion : contour doré diffus qui pulse et s'estompe autour du
+  // groupe + mini étoiles qui jaillissent. Dessiné sur le canvas du plateau
+  // (un seul canvas, contrainte Poki) — réutilise drawSparkle.
+  function drawLinkFx(now) {
+    const t = (now - linkFx.start) / linkFx.dur;
+    if (t >= 1) { linkFx = null; return; }
+    // Bump-only (tuiles déjà liées au départ) : le pop est dessiné par
+    // renderBoard ; pas de lueur dorée ni d'étoiles (feedback réservé au joueur).
+    if (linkFx.bumpOnly) return;
+    const fade = 1 - t;
+
+    // Contour doré diffus qui suit l'OUTLINE arrondi/entaillé du groupe (via l'union
+    // tilePath, comme le contour vert) — plus de rectangle à angles carrés. Le
+    // shadowBlur déborde pour le côté diffus (lueur).
+    boardCtx.save();
+    // Le contour DOIT suivre le bump des tuiles (dessinées scalées autour du centre
+    // du groupe pendant LINK_BUMP_MS dans drawTile) : on lui applique le même
+    // grossissement autour du même pivot, sinon l'outline reste figé pendant que les
+    // cases pompent.
+    const bt = (now - linkFx.start) / LINK_BUMP_MS;
+    if (bt > 0 && bt < 1) {
+      const s = linkBump(bt);
+      boardCtx.translate(linkFx.cx, linkFx.cy);
+      boardCtx.scale(s, s);
+      boardCtx.translate(-linkFx.cx, -linkFx.cy);
+    }
+    boardCtx.globalAlpha = fade;
+    boardCtx.strokeStyle = "rgba(255,208,90,0.95)";
+    boardCtx.lineWidth = SEP_W * 2.4;
+    boardCtx.lineJoin = "round";
+    boardCtx.lineCap = "round";
+    boardCtx.shadowColor = "rgba(255,190,60,0.95)";
+    boardCtx.shadowBlur = TILE_PX * (0.16 + 0.12 * Math.sin(t * Math.PI));
+    blockUnionPath(boardCtx, [...linkFx.cells], 0, 0, now);
+    boardCtx.stroke();
+    boardCtx.restore();
+
+    // Mini étoiles qui jaillissent du groupe (avec légère gravité).
+    for (const p of linkFx.particles) {
+      const e = now - linkFx.start - p.delay;
+      if (e <= 0) continue;
+      const pt = e / (linkFx.dur - p.delay);
+      if (pt >= 1) continue;
+      const s = e / 1000;
+      const x = p.x + p.vx * s;
+      const y = p.y + p.vy * s + 0.5 * (TILE_PX * 0.5) * s * s;
+      const a = Math.sin(pt * Math.PI);
+      drawSparkle(x, y, p.r * (0.5 + 0.5 * a), p.rot + p.vr * s, a);
+    }
+  }
+
+  // Précharge en arrière-plan une fenêtre glissante : les PREFETCH_AHEAD niveaux
+  // qui suivent le courant, séquentiellement pour ne pas saturer la bande passante.
+  // La fenêtre avance à chaque loadLevel. Déjà en cache → ignoré (compte quand même
+  // dans la fenêtre). Échecs silencieux (test local / hors-ligne).
+  const blobUrls = {};
+  const PREFETCH_AHEAD = 3;
+  function prefetchLevels() {
+    let done = 0;
+    (function next(i) {
+      if (i >= LEVELS.length || done >= PREFETCH_AHEAD) return;
+      const src = LEVELS[i].src;
+      if (blobUrls[src]) { done++; next(i + 1); return; }
+      fetch(VIDEO_DIR + src)
+        .then(r => r.ok ? r.blob() : Promise.reject())
+        .then(blob => { blobUrls[src] = URL.createObjectURL(blob); })
+        .catch(() => {})
+        .finally(() => { done++; next(i + 1); });
+    })(levelIdx + 1);
+  }
+
+  // Programmé après chaque changement de niveau (débounced) : laisse la vidéo
+  // courante démarrer avant de précharger la fenêtre suivante.
+  let prefetchTimer = null;
+  function schedulePrefetch() {
+    if (prefetchTimer) clearTimeout(prefetchTimer);
+    prefetchTimer = setTimeout(prefetchLevels, 1200);
+  }
+
+  const LEVEL_INTRO_MS = 2400;
+  // Bandeau d'intro plein écran à l'arrivée sur un niveau Bonus ou Hard.
+  // DOM (pas un canvas) : préserve le mono-canvas requis par Poki ; n'apparaît
+  // donc pas dans le replay playtest, comme le reste du décor DOM.
+  // Icônes de type partagées entre l'intro, les puces de progression et le menu.
+  // Bonus = mode ROTATION → flèches circulaires (même pack/style que la tête de mort).
+  const ICON_HARD = "ui/Skull.png";
+  const ICON_BONUS = "ui/Reload - Purple - Cat.png";
+
+  function showLevelIntro(type) {
+    const cfg = type === "hard"
+      ? { icon: ICON_HARD, title: t("hardLevel") }
+      : { icon: ICON_BONUS, title: t("bonusLevel") };
+    levelIntroIcon.src = cfg.icon;
+    levelIntroTitle.textContent = cfg.title;
+    fitText(levelIntroTitle, window.innerWidth * 0.92);
+    levelIntro.classList.remove("hard", "bonus", "show");
+    void levelIntro.offsetWidth; // reflow : rejoue l'animation à chaque niveau
+    levelIntro.classList.add(type, "show");
+    if (levelIntroTimer) clearTimeout(levelIntroTimer);
+    levelIntroTimer = setTimeout(() => levelIntro.classList.remove("show"), LEVEL_INTRO_MS);
+  }
+
+  const NEW_WORLD_MS = 2600;
+  // Écran interstitiel à l'entrée d'un nouveau world : icône + « NEW WORLD »,
+  // aux couleurs du world (le fond hérite des variables --bg1/--bg2 du body).
+  function showNewWorld(world) {
+    newWorldIcon.src = WORLD_ICON[world] || "";
+    newWorldText.textContent = t("newWorld");
+    fitText(newWorldText, window.innerWidth * 0.92);
+    newWorld.classList.remove("show");
+    void newWorld.offsetWidth; // reflow : rejoue l'animation
+    newWorld.classList.add("show");
+    if (newWorldTimer) clearTimeout(newWorldTimer);
+    newWorldTimer = setTimeout(() => newWorld.classList.remove("show"), NEW_WORLD_MS);
+  }
+
+  // Construit la progression du world courant : une bille par niveau du même
+  // world. Couleur de bille selon l'état (gris = à venir, vert = done, orange =
+  // courant), numéro du niveau (position dans le world, 1-indexé) au centre,
+  // icône de type en badge (crâne = hard, étoile = bonus).
+  function buildWorldProgress() {
+    const w = LEVELS[levelIdx].world;
+    worldProgress.innerHTML = "";
+    let posInWorld = 0;
+    for (let i = 0; i < LEVELS.length; i++) {
+      if (LEVELS[i].world !== w) continue;
+      // Rail AVANT la puce qu'il rejoint : plein (vert) si elle est finie ou courante.
+      if (posInWorld > 0) {
+        const rail = document.createElement("span");
+        rail.className = "pip-rail" + (doneSet.has(i) || i === levelIdx ? " filled" : "");
+        worldProgress.appendChild(rail);
+      }
+      posInWorld++;
+      const pip = document.createElement("span");
+      pip.className = "pip";
+      if (i === levelIdx) pip.classList.add("current");
+      else if (doneSet.has(i)) pip.classList.add("done");
+      const num = document.createElement("span");
+      num.className = "pip-num";
+      num.textContent = posInWorld;
+      pip.appendChild(num);
+      const iconSrc = LEVELS[i].hard ? ICON_HARD : (LEVELS[i].bonus ? ICON_BONUS : null);
+      if (iconSrc) {
+        const icon = document.createElement("img");
+        icon.className = "pip-icon";
+        icon.src = iconSrc;
+        icon.alt = "";
+        pip.appendChild(icon);
+      }
+      worldProgress.appendChild(pip);
+    }
+  }
+
+  // En-tête sur une ou deux lignes. PORTRAIT (même media query que le CSS : mobile en
+  // main) → toujours deux lignes, puces plus grosses (comme le portage Unity) : la
+  // hauteur y est libre et la taille des puces ne change pas d'un world à l'autre.
+  // PAYSAGE → les puces restent centrées sur UNE ligne tant qu'elles ne touchent ni
+  // « WORLD n » (à gauche) ni les boutons (à droite) ; sinon (world à 7 niveaux, écran
+  // court) elles passent SOUS le titre. Deux lignes = #title-row.two-line + :root.hdr-2l,
+  // qui réserve cette 2e ligne dans --board-size (le plateau rétrécit si la hauteur est
+  // la contrainte). Toujours mesuré en mode une ligne (pas d'hystérésis) ;
+  // appelé à chaque changement de world (loadLevel), au resize et au chargement de la
+  // police, AVANT layoutCanvas (la taille du plateau en dépend).
+  const titleRow = document.getElementById("title-row");
+  const worldLabelEl = document.getElementById("world-label");
+  const titleActions = document.getElementById("title-actions");
+  const HEADER_GAP = 6; // px d'air minimal entre les puces et leurs voisins
+  const PORTRAIT_MQ = window.matchMedia ? window.matchMedia("(max-aspect-ratio: 1/1)") : null;
+  function fitHeader() {
+    const root = document.documentElement;
+    titleRow.classList.remove("two-line");
+    root.classList.remove("hdr-2l");
+    let twoLine = !!(PORTRAIT_MQ && PORTRAIT_MQ.matches);
+    if (!twoLine) {
+      const p = worldProgress.getBoundingClientRect();
+      twoLine = p.left < worldLabelEl.getBoundingClientRect().right + HEADER_GAP ||
+                p.right > titleActions.getBoundingClientRect().left - HEADER_GAP;
+    }
+    titleRow.classList.toggle("two-line", twoLine);
+    root.classList.toggle("hdr-2l", twoLine);
+  }
+
+  // ===== Progression : niveaux finis / débloqués par pub =====
+  // doneSet : niveaux terminés (gagnés, indices compris). unlockedSet : niveaux
+  // débloqués par pub récompensée depuis le menu mais pas encore finis — jouables sans
+  // pub ni interstitielle, lancés QUAND LE JOUEUR LE DÉCIDE (le déblocage ne lance pas le
+  // niveau). Le prochain niveau de la progression (1er non fini, nextUndone) est
+  // toujours jouable. Sert au menu (états des cartes, compteurs) et aux puces de
+  // l'en-tête. Persistés ensemble (clé crittersPuzzle.progress, JSON), sauf en DEBUG.
+  // Save plus ancienne (position seule) : tous les niveaux avant celui repris = finis.
+  const PROGRESS_KEY = "crittersPuzzle.progress";
+  const doneSet = new Set();
+  const unlockedSet = new Set();
+  function saveSets() {
+    if (DEBUG) return;
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify({ done: Array.from(doneSet), unlocked: Array.from(unlockedSet) }));
+    } catch (e) {}
+  }
+  function loadSets(startIdx) {
+    let found = false;
+    if (!DEBUG) {
+      try {
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        if (raw) {
+          const o = JSON.parse(raw) || {};
+          const valid = n => Number.isInteger(n) && n >= 0 && n < LEVELS.length;
+          (o.done || []).forEach(n => { if (valid(n)) doneSet.add(n); });
+          (o.unlocked || []).forEach(n => { if (valid(n) && !doneSet.has(n)) unlockedSet.add(n); });
+          found = true;
+        }
+      } catch (e) {}
+    }
+    if (!found) {
+      for (let i = 0; i < startIdx; i++) doneSet.add(i);
+      saveSets();
+    }
+  }
+  function markDone(i) { doneSet.add(i); unlockedSet.delete(i); saveSets(); }
+  function markUnlocked(i) { if (doneSet.has(i)) return; unlockedSet.add(i); saveSets(); }
+  function nextUndone() {
+    for (let i = 0; i < LEVELS.length; i++) if (!doneSet.has(i)) return i;
+    return LEVELS.length;
+  }
+
+  // ===== Sauvegarde de progression =====
+  // (Position de REPRISE : le niveau relancé au démarrage. La progression réelle —
+  // niveaux finis / débloqués — vit dans doneSet / unlockedSet ci-dessus.)
+  // On mémorise le niveau courant dans localStorage pour que le joueur reprenne
+  // là où il s'était arrêté (qu'il ait fini le niveau ou abandonné en cours).
+  // Désactivé en DEBUG : les cheats N/P ne doivent pas écraser la vraie save et
+  // le test démarre toujours au niveau 1.
+  const SAVE_KEY = "crittersPuzzle.level";
+  function saveProgress(idx) {
+    if (DEBUG) return;
+    try { localStorage.setItem(SAVE_KEY, String(idx)); } catch (e) {}
+  }
+  function loadProgress() {
+    if (DEBUG) return 0;
+    try {
+      const n = parseInt(localStorage.getItem(SAVE_KEY), 10);
+      if (Number.isInteger(n) && n >= 0 && n < LEVELS.length) return n;
+    } catch (e) {}
+    return 0;
+  }
+
+  // Worlds déjà visités : l'interstitiel « NEW WORLD » ne s'affiche qu'à la PREMIÈRE
+  // entrée dans un world, pas en y revenant depuis le menu (retour joueur). World 1 =
+  // point de départ, jamais d'interstitiel. Persisté (localStorage, sauf en DEBUG) ;
+  // bootGame y ajoute aussi tous les worlds jusqu'à celui du niveau repris (progression
+  // linéaire → forcément déjà vus ; couvre les saves antérieures à cette clé).
+  const WORLDS_KEY = "crittersPuzzle.worlds";
+  const worldsSeen = new Set([1]);
+  function markWorldSeen(w) {
+    if (worldsSeen.has(w)) return;
+    worldsSeen.add(w);
+    if (DEBUG) return;
+    try { localStorage.setItem(WORLDS_KEY, Array.from(worldsSeen).join(",")); } catch (e) {}
+  }
+  function loadWorldsSeen(upToWorld) {
+    if (!DEBUG) {
+      try {
+        (localStorage.getItem(WORLDS_KEY) || "").split(",").forEach(s => {
+          const w = parseInt(s, 10);
+          if (Number.isInteger(w) && w >= 1) worldsSeen.add(w);
+        });
+      } catch (e) {}
+    }
+    for (let w = 1; w <= upToWorld; w++) markWorldSeen(w);
+  }
+
+  function loadLevel(idx) {
+    if (idx < 0) idx = 0;
+    if (idx >= LEVELS.length) idx = 0;
+    levelIdx = idx;
+    levelWasDone = doneSet.has(idx); // rejeu depuis le menu (voir triggerWin)
+    saveProgress(levelIdx);
+    const lv = LEVELS[idx];
+    size = lv.size !== undefined ? lv.size : gridSizeForLevel(idx + 1);
+    video.src = blobUrls[lv.src] || (VIDEO_DIR + lv.src);
+    document.body.dataset.world = lv.world;
+    worldIcon.src = WORLD_ICON[lv.world] || "";
+    worldNum.textContent = lv.world;
+    buildWorldProgress();
+    fitHeader(); // avant buildBoard → layoutCanvas (la taille du plateau en dépend)
+    poki(sdk => sdk.measure && sdk.measure('level', String(idx + 1), 'start'));
+    scheduleHintReveal(); // HINT caché puis révélé (scale up + bounce) après 10 s
+    ensureVideoPlay();
+    buildBoard();
+    // PREMIÈRE entrée dans un world → interstitiel (prioritaire sur l'intro bonus/hard,
+    // de toute façon le 1er niveau d'un world est toujours Regular). Revenir dans un
+    // world déjà visité (menu) ne le rejoue pas.
+    const isNewWorld = !worldsSeen.has(lv.world);
+    markWorldSeen(lv.world);
+    if (isNewWorld) {
+      showNewWorld(lv.world);
+      levelIntro.classList.remove("show");
+    } else if (lv.hard) showLevelIntro("hard");
+    else if (lv.bonus) showLevelIntro("bonus");
+    else levelIntro.classList.remove("show");
+    // Niveaux tutoriels : main animée. Niveau 1 → geste "slide" (swap des 2 cases
+    // haut-gauche) ; 1er bonus → geste "tap" (rotation de la case haut-centre).
+    if (idx === TUTORIAL_LEVEL) setTutorHand(true, "slide");
+    else if (idx === BONUS_TUTORIAL_LEVEL) setTutorHand(true, "tap");
+    else setTutorHand(false);
+    // Fenêtre de préchargement glissante : avance avec le niveau courant.
+    schedulePrefetch();
+  }
+
+  // NEXT (niveau résolu) : ouvre le menu de sélection, où le niveau suivant est la
+  // carte courante (PLAY). La pub interstitielle part au lancement de ce niveau
+  // depuis le menu (= début du niveau suivant), pas ici.
+  nextBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!solved || adInProgress) return;
+    openLevelMenu();
+  });
+
+  // HINT : pub récompensée ; si elle est regardée jusqu'au bout, un indice est joué
+  // (applyHint). Le bouton reste en place : le joueur peut en redemander.
+  hintBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (solved || adInProgress || hintLock) return;
+    unlockSfx(); // l'indice peut finir le niveau : jingle jouable même sans contact plateau
+    stopGameplay(); // clôt la session avant la pub → pas de gameplayStart en double
+    rewardedBreak(applyHint, () => {
+      // Pub abandonnée / indisponible (pas de pub, bloqueur) : petit « non » plutôt qu'un
+      // bouton qui semble mort. On retire .reveal d'abord, sinon son anim d'entrée se
+      // relancerait quand .nudge s'en va (même propriété `animation`).
+      hintBtn.classList.remove("reveal");
+      hintBtn.classList.remove("nudge");
+      void hintBtn.offsetWidth;
+      hintBtn.classList.add("nudge");
+      setTimeout(() => hintBtn.classList.remove("nudge"), 420);
+    });
+  });
+
+  // Cheats clavier (DEBUG uniquement) : N = niveau suivant, P = niveau précédent.
+  if (DEBUG) {
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "n" || ev.key === "N") loadLevel(levelIdx + 1);
+      else if (ev.key === "p" || ev.key === "P") loadLevel((levelIdx - 1 + LEVELS.length) % LEVELS.length);
+    });
+  }
+  // ===== Menu de sélection des niveaux (maquette Figma « Selection menu » + polish) =====
+  // Overlay DOM plein écran (pas de canvas → contrainte mono-canvas Poki préservée),
+  // ouvert par NEXT à la fin d'un niveau ou par le bouton maison de l'en-tête.
+  // Un panneau coloré par world (palette du biome + progression « n/N ») puis une grille
+  // de cartes (4 colonnes, 3 sur écran étroit) ; compteur global et réglages collants en
+  // haut, gros CTA PLAY collant en bas (références : saga maps Royal Match / Candy Crush,
+  // apps de jigsaw — voir CLAUDE.md).
+  // État d'une carte, par position (comme les puces) par rapport au niveau « courant »
+  // du menu (menuProgress : le suivant si le niveau est résolu) :
+  //   done    (avant) → vignette en couleur + coche tamponnée en coin
+  //   current         → fond orange + scénette en vidéo + PLAY qui rebondit + halo
+  //   locked  (après) → vignette voilée + clap
+  // Au retour d'une victoire (NEXT), le menu s'ouvre dans l'état d'AVANT puis joue la
+  // transition (celebrateMenu) : coche tamponnée, coche qui vole au compteur, barre du
+  // world qui se remplit, carte suivante qui se débloque. Un tap l'accélère.
+  // Clic : carte courante / CTA = lance le niveau (pub interstitielle d'abord) ou reprend
+  // la partie en cours. Carte VERROUILLÉE (clap = « regarder une vidéo ») = pub récompensée
+  // → déblocage animé (le niveau n'est pas lancé). Carte FINIE = rejeu (pub interstitielle
+  // puis niveau, comme tout lancement depuis le menu).
+  const levelMenu = document.getElementById("level-menu");
+  const levelMenuInner = document.getElementById("level-menu-inner");
+  const lmTotal = document.getElementById("lm-total");
+  const lmTotalNum = document.getElementById("lm-total-num");
+  const lmCtaBar = document.getElementById("lm-cta-bar");
+  const lmCta = document.getElementById("lm-cta");
+  const lmCtaThumb = document.getElementById("lm-cta-thumb");
+  const lmCtaLabel = document.getElementById("lm-cta-label");
+  const ICON_CHECK = "ui/Checkmark.png";
+  const ICON_CLAP = "ui/Itemicon_Movie.Png";
+  const MENU_FADE_MS = 240;   // fondu d'entrée du menu (CSS 0,22 s) avant de masquer le jeu dessous
+  const MENU_FLY_MS = 650;    // vol de la coche vers le compteur global
+  let menuCards = [];         // cartes de la dernière construction (index global)
+  let menuWorlds = {};        // world → { el, prog, fill, count, total }
+  let menuTimers = [];        // timers du menu (séquence de célébration…), annulés à la fermeture
+  let menuPreviewIdx = -1;    // niveau dont l'aperçu vidéo est attaché
+  let menuPlayIdx = 0;        // niveau lancé par le CTA / la carte courante
+  let menuCelebrating = false;
+
+  document.getElementById("lm-total-of").textContent = "/" + LEVELS.length;
+
+  function menuEl(tag, cls, src) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (src) { e.src = src; e.alt = ""; e.draggable = false; }
+    return e;
+  }
+  function thumbOf(i) { return "ui/thumbs/" + LEVELS[i].id + ".jpg"; }
+  function menuLater(ms, fn) { menuTimers.push(setTimeout(fn, ms)); }
+  function clearMenuTimers() { menuTimers.forEach(clearTimeout); menuTimers = []; }
+  // (Re)joue une anim CSS portée par une classe temporaire.
+  function pulseClass(el, cls, ms) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), ms);
+  }
+
+  // Niveau « courant » du menu (`cur`, carte orange) et niveau que lance PLAY (`play`).
+  // Partie en cours → ce niveau (reprise). Résolu → le prochain niveau NON FINI de la
+  // progression ; tout fini → toutes les cartes cochées (cur = LEVELS.length) et PLAY
+  // reboucle au niveau 1, comme loadLevel.
+  function menuProgress() {
+    if (!solved) return { cur: levelIdx, play: levelIdx };
+    const n = nextUndone();
+    if (n >= LEVELS.length) return { cur: LEVELS.length, play: 0 };
+    return { cur: n, play: n };
+  }
+
+  // hideDone : pendant la célébration, le niveau qui vient d'être gagné s'affiche encore
+  // dans son état d'AVANT (courant, non compté dans les finis) — voir openLevelMenu.
+  function buildLevelMenu(cur, hideDone) {
+    levelMenuInner.innerHTML = "";
+    menuCards = [];
+    menuWorlds = {};
+    menuPreviewIdx = -1;
+    let grid = null, posInWorld = 0;
+    for (let i = 0; i < LEVELS.length; i++) {
+      const lv = LEVELS[i];
+      if (!menuWorlds[lv.world]) {
+        posInWorld = 0;
+        const section = menuEl("section", "lm-world");
+        section.dataset.world = lv.world;
+        const header = menuEl("div", "lm-header");
+        const title = menuEl("div", "lm-title");
+        title.appendChild(menuEl("img", "lm-world-icon", WORLD_ICON[lv.world] || ""));
+        title.appendChild(menuEl("img", "lm-world-label", "ui/World.png"));
+        const num = menuEl("span", "lm-world-num");
+        num.textContent = lv.world;
+        title.appendChild(num);
+        const prog = menuEl("div", "lm-wprog");
+        const bar = menuEl("span", "lm-wbar");
+        const fill = menuEl("i");
+        bar.appendChild(fill);
+        const count = menuEl("span", "lm-wcount");
+        prog.appendChild(bar);
+        prog.appendChild(count);
+        header.appendChild(title);
+        header.appendChild(prog);
+        grid = menuEl("div", "lm-grid");
+        section.appendChild(header);
+        section.appendChild(grid);
+        levelMenuInner.appendChild(section);
+        menuWorlds[lv.world] = { el: section, prog, fill, count, total: 0 };
+      }
+      menuWorlds[lv.world].total++;
+      posInWorld++;
+      const dist = Math.abs(i - cur);
+      const card = menuEl("button", "lm-card enter");
+      // Entrée en vague : la carte courante d'abord, puis ses voisines.
+      card.style.setProperty("--d", Math.min(dist, 8) * 45 + "ms");
+      card.setAttribute("aria-label", "Level " + (i + 1));
+      const frame = menuEl("span", "lm-frame");
+      const ill = menuEl("img", "lm-ill", thumbOf(i));
+      // Vignettes proches du courant chargées tout de suite (visibles à l'ouverture),
+      // les autres à la demande.
+      ill.loading = dist <= 8 ? "eager" : "lazy";
+      ill.decoding = "async";
+      frame.appendChild(ill);
+      card.appendChild(frame);
+      const n = menuEl("span", "lm-num");
+      n.textContent = posInWorld;
+      card.appendChild(n);
+      const mid = menuEl("span", "lm-mid");
+      mid.setAttribute("aria-hidden", "true"); // décor : le nom accessible est l'aria-label
+      const play = menuEl("span", "lm-play pill");
+      play.textContent = t("play");
+      mid.appendChild(play);
+      mid.appendChild(menuEl("img", "lm-clap", ICON_CLAP));
+      card.appendChild(mid);
+      card.appendChild(menuEl("img", "lm-check", ICON_CHECK));
+      const badgeSrc = lv.hard ? ICON_HARD : (lv.bonus ? ICON_BONUS : null);
+      if (badgeSrc) {
+        const badge = menuEl("span", "lm-badge");
+        badge.appendChild(menuEl("img", "", badgeSrc));
+        card.appendChild(badge);
+      }
+      card.addEventListener("click", (e) => { e.stopPropagation(); onMenuCard(i); });
+      grid.appendChild(card);
+      menuCards.push(card);
+    }
+    applyMenuState(cur, hideDone);
+  }
+
+  function setCardState(i, state) {
+    const card = menuCards[i];
+    if (!card) return;
+    card.classList.remove("done", "current", "locked", "unlocked");
+    card.classList.add(state);
+  }
+  function updateWorldProgress(w, hideDone) {
+    const W = menuWorlds[w];
+    if (!W) return;
+    let done = 0;
+    for (let i = 0; i < LEVELS.length; i++) if (LEVELS[i].world === w && doneSet.has(i) && i !== hideDone) done++;
+    W.fill.style.setProperty("--p", W.total ? String(done / W.total) : "0");
+    W.count.textContent = done + "/" + W.total;
+    W.el.classList.toggle("complete", done === W.total);
+  }
+  // États : current (orange, PLAY) ; done (coche) ; unlocked (jouable sans pub
+  // récompensée : débloqué par pub, ou prochain niveau de la progression quand ce n'est
+  // pas la carte courante) ; locked (clap → pub récompensée pour débloquer).
+  function applyMenuState(cur, hideDone) {
+    let frontier = LEVELS.length; // 1er non fini (hideDone compte encore comme non fini)
+    for (let i = 0; i < LEVELS.length; i++) if (!doneSet.has(i) || i === hideDone) { frontier = i; break; }
+    for (let i = 0; i < menuCards.length; i++) {
+      let st;
+      if (i === cur) st = "current";
+      else if (doneSet.has(i) && i !== hideDone) st = "done";
+      else if (unlockedSet.has(i) || i === frontier) st = "unlocked";
+      else st = "locked";
+      setCardState(i, st);
+    }
+    for (const w in menuWorlds) updateWorldProgress(+w, hideDone);
+    lmTotalNum.textContent = doneSet.size - (doneSet.has(hideDone) ? 1 : 0);
+  }
+  // Le libellé PLAY de la carte courante tient dans son bouton (langues longues).
+  function fitMenuTexts() {
+    levelMenuInner.querySelectorAll(".lm-card.current .lm-play, .lm-card.unlocked .lm-play")
+      .forEach(play => fitText(play, play.clientWidth));
+  }
+
+  // Aperçu vivant : la scénette du niveau courant tourne en boucle dans sa carte (vidéo
+  // DOM, pas un canvas). Réutilise le blob préchargé s'il existe (pas de réseau en plus :
+  // c'est la vidéo que PLAY va lancer). Vignette visible jusqu'à la 1re frame (fondu).
+  function attachPreview(i) {
+    if (menuPreviewIdx === i && menuPreview) return;
+    detachPreview();
+    const card = menuCards[i];
+    if (!card) return;
+    const lv = LEVELS[i];
+    const v = document.createElement("video");
+    v.className = "lm-vid";
+    v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+    v.setAttribute("muted", ""); v.setAttribute("playsinline", "");
+    v.preload = "auto";
+    v.addEventListener("playing", () => v.classList.add("on"), { once: true });
+    v.src = blobUrls[lv.src] || (VIDEO_DIR + lv.src);
+    card.querySelector(".lm-frame").appendChild(v);
+    menuPreview = v;
+    menuPreviewIdx = i;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {}); // autoplay refusé (économie d'énergie) → la vignette reste
+  }
+  function detachPreview() {
+    if (!menuPreview) return;
+    const v = menuPreview;
+    menuPreview = null;
+    menuPreviewIdx = -1;
+    try { v.pause(); v.removeAttribute("src"); v.load(); } catch (e) {} // libère le décodeur
+    v.remove();
+  }
+
+  // Éclats qui partent du centre d'une carte (tampon de la coche, déblocage).
+  function burst(card, count) {
+    const r = card.offsetWidth * 0.62;
+    card.classList.add("lift");
+    for (let k = 0; k < count; k++) {
+      const s = menuEl("span", "lm-spark");
+      const a = (k / count) * Math.PI * 2 + Math.random() * 0.5;
+      const d = r * (0.7 + Math.random() * 0.45);
+      s.style.setProperty("--dx", (Math.cos(a) * d).toFixed(1) + "px");
+      s.style.setProperty("--dy", (Math.sin(a) * d).toFixed(1) + "px");
+      s.style.animationDelay = ((Math.random() * 80) | 0) + "ms";
+      card.appendChild(s);
+      setTimeout(() => s.remove(), 800);
+    }
+    setTimeout(() => card.classList.remove("lift"), 800);
+  }
+  // La coche du niveau fini s'envole (en arc) jusqu'à la progression de son world (cadré
+  // en haut d'écran, donc visible) — cause → effet, comme les ressources qui volent vers
+  // leur jauge dans Royal Match. Web Animations API absente (vieux Safari) → on saute juste
+  // le vol, les compteurs se mettent à jour quand même.
+  function flyCheck(card, target) {
+    const probe = menuEl("img", "lm-flyer", ICON_CHECK);
+    if (!probe.animate) return;
+    const a = card.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const sz = 44;
+    const x0 = a.right - sz * 0.9, y0 = a.bottom - sz * 0.9;
+    const x1 = b.left + 4, y1 = b.top + (b.height - sz) / 2;
+    const mx = (x0 + x1) / 2, my = Math.min(y0, y1) - 70;
+    levelMenu.appendChild(probe);
+    const anim = probe.animate([
+      { transform: "translate(" + x0 + "px," + y0 + "px) scale(1.1)", opacity: 1 },
+      { transform: "translate(" + mx + "px," + my + "px) scale(1.3)", opacity: 1, offset: 0.45 },
+      { transform: "translate(" + x1 + "px," + y1 + "px) scale(0.55)", opacity: 0.85 },
+    ], { duration: MENU_FLY_MS, easing: "cubic-bezier(0.45, 0, 0.55, 1)" });
+    anim.onfinish = () => probe.remove();
+    menuLater(MENU_FLY_MS + 100, () => probe.remove()); // filet si fermé en plein vol
+  }
+  // Positions en offsetTop (mise en page seule) : insensibles aux transforms des anims
+  // d'entrée des cartes. offsetParent des cartes/sections = #level-menu (seul ancêtre
+  // positionné), donc offsetTop = position dans le contenu défilant.
+  const MENU_SCROLL_MARGIN = 18;
+  function cardFullyVisible(card) {
+    const t = card.offsetTop - levelMenu.scrollTop;
+    return t >= 0 && t + card.offsetHeight <= levelMenu.clientHeight - lmCtaBar.offsetHeight;
+  }
+  // Cadrage : le HAUT du world du niveau en haut d'écran (tout en haut de page pour le
+  // 1er world, barre du haut comprise), sans jamais laisser la carte sous le CTA.
+  function scrollMenuTo(i, smooth) {
+    const card = menuCards[i];
+    if (!card) return;
+    const section = card.parentNode.parentNode; // .lm-grid → .lm-world
+    let top = section === levelMenuInner.firstElementChild ? 0 : section.offsetTop - MENU_SCROLL_MARGIN;
+    const visible = levelMenu.clientHeight - lmCtaBar.offsetHeight - MENU_SCROLL_MARGIN;
+    const cardBottom = card.offsetTop + card.offsetHeight;
+    if (cardBottom - top > visible) top = cardBottom - visible;
+    top = Math.max(0, top);
+    if (smooth) levelMenu.scrollTo({ top: top, behavior: "smooth" });
+    else levelMenu.scrollTop = top;
+  }
+
+  // Transition « niveau fini → suivant débloqué » (animated state transition) : le menu
+  // est construit dans l'état d'AVANT la victoire, puis on anime vers le nouvel état.
+  function celebrateMenu(doneIdx, cur) {
+    menuCelebrating = true;
+    const doneCard = menuCards[doneIdx];
+    const doneWorld = LEVELS[doneIdx].world;
+    const nextIdx = cur < LEVELS.length ? cur : -1;
+    const nextCard = nextIdx >= 0 ? menuCards[nextIdx] : null;
+    // 1) La carte finie perd son PLAY, la coche s'y tamponne, éclats, la coche s'envole.
+    menuLater(450, () => {
+      setCardState(doneIdx, "done");
+      pulseClass(doneCard, "stamp", 600);
+      burst(doneCard, 10);
+      flyCheck(doneCard, menuWorlds[doneWorld].prog);
+    });
+    // 2) Arrivée de la coche : barre du world qui se remplit, compteur global +1.
+    menuLater(450 + MENU_FLY_MS, () => {
+      lmTotalNum.textContent = doneSet.size;
+      pulseClass(lmTotal, "bump", 480);
+      updateWorldProgress(doneWorld);
+      pulseClass(menuWorlds[doneWorld].prog, "bump", 480);
+      // World bouclé : la pastille passe à l'or et l'icône du world saute.
+      if (menuWorlds[doneWorld].el.classList.contains("complete")) pulseClass(menuWorlds[doneWorld].el, "wake", 720);
+    });
+    if (!nextCard) { menuLater(450 + MENU_FLY_MS + 200, () => { menuCelebrating = false; }); return; }
+    // 3) La carte suivante (défilement doux si hors champ) : le clap tremble…
+    menuLater(1250, () => {
+      if (!cardFullyVisible(nextCard)) scrollMenuTo(nextIdx, true);
+      nextCard.classList.add("unlocking");
+      const nw = LEVELS[nextIdx].world;
+      if (nw !== doneWorld) pulseClass(menuWorlds[nw].el, "wake", 720); // nouveau world
+    });
+    // 4) … puis saute : la carte devient courante (orange, vidéo, PLAY), éclats, CTA.
+    menuLater(1250 + 860, () => {
+      nextCard.classList.remove("unlocking");
+      setCardState(nextIdx, "current");
+      burst(nextCard, 12);
+      attachPreview(nextIdx);
+      fitMenuTexts();
+      pulseClass(lmCta, "bump", 480);
+      menuCelebrating = false;
+    });
+  }
+  // Un tap pendant la transition la termine d'un coup (le joueur ne subit jamais l'anim).
+  function finishCelebration() {
+    menuCelebrating = false;
+    clearMenuTimers();
+    const prog = menuProgress();
+    menuCards.forEach(c => c.classList.remove("unlocking", "enter"));
+    applyMenuState(prog.cur);
+    if (prog.cur < LEVELS.length) attachPreview(prog.cur);
+    fitMenuTexts();
+    if (menuOpen) document.body.classList.add("menu-open");
+  }
+
+  function onMenuCard(i) {
+    if (adInProgress) return;
+    if (menuCelebrating) { finishCelebration(); return; }
+    const card = menuCards[i];
+    if (card.classList.contains("locked")) { unlockWithReward(i); return; }
+    playFromMenu(i);
+  }
+  // Niveau verrouillé : pub récompensée. Regardée jusqu'au bout → le niveau est DÉBLOQUÉ
+  // (unlockedSet, sauvegardé) et la carte s'ouvre sous les yeux du joueur (clap qui
+  // tremble puis saute, vignette en couleur, PLAY, éclats) — mais on RESTE dans le menu :
+  // le joueur lance le niveau quand il veut (PLAY de la carte). Les autres
+  // niveaux ne changent pas d'état. Pub abandonnée / indisponible → petit « non ».
+  function unlockWithReward(i) {
+    const card = menuCards[i];
+    rewardedBreak(() => {
+      markUnlocked(i);
+      if (!menuOpen) return;
+      card.classList.add("unlocking");
+      menuLater(560, () => {
+        card.classList.remove("unlocking");
+        setCardState(i, "unlocked");
+        burst(card, 12);
+        fitMenuTexts();
+      });
+    }, () => { if (menuOpen) pulseClass(card, "nudge", 420); });
+  }
+  // Toute entrée en jeu depuis le menu tire une interstitielle : niveau suivant, rejeu,
+  // niveau débloqué par pub récompensée, reprise de la partie en cours (retour QA Poki :
+  // commercialBreak à CHAQUE retour au gameplay, jamais filtré ni temporisé de notre
+  // côté). C'est le SDK qui décide d'afficher une pub : son délai entre deux pubs est
+  // relancé aussi par une pub récompensée → pas de double pub juste après un déblocage.
+  function playFromMenu(i) {
+    if (adInProgress) return;
+    closeLevelMenu();
+    if (i === levelIdx && !solved) commercialBreak(); // reprise de la partie en cours
+    else commercialBreak(() => loadLevel(i));
+  }
+
+  function openLevelMenu() {
+    if (menuOpen) return;
+    stopGameplay(); // comme les réglages : on clôt la session de gameplay Poki
+    menuOpen = true;
+    try { video.pause(); } catch (e) {} // le menu couvre le plateau (voir ensureVideoPlay)
+    const prog = menuProgress();
+    menuPlayIdx = prog.play;
+    // Retour d'une victoire : on part de l'état d'avant pour animer la progression.
+    const celebrate = solved && !winCelebrated;
+    winCelebrated = true;
+    const shownCur = celebrate ? levelIdx : prog.cur;
+    buildLevelMenu(shownCur, celebrate ? levelIdx : undefined);
+    lmCtaThumb.src = thumbOf(menuPlayIdx);
+    lmCtaLabel.textContent = t("play");
+    levelMenu.classList.add("show");
+    levelMenu.setAttribute("aria-hidden", "false");
+    scrollMenuTo(Math.min(shownCur, LEVELS.length - 1), false);
+    fitMenuTexts();
+    if (!celebrate && prog.cur < LEVELS.length) attachPreview(prog.cur);
+    menuLater(MENU_FADE_MS, () => document.body.classList.add("menu-open"));
+    menuLater(1000, () => menuCards.forEach(c => c.classList.remove("enter")));
+    if (celebrate) celebrateMenu(levelIdx, prog.cur);
+    try { lmCta.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function closeLevelMenu() {
+    if (!menuOpen) return;
+    menuOpen = false;
+    menuCelebrating = false;
+    clearMenuTimers();
+    stopMenuMomentum();
+    menuDrag = null;
+    levelMenu.classList.remove("dragging");
+    detachPreview();
+    document.body.classList.remove("menu-open");
+    levelMenu.classList.remove("show");
+    levelMenu.setAttribute("aria-hidden", "true");
+    renderDirty = true; // le canvas a été gelé pendant le menu
+    ensureVideoPlay();
+  }
+
+  lmCta.addEventListener("click", (e) => { e.stopPropagation(); playFromMenu(menuPlayIdx); });
+  document.getElementById("lm-settings").addEventListener("click", (e) => {
+    e.stopPropagation();
+    settingsBtn.click();
+  });
+  // Glisser à la SOURIS pour faire défiler le menu (au doigt, le défilement natif s'en
+  // charge — touch-action: pan-y). Seuil avant de « prendre » le geste (un simple clic
+  // reste un clic), inertie au relâché, et le clic qui termine un glisser est avalé (pas
+  // de niveau lancé par erreur). Molette / nouveau geste / fermeture coupent l'inertie.
+  const MENU_DRAG_THRESHOLD = 6; // px avant de considérer que c'est un glisser
+  let menuDrag = null;           // { id, y, top, moved, lastY, lastT, v }
+  let menuMomentum = 0;          // id rAF de l'inertie
+  let menuSwallowClick = false;
+  function stopMenuMomentum() {
+    if (menuMomentum) { cancelAnimationFrame(menuMomentum); menuMomentum = 0; }
+  }
+  levelMenu.addEventListener("pointerdown", (e) => {
+    stopMenuMomentum();
+    if (e.pointerType === "touch" || e.button !== 0) return;
+    const now = performance.now();
+    menuDrag = { id: e.pointerId, y: e.clientY, top: levelMenu.scrollTop, moved: false, lastY: e.clientY, lastT: now, v: 0 };
+  });
+  levelMenu.addEventListener("pointermove", (e) => {
+    const d = menuDrag;
+    if (!d || e.pointerId !== d.id) return;
+    const dy = e.clientY - d.y;
+    if (!d.moved) {
+      if (Math.abs(dy) < MENU_DRAG_THRESHOLD) return;
+      d.moved = true;
+      try { levelMenu.setPointerCapture(e.pointerId); } catch (err) {}
+      levelMenu.classList.add("dragging");
+    }
+    const now = performance.now();
+    const dt = Math.max(1, now - d.lastT);
+    d.v = 0.8 * ((d.lastY - e.clientY) / dt) + 0.2 * d.v; // px/ms dans le sens du défilement, lissée
+    d.lastY = e.clientY;
+    d.lastT = now;
+    levelMenu.scrollTop = d.top - dy;
+  });
+  function endMenuDrag(e) {
+    const d = menuDrag;
+    if (!d || e.pointerId !== d.id) return;
+    menuDrag = null;
+    if (!d.moved) return;
+    levelMenu.classList.remove("dragging");
+    try { levelMenu.releasePointerCapture(e.pointerId); } catch (err) {}
+    menuSwallowClick = true;
+    setTimeout(() => { menuSwallowClick = false; }, 0);
+    // Inertie : décroît de ~5 % par frame de 16 ms ; nulle si le geste s'était arrêté.
+    let v = (performance.now() - d.lastT) > 90 ? 0 : d.v;
+    let last = performance.now();
+    const step = (now) => {
+      const dt = now - last;
+      last = now;
+      levelMenu.scrollTop += v * dt;
+      v *= Math.pow(0.95, dt / 16);
+      menuMomentum = Math.abs(v) > 0.02 ? requestAnimationFrame(step) : 0;
+    };
+    if (Math.abs(v) > 0.05) menuMomentum = requestAnimationFrame(step);
+  }
+  levelMenu.addEventListener("pointerup", endMenuDrag);
+  levelMenu.addEventListener("pointercancel", endMenuDrag);
+  levelMenu.addEventListener("click", (e) => {
+    if (!menuSwallowClick) return;
+    menuSwallowClick = false;
+    e.stopPropagation();
+    e.preventDefault();
+  }, true);
+  levelMenu.addEventListener("wheel", stopMenuMomentum, { passive: true });
+
+  // Bouton maison de l'en-tête : ouvre le menu (reprise de la partie par PLAY / Échap).
+  homeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (adInProgress || hintLock) return; // pas de menu pendant une pub ou un indice
+    openLevelMenu();
+  });
+  window.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape" || !menuOpen || menuCelebrating) return;
+    if (settingsModal.classList.contains("show")) return; // réglages par-dessus le menu
+    closeLevelMenu();
+    if (!solved) commercialBreak(); // retour en jeu → interstitielle (voir playFromMenu)
+  });
+
+  boardInput.addEventListener("pointerdown", onPointerDown);
+  boardInput.addEventListener("pointermove", onPointerMove);
+  boardInput.addEventListener("pointerup", onPointerUp);
+  boardInput.addEventListener("pointercancel", onPointerCancel);
+
+  // Les navigateurs mobiles mettent la vidéo en pause quand l'onglet/l'app
+  // passe en arrière-plan et ne la reprennent pas tout seul au retour : on
+  // relance la lecture à chaque retour au premier plan, sinon le plateau
+  // resterait figé sur la dernière frame.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) ensureVideoPlay();
+    syncBGM(); // musique en pause en arrière-plan, reprise au retour (son actif, hors pub)
+  });
+
+  // [F2] Filet de sécurité vidéo : si une source blob: (préchargée) est illisible par le
+  // lecteur (WebView in-app ancienne/restrictive), on invalide le blob fautif et on
+  // retombe UNE fois sur le fichier direct. Le repli || de loadLevel ne couvre que le blob
+  // ABSENT, pas un blob présent-mais-illisible ; ce listener ferme ce trou (auto-anti-boucle :
+  // après repli, video.src n'est plus un blob:).
+  video.addEventListener("error", () => {
+    const cur = LEVELS[levelIdx];
+    if (cur && typeof video.src === "string" && video.src.slice(0, 5) === "blob:") {
+      delete blobUrls[cur.src];
+      video.src = VIDEO_DIR + cur.src;
+      ensureVideoPlay();
+    }
+  });
+
+  // Pose les textes statiques (boutons NEXT / HINT) dans la langue détectée et
+  // les ajuste pour qu'ils ne débordent jamais de leur pilule (taille fixe ; le
+  // libellé .pill-label est rétrécissable, sa largeur allouée = la place dispo).
+  // Rejouée au resize (la pilule change de forme entre paysage et portrait) et au
+  // chargement de la police (fitText réinitialise d'abord la taille CSS).
+  function applyStaticI18n() {
+    document.documentElement.lang = LANG;
+    nextText.textContent = t("next");
+    hintText.textContent = t("hint");
+    fitText(nextText, nextText.clientWidth);
+    fitText(hintText, hintText.clientWidth);
+  }
+  // Un seul handler resize, coalescé en rAF : sur mobile, l'animation de la barre
+  // d'URL émet une rafale d'events resize (~1/frame). Sans coalescing, chaque event
+  // réalloue le backing plein écran (plusieurs Mo) + refait les fitText (reflow) →
+  // jank/chauffe. On regroupe tout en un seul appel par frame. layoutCanvas
+  // redimensionne le canvas (mappé au viewport en px) ; le plateau se réaligne seul
+  // (offset lu en direct dans renderBoard).
+  let resizePending = false;
+  window.addEventListener("resize", () => {
+    if (resizePending) return;
+    resizePending = true;
+    requestAnimationFrame(() => {
+      resizePending = false;
+      fitHeader(); // avant layoutCanvas : une ou deux lignes change la taille du plateau
+      if (frameCanvas) layoutCanvas();
+      applyStaticI18n();
+    });
+  });
+
+  // [F0] Plancher dur : sans Pointer Events (iOS ≤ 12, très vieux Android), le plateau ne
+  // recevrait AUCUNE entrée → jeu injouable. Plutôt qu'un plateau muet et figé, on affiche
+  // un message propre invitant à mettre le navigateur à jour (et on récupère un signal au
+  // lieu d'un bounce silencieux). Overlay DOM créé à la volée (top/right/bottom/left explicites
+  // car ces vieux moteurs ne supportent pas non plus le shorthand `inset`).
+  function showUnsupported() {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;inset:0;top:0;right:0;bottom:0;left:0;z-index:200;" +
+      "display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;" +
+      "background:radial-gradient(circle at 50% 30%,#fff3c0,#f5b81e);color:#3a2a1e;" +
+      "font:700 clamp(16px,4.5vmin,24px)/1.4 'Nunito','Segoe UI',system-ui,sans-serif;";
+    el.textContent = "Please update your browser to play this game.";
+    document.body.appendChild(el);
+  }
+
+  function bootGame() {
+    if (!("PointerEvent" in window)) { showUnsupported(); return; }
+    applyStaticI18n();
+    // Libellés en Mont (font-display: swap) : re-fitter une fois la police chargée,
+    // sinon le fit du boot a été calculé avec les métriques de la police de repli.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+      applyStaticI18n();
+      fitHeader(); // « WORLD n » en Mont : sa largeur finale n'est connue qu'ici
+      if (frameCanvas) layoutCanvas();
+    });
+    const startIdx = loadProgress();
+    loadSets(startIdx);
+    // Worlds déjà visités (save + tous ceux jusqu'au niveau repris) : pas
+    // d'interstitiel « NEW WORLD » au lancement (l'intro Bonus/Hard, elle, reste
+    // utile en rappel des règles et se déclenchera normalement si besoin).
+    loadWorldsSeen(LEVELS[startIdx].world);
+    loadLevel(startIdx);
+    startRenderLoop();
+    startBGM();
+    // Le préchargement (fenêtre glissante) est programmé par loadLevel via schedulePrefetch.
+
+    // --- HARNAIS DEBUG OMBRE CONCAVE (temporaire, ?shadowdbg=1) ---
+    if (/[?&]shadowdbg=1/.test(location.search)) {
+      window.__shadowdbg = function (sx, sy, cells) {
+        cells = cells || [0, 1, size];
+        // Réinitialise : chaque case son propre bloc puis force les pièces voulues.
+        const forcePiece = (pos, piece) => {
+          const cur = tiles.indexOf(piece);
+          const tmp = tiles[pos]; tiles[pos] = piece; tiles[cur] = tmp;
+        };
+        cells.forEach(p => forcePiece(p, p));
+        recomputeBlocks();
+        selectedAnchor = window.__selectBlock ? cells[0] : -1;
+        dragOverPos = -1;
+        if (sx == null) {
+          dragState = null; // mode statique : bloc fusionné au repos
+        } else {
+          dragState = { pointerId: 1, sourcePos: cells[0], startX: 0, startY: 0,
+            dx: sx, dy: sy, moved: true };
+        }
+      };
+      window.__fxbufs = () => ({
+        tilt: (typeof tiltCanvas !== "undefined") ? tiltCanvas : null,
+        shadow: (typeof shadowFxCanvas !== "undefined") ? shadowFxCanvas : null,
+        m: (typeof dragFxM !== "undefined") ? dragFxM : 0,
+      });
+      // static par défaut ; ?shadowdbg=1&drag=1 pour draguer
+      setTimeout(() => {
+        if (/[?&]drag=1/.test(location.search)) window.__shadowdbg(90, 55);
+        else window.__shadowdbg();
+      }, 700);
+    }
+  }
+
+  if (typeof window.PokiSDK !== "undefined" && window.PokiSDK.init) {
+    window.PokiSDK.init().then(() => {
+      pokiAvailable = true;
+      try { window.PokiSDK.gameLoadingFinished(); } catch (e) {}
+      bootGame();
+    }).catch(() => {
+      try { window.PokiSDK.gameLoadingFinished && window.PokiSDK.gameLoadingFinished(); } catch (e) {}
+      bootGame();
+    });
+  } else {
+    bootGame();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="https://d103b864-acf3-4ed7-9e2e-cb0c105f19cf.gdn.poki.com/48d60068-adeb-4fc9-86dc-6639a0a369af/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  var PokiMock = {
+    init: function() { return resolvedPromise(); },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function() { return resolvedPromise(); },
+    rewardedBreak: function() { return resolvedPromise(true); },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function() { return ''; },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() { return resolvedPromise(true); };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: false,
+      configurable: false
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+})();
+</script>
+
+		<meta name="build-version" content="211.2311">
+		<script>window.__PACK='pack_a'</script>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
+ <meta name="color-scheme" content="light dark">
+ <meta name="supported-color-schemes" content="light dark">
+ <title>Dino Simulator</title>
+ <script>
+ // The player's likely language, asked for before a script of the game has loaded: their own pick, then the browser's,
+ // as loca.guess() picks it at the top of the boot, which then finds the file on its way. The codes are LANGUAGES in
+ // script/ui/loca.js; tools/test/loca_guess.test.mjs holds the two together.
+ (function () {
+  var codes = ['de', 'en', 'es', 'fr', 'hi', 'id', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'sv', 'th', 'tr', 'uk', 'vi', 'zh', 'zh-TW']
+  var picked = ''
+  try { picked = localStorage.getItem('dino.language') || '' } catch (e) {}
+  var found = 'en'
+  var tags = [picked, navigator.language || '']
+  for (var i = 0; i < tags.length; i++) {
+   var tag = String(tags[i]).toLowerCase().replace('_', '-')
+   if (tag === 'zh-tw' || /^zh-(hant|hk|mo)\b/.test(tag)) { found = 'zh-TW'; break }
+   if (codes.indexOf(tag) >= 0) { found = tag; break }
+   var language = tag.split('-')[0].replace(/^in$/, 'id')
+   if (codes.indexOf(language) >= 0) { found = language; break }
+  }
+  window.__LANG = found
+ })()
+ </script>
+ <link rel="icon" href="favicon.ico" sizes="32x32">
+ <!-- Add to Home Screen. iOS has no call for it; script/install_hint.js tells a player where the
+      button is. These are what the installed page launches as: its own icon, no browser chrome. -->
+ <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+ <link rel="manifest" href="manifest.webmanifest">
+ <meta name="theme-color" content="#194638">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-title" content="Dino Simulator">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <style>
+@font-face {
+	font-family: 'SN Pro';
+	src: url('SNPro-Regular.woff2') format('woff2');
+	font-weight: 400 900;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Giant Display';
+	src: url('GiantDisplay-Regular.woff2') format('woff2');
+	font-weight: 400 900;
+	font-style: normal;
+	font-display: swap;
+}
+*, *::before, *::after {
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
+}
+input, textarea {
+	-webkit-user-select: text;
+	user-select: text;
+	-webkit-touch-callout: default;
+}
+html, body {
+	color-scheme: light dark;
+	forced-color-adjust: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background-color: rgb(25, 70, 56);
+	color: white;
+	touch-action: none;
+	overscroll-behavior: none;
+}
+#canvas, #ui {
+	display: block;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	outline: none;
+	color-scheme: light dark;
+	forced-color-adjust: none;
+	filter: none !important;
+}
+#ui {
+	z-index: 1;
+	touch-action: none;
+}
+@media (prefers-color-scheme: dark) {
+	html, body {
+		color-scheme: light dark;
+		forced-color-adjust: none;
+		background-color: rgb(25, 70, 56);
+		color: white;
+	}
+	#canvas, #ui {
+		color-scheme: light dark;
+		forced-color-adjust: none;
+		filter: none !important;
+	}
+}
+#status-notice {
+	display: none;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 2;
+	box-sizing: border-box;
+	width: max-content;
+	max-width: min(92%, 480px);
+	font-family: 'SN Pro', Arial, sans-serif;
+	background-color: #173b30;
+	border: 1px solid #3c7560;
+	border-radius: 0.75rem;
+	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+	color: #e6efe9;
+	line-height: 1.3;
+	padding: 1rem;
+	text-align: center;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+#status-actions {
+	display: flex;
+	justify-content: center;
+	gap: 0.6rem;
+	margin-top: 0.85rem;
+}
+#status-actions button {
+	display: block;
+	width: 2.25rem;
+	height: 2.25rem;
+	padding: 0;
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	border-radius: 0.35rem;
+	background-color: #f2f2f2;
+	color: #2a2a2a;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+#status-actions svg {
+	display: block;
+	width: 1.15rem;
+	height: 1.15rem;
+	margin: 0 auto;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+#status-retry {
+	display: block;
+	margin: 0.85rem auto 0;
+	padding: 0.5rem 1.6rem;
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	border-radius: 0.35rem;
+	background-color: #f2f2f2;
+	color: #2a2a2a;
+	font: inherit;
+	font-weight: bold;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+#status-notice.steps {
+	padding: 1.25rem 1.5rem;
+	text-align: left;
+}
+#status-notice.steps svg {
+	flex: none;
+	width: 1.6rem;
+	height: 1.6rem;
+	fill: none;
+	stroke: #9fdcb8;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+#status-notice.steps .title {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	font-size: 1.2rem;
+	font-weight: bold;
+	color: #ffffff;
+}
+#status-notice.steps .title .emoji {
+	font-size: 2.2rem;
+	font-style: normal;
+	line-height: 1;
+}
+#status-notice.steps ul {
+	list-style: none;
+	margin: 1rem 0 0;
+	padding: 0;
+}
+#status-notice.steps li {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.45rem 0;
+	border-top: 1px solid rgba(159, 220, 184, 0.15);
+}
+#status-notice.steps p {
+	margin: 0.6rem 0 0;
+	font-size: 0.85rem;
+	opacity: 0.7;
+}
+#status-notice.retry {
+	text-align: center;
+}
+#status-notice.retry .title {
+	justify-content: center;
+}
+#status-notice.retry .title svg {
+	width: 2.2rem;
+	height: 2.2rem;
+	color: #9fdcb8;
+}
+#status-notice.retry .title svg .slash {
+	stroke: #e53935;
+	stroke-width: 2.4;
+}
+#status-notice.steps #status-retry {
+	background-color: #6cc48f;
+	border-color: #3c7560;
+	color: #0f2a21;
+}
+#status-notice.steps #status-retry {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-width: 9rem;
+}
+#status-retry .spinner {
+	display: none;
+	width: 1rem;
+	height: 1rem;
+	border: 0.18rem solid rgba(15, 42, 33, 0.25);
+	border-top-color: #0f2a21;
+	border-radius: 50%;
+	animation: status-spin 0.8s linear infinite;
+}
+#status-retry.busy {
+	cursor: default;
+	opacity: 0.85;
+}
+#status-retry.busy .spinner {
+	display: block;
+}
+#status-retry.nope {
+	animation: status-nope 0.4s ease-in-out;
+}
+@keyframes status-spin { to { transform: rotate(360deg); } }
+@keyframes status-nope {
+	20%, 60% { transform: translateX(-0.4rem); }
+	40%, 80% { transform: translateX(0.4rem); }
+}
+#status-copy.done {
+	background-color: #9ad79a;
+}
+
+#initial-loading {
+ position: absolute; inset: 0; z-index: 3; display: flex; box-shadow: 0 200px 0 rgb(25, 70, 56);
+ align-items: center; justify-content: center;
+ background-color: rgb(25, 70, 56); color: #ffffff;
+ color-scheme: light dark; forced-color-adjust: none; filter: none !important;
+ pointer-events: none; font: bold 28px Arial, sans-serif;
+}
+#initial-loading > * { position: absolute; left: 50%; top: 50%; }
+#initial-loading img { visibility: hidden; transform-origin: 50% 0; object-fit: contain; }
+#initial-loading .bar { background: rgba(20, 40, 25, 0.6); }
+#initial-loading .fill { position: absolute; background: #43a047; }
+@media (prefers-color-scheme: dark) {
+ #initial-loading { background-color: rgb(25, 70, 56); color: #ffffff;
+ color-scheme: light dark; forced-color-adjust: none; filter: none !important; }
+}
+</style>
+ <script id="browser-compat">
+			if (typeof Object.hasOwn !== 'function') {
+				Object.defineProperty(Object, 'hasOwn', {
+					value: function hasOwn(object, property) {
+						if (object === null || object === undefined) {
+							throw new TypeError('Cannot convert undefined or null to object')
+						}
+						return Object.prototype.hasOwnProperty.call(Object(object), property)
+					},
+					writable: true,
+					configurable: true
+				})
+			}
+		</script>
+ <script>
+			(function () {
+				const DEV_HOST_SUFFIXES = ['mibbon.com']
+				const DEV_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]', '']
+				const host = location.hostname
+				window.__IS_DEV_HOST = DEV_HOSTS.includes(host) ||
+					DEV_HOST_SUFFIXES.some((s) => host === s || host.endsWith('.' + s))
+				// Our hosted dev sites only over https. Over plain http the page is an insecure context, and
+				// the Poki SDK's init throws on crypto.randomUUID there and never settles -- which is the
+				// loading bar stopped at fifteen percent for good, waiting on it. The server does not redirect.
+				if (window.__IS_DEV_HOST && location.protocol === 'http:' && !DEV_HOSTS.includes(host)) {
+					location.replace('https://' + location.host + location.pathname + location.search + location.hash)
+				}
+				// The escape hatch, on the same terms as everything else here: ?debug makes
+				// any host ours for the length of one page load.
+				window.__IS_DEV = window.__IS_DEV_HOST ||
+					new URLSearchParams(location.search).has('debug')
+			})()
+		</script>
+ <script>
+(function () {
+ var pack = window.__PACK;
+ if (!pack) { try { pack = localStorage.getItem('dino.pack'); } catch (_) {} }
+ if (window.__IS_DEV_HOST) return;
+ var params = new URLSearchParams(location.search);
+ var token = params.get('nocache');
+ function preload(path, kind) {
+  var link = document.createElement('link');
+  link.rel = kind === 'script' ? 'modulepreload' : 'preload';
+  if (kind !== 'script') link.as = kind;
+  // FontFace fetches in cors mode; a preload without it is a second download, not a head start.
+  if (kind === 'font') link.crossOrigin = 'anonymous';
+  link.href = path + (token ? '?nocache=' + encodeURIComponent(token) : '');
+  document.head.appendChild(link);
+ }
+ preload((pack || 'pack_a') + '/title.webp', 'image');
+ preload('./index.js', 'script');
+ // main.js awaits both before the first screen, and would otherwise only ask once the whole bundle has run.
+ preload('SNPro-Regular.woff2', 'font');
+ preload('GiantDisplay-Regular.woff2', 'font');
+})();
+</script>
+ <!-- Defer lets the initial text paint while the SDK downloads. It runs before bootstrap.js. -->
+ 
+ <!-- On a dev host every file is fetched under its own content hash, the shell included. The
+      ?nocache stamp busts the page, but a static import resolves bare, and with no Cache-Control
+      from the server a browser is free to serve whichever copy of a module it holds; an iPhone
+      did, and the page died at link time on an export the old copy never had. An import map
+      applies to relative specifiers once resolved, so one that sends every module of the build
+      to itself plus its hash makes a changed module a new URL and an unchanged one a cached
+      one. The same table stamps the art through window.__NOCACHE_URL. It is script/files.json,
+      written by the upload beside the build; a checkout has none and uses the load's stamp, as
+      it always did. Read synchronously: the map has to be in the document before the first
+      module script is. -->
+ <script>
+(function () {
+ var stamp = Date.now()
+ var table = null
+ if (window.__IS_DEV) {
+  try {
+   var request = new XMLHttpRequest()
+   request.open('GET', 'script/files.json?nocache=' + stamp, false)
+   request.send(null)
+   if (request.status === 200) table = JSON.parse(request.responseText)
+  } catch (e) { console.warn('[boot] files not stamped:', e) }
+ }
+ window.__FILE_STAMPS = table
+ window.__FILE_STAMP = function (url) {
+  try { return (table && table[new URL(url, location.href).pathname.slice(new URL('.', location.href).pathname.length)]) || '' } catch (e) { return '' }
+ }
+ // The player's language, preloaded under the exact URL loca's fetch will ask for -- with its hash on a stamped
+ // build. A checkout busts every load with a fresh stamp nothing here can know, so it goes without.
+ var ask = function (code) {
+  var path = 'translations/' + code + '.json'
+  var hash = window.__FILE_STAMP(path)
+  var token = new URLSearchParams(location.search).get('nocache')
+  if (!hash && window.__IS_DEV_HOST) return
+  var link = document.createElement('link')
+  link.rel = 'preload'
+  link.as = 'fetch'
+  link.crossOrigin = 'anonymous'
+  link.href = path + (hash ? '?v=' + hash : token ? '?nocache=' + encodeURIComponent(token) : '')
+  document.head.appendChild(link)
+ }
+ ask(window.__LANG)
+ if (window.__LANG !== 'en') ask('en')
+ var shell = 'bootstrap.js' + (window.__IS_DEV ? '?' + (table && table['bootstrap.js'] ? 'v=' + table['bootstrap.js'] : 'nocache=' + stamp) : '')
+ if (table) {
+  var imports = {}, count = 0
+  for (var path in table) {
+   if (!/\.m?js$/.test(path)) continue
+   var full = new URL(path, location.href).pathname
+   imports[full] = full + '?v=' + table[path]
+   count++
+  }
+  window.__STAMPED_MODULES = count
+  document.write('<script type="importmap">' + JSON.stringify({ imports: imports }) + '<\/script>')
+ }
+ document.write('<script type="module" src="' + shell + '"><\/script>')
+})()
+</script>
+</head>
+<body>
+ <div id="initial-loading" role="status" aria-label="Loading"><img alt=""><div class="bar"><div class="fill"></div></div></div>
+ <script>
+// The loading page's logo and bar, up from the first paint and laid out as StartScreenDom lays out its own (no picker,
+// lifted as far as the loading egg lifted them last time: dino.egglift), so the game's page takes the bar over in place. Until then it fills with the script download: the
+// stamped modules counted as they land on a dev host, a creep toward HANDOFF for Poki's one bundle.
+(function () {
+ var HANDOFF = 0.08
+ var page = document.getElementById('initial-loading')
+ var title = page.querySelector('img'), bar = page.querySelector('.bar'), fill = page.querySelector('.fill')
+ var pack = window.__PACK
+ if (!pack) { try { pack = localStorage.getItem('dino.pack') } catch (_) {} }
+ var path = (pack || 'pack_a') + '/title.webp'
+ var hash = window.__FILE_STAMP && window.__FILE_STAMP(path)
+ var token = new URLSearchParams(location.search).get('nocache')
+ title.src = path + (hash ? '?v=' + hash : token ? '?nocache=' + encodeURIComponent(token) : '')
+ var fraction = 0, landed = 0, total = window.__STAMPED_MODULES || 0
+ if (total && window.PerformanceObserver) {
+  try {
+   new PerformanceObserver(function (list) {
+    list.getEntries().forEach(function (e) { if (/\.m?js(\?|$)/.test(e.name)) landed++ })
+   }).observe({ type: 'resource', buffered: true })
+  } catch (_) {}
+ }
+ var k = 1, scale = 1, lifts = {}
+ try { lifts = JSON.parse(localStorage.getItem('dino.egglift')) || {} } catch (_) {}
+ var px = function (v) { return v * scale + 'px' }
+ function layout() {
+  var w = innerWidth || 1280, h = innerHeight || 720
+  var vw = 1280, vh = 720
+  if (1280 / 720 < w / h) { vw = Math.floor(720 * w / h); scale = h / vh } else { vh = Math.floor(1280 * h / w); scale = w / vw }
+  k = 1.6 + (1 - 1.6) * Math.min(Math.max((vw / vh - 0.5) / 0.5, 0), 1)
+  var portrait = vh > vw, logoScale = portrait ? 1.5 : 1
+  var lift = (lifts[portrait ? 'p' : 'l'] || 0) * k
+  var baseH = 220 * k
+  var baseW = Math.min(560 * k, (title.naturalWidth / title.naturalHeight || 560 / 220) * baseH)
+  var titleAt = -185 * k - (portrait ? baseH * 0.5 : 0) - lift
+  title.style.width = px(baseW); title.style.height = px(baseH); title.style.marginLeft = px(-baseW / 2)
+  title.style.transform = 'translateY(' + px(titleAt) + ') scale(' + logoScale + ')'
+  bar.style.width = px(560 * k); bar.style.height = px(30 * k); bar.style.borderRadius = px(10 * k)
+  bar.style.transform = 'translate(' + px(-280 * k) + ', ' + px(70 * k - lift) + ')'
+  fill.style.left = fill.style.top = fill.style.bottom = px(3 * k); fill.style.borderRadius = px(7 * k)
+  draw()
+ }
+ function draw() { fill.style.width = px(554 * k * fraction) }
+ var start = performance.now()
+ function tick() {
+  if (!page.isConnected) { removeEventListener('resize', layout); return }
+  var creep = 1 - Math.exp(-(performance.now() - start) / 2500)
+  fraction = HANDOFF * Math.max(0.9 * creep, total ? Math.min(1, landed / total) : 0)
+  draw()
+  requestAnimationFrame(tick)
+ }
+ title.onload = function () { layout(); title.style.visibility = 'visible' }
+ addEventListener('resize', layout)
+ layout()
+ requestAnimationFrame(tick)
+ window.__initialProgress = function () { return fraction }
+})()
+ </script>
+ <canvas id="canvas" tabindex="0"></canvas>
+ <canvas id="ui"></canvas>
+ <div id="status-notice"></div>
+</body>
+</html>
