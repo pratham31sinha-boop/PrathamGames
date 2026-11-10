@@ -1,5 +1,25 @@
 [
   {
+    "id": "act_1794291595886",
+    "timestamp": "2026-11-10 06:19:55 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Subway Surfers",
+    "slug": "subway-surfers",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=subway-surfers"
+  },
+  {
+    "id": "act_1794291595883",
+    "timestamp": "2026-11-10 06:19:55 UTC",
+    "type": "USER_VISIT",
+    "gameTitle": "Games Store Home",
+    "slug": "",
+    "category": "Portal",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=subway-surfers"
+  },
+  {
     "id": "act_1794290400272",
     "timestamp": "2026-11-10 06:00:00 UTC",
     "type": "GAME_PLAY",
