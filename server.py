@@ -584,6 +584,64 @@ MOCK_SDK_TEMPLATE = """
 
   window.pokiReady = true;
   window.pokiAdBlock = false;
+  window.PokiSDKInited = true;
+  window.isPokiSDKInited = true;
+
+  // Cross-origin Worker polyfill using Blob and importScripts
+  try {
+    var _origWorker = window.Worker;
+    if (_origWorker) {
+      window.Worker = function(scriptURL, options) {
+        try {
+          var resolved = new URL(scriptURL, document.baseURI || window.location.href).href;
+          if (resolved.indexOf(window.location.origin) !== 0) {
+            var blobCode = 'importScripts(' + JSON.stringify(resolved) + ');';
+            var blob = new Blob([blobCode], { type: 'application/javascript' });
+            return new _origWorker(URL.createObjectURL(blob), options);
+          }
+          return new _origWorker(resolved, options);
+        } catch(e) {
+          return new _origWorker(scriptURL, options);
+        }
+      };
+    }
+  } catch(e) {}
+
+  // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
+  try {
+    var PROXY_DOMAINS = ['minefun.io', 'vectaria.io', 'supabase.co', 'pangolinworks.dev', 'cryzen.io', 'sushiparty.io'];
+    var shouldProxy = function(u) {
+      if (typeof u !== 'string') return false;
+      for (var i = 0; i < PROXY_DOMAINS.length; i++) {
+        if (u.indexOf(PROXY_DOMAINS[i]) !== -1) return true;
+      }
+      return false;
+    };
+
+    var _origFetch = window.fetch;
+    if (_origFetch) {
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (shouldProxy(url)) {
+          var proxyUrl = '/api/cors-proxy?url=' + encodeURIComponent(url);
+          if (typeof input === 'string') {
+            input = proxyUrl;
+          } else if (input && input.url) {
+            input = new Request(proxyUrl, input);
+          }
+        }
+        return _origFetch.call(this, input, init);
+      };
+    }
+
+    var _origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      if (shouldProxy(url)) {
+        url = '/api/cors-proxy?url=' + encodeURIComponent(url);
+      }
+      return _origXhrOpen.call(this, method, url, async !== false, user, pass);
+    };
+  } catch(e) {}
 
   // Poll for Unity bridge and signal ready immediately
   var bridgeInterval = setInterval(function() {
@@ -611,11 +669,25 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
             return
         return super().do_HEAD()
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.send_header('Access-Control-Allow-Credentials', 'true')
+        self.send_header('Access-Control-Max-Age', '86400')
+        self.end_headers()
+
     def do_GET(self):
         # Ignore empty/undefined requests from third-party scripts
         if self.path in ('/undefined', '/null'):
             self.send_response(204)
             self.end_headers()
+            return
+
+        # Route: /api/cors-proxy
+        if self.path.startswith('/api/cors-proxy'):
+            self.handle_cors_proxy('GET')
             return
 
         # Route: /api/player-history
@@ -681,6 +753,11 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
+        # Route: /api/cors-proxy
+        if self.path.startswith('/api/cors-proxy'):
+            self.handle_cors_proxy('POST')
+            return
+
         # Route: /api/register-player
         if self.path == '/api/register-player':
             content_length = int(self.headers.get('Content-Length', 0))
@@ -747,6 +824,81 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
+    def do_PUT(self):
+        if self.path.startswith('/api/cors-proxy'):
+            self.handle_cors_proxy('PUT')
+            return
+        self.send_response(404)
+        self.end_headers()
+
+    def handle_cors_proxy(self, method):
+        import urllib.parse
+        parsed = urllib.parse.urlparse(self.path)
+        qs = urllib.parse.parse_qs(parsed.query)
+        target_url = qs.get('url', [''])[0]
+        if not target_url:
+            self.send_response(400)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            return
+
+        req_headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': '*/*'
+        }
+        for h, v in self.headers.items():
+            h_lower = h.lower()
+            if h_lower not in ('host', 'origin', 'referer', 'content-length', 'connection', 'accept-encoding'):
+                req_headers[h] = v
+
+        if 'minefun' in target_url:
+            req_headers['Origin'] = 'https://c89f4abe-5041-497b-8705-986b6f3b748c.poki-gdn.com'
+            req_headers['Referer'] = 'https://c89f4abe-5041-497b-8705-986b6f3b748c.poki-gdn.com/'
+        elif 'vectaria' in target_url:
+            req_headers['Origin'] = 'https://e00d1cab-5c0c-46e5-8f15-e409e1215622.poki-gdn.com'
+            req_headers['Referer'] = 'https://e00d1cab-5c0c-46e5-8f15-e409e1215622.poki-gdn.com/'
+        else:
+            req_headers['Origin'] = 'https://games.poki.com'
+            req_headers['Referer'] = 'https://games.poki.com/'
+
+        body = None
+        if method in ('POST', 'PUT', 'PATCH'):
+            try:
+                content_len = int(self.headers.get('Content-Length', 0))
+                if content_len > 0:
+                    body = self.rfile.read(content_len)
+            except Exception:
+                body = None
+
+        try:
+            req = urllib.request.Request(target_url, data=body, headers=req_headers, method=method)
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                resp_data = resp.read()
+                self.send_response(resp.status)
+                for h, v in resp.getheaders():
+                    if h.lower() not in ('transfer-encoding', 'content-encoding', 'access-control-allow-origin', 'access-control-allow-credentials', 'content-security-policy'):
+                        self.send_header(h, v)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Credentials', 'true')
+                self.end_headers()
+                self.wfile.write(resp_data)
+        except urllib.error.HTTPError as e:
+            try:
+                err_data = e.read()
+            except Exception:
+                err_data = b''
+            self.send_response(e.code)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Credentials', 'true')
+            self.send_header('Content-Type', e.headers.get('Content-Type', 'text/plain'))
+            self.end_headers()
+            self.wfile.write(err_data)
+        except Exception as e:
+            self.send_response(502)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(str(e).encode('utf-8'))
+
     def send_json_response(self, obj, status=200):
         body = json.dumps(obj).encode('utf-8')
         self.send_response(status)
@@ -766,6 +918,64 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
                 return
             except Exception as e:
                 print(f"Error reading disk cache for {slug}: {e}")
+
+        # Check if slug is a sub-resource path (e.g. scripts/jobworker.js or slug/subpath)
+        ref_slug = None
+        subpath = slug
+        if '/' in slug:
+            parts = slug.split('/', 1)
+            if parts[0] in GAME_CACHE or os.path.exists(os.path.join(HTML_CACHE_DIR, f"{parts[0]}.html")):
+                ref_slug = parts[0]
+                subpath = parts[1]
+
+        if not ref_slug:
+            referer = self.headers.get('Referer', '')
+            if '/play-game/' in referer:
+                ref_slug = referer.split('/play-game/')[1].split('?')[0].strip('/').split('/')[0]
+            elif '?game=' in referer:
+                ref_slug = referer.split('?game=')[1].split('&')[0].strip('/')
+
+        if ref_slug:
+            base_url = None
+            if ref_slug in GAME_CACHE:
+                clean_uri = GAME_CACHE[ref_slug].split('?')[0]
+                base_url = clean_uri.rsplit('/', 1)[0] + '/'
+            else:
+                ref_file = os.path.join(HTML_CACHE_DIR, f"{ref_slug}.html")
+                if os.path.exists(ref_file):
+                    try:
+                        with open(ref_file, 'r', encoding='utf-8') as f:
+                            m = re.search(r'<base\s+href=[\'"]([^\'"]+)[\'"]', f.read())
+                            if m:
+                                base_url = m.group(1)
+                    except Exception:
+                        pass
+
+            if base_url:
+                target_url = urllib.parse.urljoin(base_url, subpath)
+                try:
+                    req = urllib.request.Request(target_url, headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Referer': 'https://games.poki.com/'
+                    })
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        data = resp.read()
+                        self.send_response(resp.status)
+                        ctype = resp.headers.get('Content-Type')
+                        if not ctype or 'text/plain' in ctype:
+                            if subpath.endswith('.js'): ctype = 'text/javascript; charset=utf-8'
+                            elif subpath.endswith('.wasm'): ctype = 'application/wasm'
+                            elif subpath.endswith('.json'): ctype = 'application/json'
+                            elif subpath.endswith('.css'): ctype = 'text/css'
+                            elif subpath.endswith('.png'): ctype = 'image/png'
+                            elif subpath.endswith('.jpg') or subpath.endswith('.jpeg'): ctype = 'image/jpeg'
+                        self.send_header('Content-Type', ctype)
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(data)
+                        return
+                except Exception as e:
+                    print(f"Error proxying subpath {subpath} for {ref_slug}: {e}")
 
         # If not already cached on disk, resolve and fetch with retry
         game_uri = resolve_game_slug(slug)

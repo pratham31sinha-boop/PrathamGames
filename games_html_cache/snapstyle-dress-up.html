@@ -142,6 +142,64 @@
 
   window.pokiReady = true;
   window.pokiAdBlock = false;
+  window.PokiSDKInited = true;
+  window.isPokiSDKInited = true;
+
+  // Cross-origin Worker polyfill using Blob and importScripts
+  try {
+    var _origWorker = window.Worker;
+    if (_origWorker) {
+      window.Worker = function(scriptURL, options) {
+        try {
+          var resolved = new URL(scriptURL, document.baseURI || window.location.href).href;
+          if (resolved.indexOf(window.location.origin) !== 0) {
+            var blobCode = 'importScripts(' + JSON.stringify(resolved) + ');';
+            var blob = new Blob([blobCode], { type: 'application/javascript' });
+            return new _origWorker(URL.createObjectURL(blob), options);
+          }
+          return new _origWorker(resolved, options);
+        } catch(e) {
+          return new _origWorker(scriptURL, options);
+        }
+      };
+    }
+  } catch(e) {}
+
+  // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
+  try {
+    var PROXY_DOMAINS = ['minefun.io', 'vectaria.io', 'supabase.co', 'pangolinworks.dev', 'cryzen.io', 'sushiparty.io'];
+    var shouldProxy = function(u) {
+      if (typeof u !== 'string') return false;
+      for (var i = 0; i < PROXY_DOMAINS.length; i++) {
+        if (u.indexOf(PROXY_DOMAINS[i]) !== -1) return true;
+      }
+      return false;
+    };
+
+    var _origFetch = window.fetch;
+    if (_origFetch) {
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (shouldProxy(url)) {
+          var proxyUrl = '/api/cors-proxy?url=' + encodeURIComponent(url);
+          if (typeof input === 'string') {
+            input = proxyUrl;
+          } else if (input && input.url) {
+            input = new Request(proxyUrl, input);
+          }
+        }
+        return _origFetch.call(this, input, init);
+      };
+    }
+
+    var _origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      if (shouldProxy(url)) {
+        url = '/api/cors-proxy?url=' + encodeURIComponent(url);
+      }
+      return _origXhrOpen.call(this, method, url, async !== false, user, pass);
+    };
+  } catch(e) {}
 
   // Poll for Unity bridge and signal ready immediately
   var bridgeInterval = setInterval(function() {
