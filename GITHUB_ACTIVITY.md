@@ -33,3 +33,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-10 06:24:31 UTC | 🎮 GAME_PLAY | **Stickman Hook** (Skill) | Linux x86_64 • Desktop |
 | 2026-11-10 06:24:47 UTC | 🎮 GAME_PLAY | **Tic Tac Toe Ultimate** (Puzzle) | Linux x86_64 • Desktop |
 | 2026-11-10 06:27:15 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
+| 2026-11-10 06:32:13 UTC | 🎮 GAME_PLAY | **Monkey Mart** (Simulation) | Linux x86_64 • Desktop |
