@@ -15,3 +15,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:29:37 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 128 pts | Duration: 5s
 [11:29:37 AM IST] GAME PLAYED: Beauty Salon | Category: Casual | Score: Active Session Started | Duration: 0m
 [11:29:46 AM IST] GAME PLAYED: Beauty Salon | Category: Casual | Score: 191 pts | Duration: 8s
+[11:29:46 AM IST] GAME PLAYED: Talking Tom Gold Run | Category: Adventure | Score: Active Session Started | Duration: 0m
