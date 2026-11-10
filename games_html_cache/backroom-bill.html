@@ -328,7 +328,7 @@
         </script>
   <script id="poki-sdk-setup" type="text/javascript">
 		var isWasmLoaded = false;
-		var isPokiSDKInited = false;
+		var isPokiSDKInited = true;
 		var runFunc = function() {
 			if (isPokiSDKInited && isWasmLoaded) {
 				Module.runApp("canvas");
@@ -358,6 +358,8 @@
 					runFunc();
 				});
 		}
+	
+		try { poki_sdk_loaded(); } catch(e) {}
 	</script>
  </body>
 </html>
