@@ -42,3 +42,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [12:48:03 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
 [12:48:07 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 109 pts | Duration: 4s
 [12:48:12 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
+[12:48:12 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 50 pts | Duration: 1s
+[12:48:12 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
