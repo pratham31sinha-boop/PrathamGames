@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794291696226",
+    "timestamp": "2026-11-10 06:21:36 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Chess Pro",
+    "slug": "chess-pro",
+    "category": "Puzzle",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/"
+  },
+  {
     "id": "act_1794291606022",
     "timestamp": "2026-11-10 06:20:06 UTC",
     "type": "GAME_PLAY",

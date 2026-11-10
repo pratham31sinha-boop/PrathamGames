@@ -27,3 +27,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-10 06:19:55 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-10 06:20:00 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-10 06:20:06 UTC | 🎮 GAME_PLAY | **Count Control Legends** (Arcade) | Linux x86_64 • Desktop |
+| 2026-11-10 06:21:36 UTC | 🎮 GAME_PLAY | **Chess Pro** (Puzzle) | Linux x86_64 • Desktop |
