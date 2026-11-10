@@ -7,3 +7,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 ================================================================================
 
 [11:24:53 AM IST] PLAYER REGISTERED: Priya (Age: 18) registered into Pratham Games
+[11:24:53 AM IST] GAME PLAYED: Drive Mad | Category: Racing | Score: 3,400 pts | Duration: 3m 10s
