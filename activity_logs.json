@@ -1,5 +1,25 @@
 [
   {
+    "id": "act_1794291887055",
+    "timestamp": "2026-11-10 06:24:47 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Tic Tac Toe Ultimate",
+    "slug": "tic-tac-toe-ultimate",
+    "category": "Puzzle",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=stickman-hook"
+  },
+  {
+    "id": "act_1794291871534",
+    "timestamp": "2026-11-10 06:24:31 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Stickman Hook",
+    "slug": "stickman-hook",
+    "category": "Skill",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=hill-climb-racing-lite"
+  },
+  {
     "id": "act_1794291772939",
     "timestamp": "2026-11-10 06:22:52 UTC",
     "type": "GAME_PLAY",
