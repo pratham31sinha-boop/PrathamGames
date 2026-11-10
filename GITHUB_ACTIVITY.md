@@ -51,3 +51,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-10 10:00:31 UTC | 🎮 GAME_PLAY | **MineFun.io** (.io & Arena) | Linux x86_64 • Desktop |
 | 2026-11-10 10:00:43 UTC | 🎮 GAME_PLAY | **Ludo King** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-10 10:01:35 UTC | 🎮 GAME_PLAY | **Escape From School** (Adventure) | Linux x86_64 • Desktop |
+| 2026-11-10 10:27:17 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
