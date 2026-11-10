@@ -9,3 +9,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:28:20 AM IST] PLAYER REGISTERED: Pratham (Age: 15) registered into Pratham Games
 [11:28:33 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
 [11:28:47 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 297 pts | Duration: 13s
+[11:28:47 AM IST] GAME PLAYED: Scary Teacher 3D | Category: Racing | Score: Active Session Started | Duration: 0m
