@@ -35,3 +35,5 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-10 06:27:15 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-10 06:32:13 UTC | 🎮 GAME_PLAY | **Monkey Mart** (Simulation) | Linux x86_64 • Desktop |
 | 2026-11-10 07:18:03 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-10 07:18:03 UTC | 🎮 GAME_PLAY | **Monkey Mart** (Simulation) | Linux x86_64 • Desktop |
+| 2026-11-10 07:18:09 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
