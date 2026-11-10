@@ -31,3 +31,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:52:52 AM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 1583 pts | Duration: 1m 11s
 [11:52:52 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
 [11:54:31 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 2166 pts | Duration: 1m 38s
+[11:54:31 AM IST] GAME PLAYED: Stickman Hook | Category: Skill | Score: Active Session Started | Duration: 0m
