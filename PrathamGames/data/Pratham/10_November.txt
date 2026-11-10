@@ -66,3 +66,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [07:21:49 PM IST] GAME PLAYED: Soccer REAL | Category: Sports | Score: Active Session Started | Duration: 0m
 [07:21:51 PM IST] GAME PLAYED: Soccer REAL | Category: Sports | Score: 50 pts | Duration: 2s
 [07:21:51 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: Active Session Started | Duration: 0m
+[07:33:01 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: 14725 pts | Duration: 11m 9s
+[07:33:01 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
