@@ -69,3 +69,6 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [07:33:01 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: 14725 pts | Duration: 11m 9s
 [07:33:01 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
 [07:33:11 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: 236 pts | Duration: 10s
+[07:33:11 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
+[07:33:20 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
+[07:33:24 PM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: 272 pts | Duration: 12s
