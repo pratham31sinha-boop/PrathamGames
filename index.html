@@ -228,10 +228,6 @@
           </div>
 
           <div class="footer-right">
-            <button class="github-sync-pill" id="githubStatusBtn" title="GitHub Telemetry Active • Click to view live session log">
-              <span class="github-live-dot"></span>
-              <span>🐙 GitHub Sync: Active</span>
-            </button>
             <span>© 2026 Pratham Games. All rights reserved.</span>
             <a href="/?category=racing">Racing</a>
             <a href="/?category=adventure">Adventure</a>
@@ -244,56 +240,6 @@
     </div>
   </div>
 
-  <!-- GitHub Live Telemetry & Config Modal -->
-  <div class="github-modal-backdrop" id="githubModal" style="display: none;">
-    <div class="github-modal-card">
-      <div class="github-modal-header">
-        <div class="github-modal-title">
-          <span>🐙</span>
-          <span>GitHub Live Activity & Session Stream</span>
-        </div>
-        <button class="github-modal-close" id="githubModalClose">&times;</button>
-      </div>
-      <div class="github-modal-body">
-        <p class="github-modal-desc">
-          Automatically tracks and syncs user browser visits and real-time game play sessions to your GitHub repository and webhooks.
-        </p>
-
-        <!-- Live Event Feed -->
-        <div class="github-live-feed-wrap">
-          <div class="github-feed-header">
-            <span>Recent Activity Stream</span>
-            <span id="githubEventCountBadge" class="github-badge">Active</span>
-          </div>
-          <div class="github-feed-list" id="githubFeedList">
-            <div style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading live events...</div>
-          </div>
-        </div>
-
-        <!-- GitHub Sync Config Form -->
-        <div class="github-config-box">
-          <div class="github-config-title">⚙️ GitHub Remote / Webhook Integration</div>
-          <div class="github-form-row">
-            <label>GitHub Webhook URL (Discord / Slack / GitHub Webhook):</label>
-            <input type="text" id="githubWebhookInput" placeholder="https://discord.com/api/webhooks/... or https://...">
-          </div>
-          <div class="github-form-row">
-            <label>Target GitHub Repository (owner/repo):</label>
-            <input type="text" id="githubRepoInput" placeholder="e.g. prathamsinha/pratham-games-activity">
-          </div>
-          <div class="github-form-row">
-            <label>GitHub Personal Access Token (PAT):</label>
-            <input type="password" id="githubTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-          </div>
-          <div class="github-form-actions">
-            <button id="githubSaveConfigBtn" class="github-btn-primary">Save Settings</button>
-            <button id="githubTestPingBtn" class="github-btn-secondary">Test GitHub Ping</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Player Onboarding Modal (Name & Age Required at Start) -->
   <div class="player-onboard-backdrop" id="playerOnboardModal" style="display: none;">
     <div class="player-onboard-card">
@@ -302,7 +248,7 @@
           <img src="./assets/icons/logo.svg" alt="PRATHAM GAMES" class="onboard-brand-logo-img">
         </div>
         <h2 class="onboard-title">Welcome to PRATHAM GAMES</h2>
-        <p class="onboard-sub">Enter your Gamer Name and Age to register your profile and track all game plays & scores.</p>
+        <p class="onboard-sub">Enter your Gamer Name and Age to personalize your profile and save your games.</p>
       </div>
       <form id="playerOnboardForm" class="onboard-form" onsubmit="return false;">
         <div class="onboard-field">
@@ -319,9 +265,8 @@
             <input type="number" id="onboardAgeInput" placeholder="e.g. 16" min="3" max="120" required>
           </div>
         </div>
-        <div class="onboard-notice">
-          <span>🇮🇳</span>
-          <span>Registered in <strong>PrathamGames/data/</strong> with daily Indian Time (IST) txt files.</span>
+        <div class="onboard-notice" style="justify-content: center; text-align: center;">
+          <span>⚡ Instant Play • 100% Free • Save High Scores</span>
         </div>
         <button type="submit" id="onboardSubmitBtn" class="onboard-submit-btn">
           <span>START PLAYING</span>
@@ -352,18 +297,18 @@
             <div class="profile-stat-val" id="profileStatAge">--</div>
           </div>
           <div class="profile-stat-box">
-            <div class="profile-stat-label">Timezone</div>
-            <div class="profile-stat-val" id="profileStatTimezone">IST (India)</div>
+            <div class="profile-stat-label">Status</div>
+            <div class="profile-stat-val" id="profileStatTimezone">Active Gamer</div>
           </div>
         </div>
 
         <div class="github-live-feed-wrap">
           <div class="github-feed-header">
-            <span>Today's Daily File: <strong id="profileTodayFileName">Today's Log</strong></span>
-            <span class="github-badge" id="profileLogCount">Active</span>
+            <span>🎮 Today's Activity (<strong id="profileTodayFileName">Today</strong>)</span>
+            <span class="github-badge" id="profileLogCount">0 Played</span>
           </div>
           <div class="github-feed-list" id="profileFeedList">
-            <div style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading your daily games log...</div>
+            <div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No games played today yet. Pick any game to start playing!</div>
           </div>
         </div>
 

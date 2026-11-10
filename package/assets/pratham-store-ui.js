@@ -637,7 +637,7 @@
     if (title) title.innerText = game.title;
     if (sub) sub.innerText = `⭐ ${game.rating || 4.9} • ${game.plays || '4.2M'} Plays • 🟢 Player: ${player.name} (Age: ${player.age})`;
     if (catBadge) catBadge.innerText = game.category || 'Arcade';
-    if (devLabel) devLabel.innerText = `by ${game.developer || 'Verified Studio'} • Indian Time (IST)`;
+    if (devLabel) devLabel.innerText = `by ${game.developer || 'Verified Studio'}`;
     if (controls) controls.innerText = `🎮 Controls: ${game.controls || 'Use Arrow keys or WASD to navigate'}`;
 
     // Send Real-time Game Play Telemetry to GitHub & PrathamGames/data/
@@ -1160,7 +1160,7 @@
         })
         .then(r => r.json())
         .then(() => {
-          showToast(`🎮 Welcome, <strong>${savedPlayer.name}</strong>! Profile registered in PrathamGames/data/`);
+          showToast(`🎮 Welcome, <strong>${savedPlayer.name}</strong>! Let's play!`);
         })
         .catch(() => {
           showToast(`🎮 Welcome, <strong>${savedPlayer.name}</strong>!`);
@@ -1170,7 +1170,7 @@
       });
     }
 
-    // Open Profile Modal & Load Daily Logs
+    // Open Profile Modal & Load Daily Activity
     function openProfileModal() {
       const p = getPlayer() || { name: 'Rahul', age: 16 };
       if (profileModal) profileModal.style.display = 'flex';
@@ -1184,36 +1184,56 @@
 
       if (statName) statName.innerText = p.name;
       if (statAge) statAge.innerText = `${p.age} yrs`;
-      if (statTz) statTz.innerText = 'IST (UTC+5:30)';
+      if (statTz) statTz.innerText = 'Active Gamer';
 
       if (feedList) {
-        feedList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">Fetching your daily IST logs from PrathamGames/data/...</div>';
+        feedList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">Loading your activity...</div>';
       }
 
       fetch(`/api/player-history?name=${encodeURIComponent(p.name)}`)
         .then(r => r.json())
         .then(data => {
-          if (fileNameEl && data.date) {
-            fileNameEl.innerText = `${data.date}.txt`;
+          if (fileNameEl) {
+            fileNameEl.innerText = data.date || 'Today';
           }
           if (logCountBadge && data.history) {
-            logCountBadge.innerText = `${data.history.length} Logged`;
+            const gameEvents = data.history.filter(h => h.includes('GAME PLAYED') || h.includes('PLAYED:'));
+            logCountBadge.innerText = `${gameEvents.length} Played`;
           }
           if (feedList && data.history) {
             if (data.history.length === 0) {
-              feedList.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No games recorded today yet. Launch any game to start recording!</div>';
+              feedList.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No games played today yet. Launch any game to start playing!</div>';
               return;
             }
-            feedList.innerHTML = data.history.map(item => `
-              <div class="github-feed-item">
-                <span class="github-feed-item-tag">IST LOG</span>
-                <span style="font-weight: 600; color: var(--text-main); font-size: 0.82rem; word-break: break-all;">${item}</span>
-              </div>
-            `).join('');
+            feedList.innerHTML = data.history.map(item => {
+              const timeMatch = item.match(/^\[(.*?)\]/);
+              const timeStr = timeMatch ? timeMatch[1].replace(' IST', '') : '';
+              let title = item.replace(/^\[.*?\]\s*/, '');
+              let tag = '🎮 GAME';
+              let tagBg = 'var(--brand-orange)';
+
+              if (title.includes('GAME PLAYED:')) {
+                const parts = title.split('GAME PLAYED:')[1].split('|');
+                title = parts[0].trim();
+                tag = '🎮 PLAY';
+              } else if (title.includes('PLAYER REGISTERED:')) {
+                title = 'Joined Pratham Games';
+                tag = '👤 JOIN';
+                tagBg = '#10b981';
+              }
+
+              return `
+                <div class="github-feed-item" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem;">
+                  <span class="github-feed-item-tag" style="background: ${tagBg}; color: #fff; font-weight: 800; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 6px;">${tag}</span>
+                  <span style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">${title}</span>
+                  <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${timeStr}</span>
+                </div>
+              `;
+            }).join('');
           }
         })
         .catch(() => {
-          if (feedList) feedList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">Could not fetch player logs.</div>';
+          if (feedList) feedList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-muted);">No activity recorded yet.</div>';
         });
     }
 
