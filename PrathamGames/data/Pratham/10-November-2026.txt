@@ -48,3 +48,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [12:48:19 PM IST] GAME PLAYED: Brain Test: Tricky Puzzles | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [12:56:50 PM IST] GAME PLAYED: Brain Test: Tricky Puzzles | Category: Puzzle | Score: 11263 pts | Duration: 8m 31s
 [12:56:57 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
+[03:29:56 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 201954 pts | Duration: 152m 59s
