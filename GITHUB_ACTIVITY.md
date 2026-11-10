@@ -55,3 +55,5 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-10 13:51:49 UTC | 🎮 GAME_PLAY | **Soccer REAL** (Sports) | Linux x86_64 • Desktop |
 | 2026-11-10 13:51:51 UTC | 🎮 GAME_PLAY | **Hide and Paint** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-10 14:03:01 UTC | 🎮 GAME_PLAY | **Planet Destruction** (Arcade) | Linux x86_64 • Desktop |
+| 2026-11-10 14:03:11 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-10 14:03:11 UTC | 🎮 GAME_PLAY | **Planet Destruction** (Arcade) | Linux x86_64 • Desktop |
