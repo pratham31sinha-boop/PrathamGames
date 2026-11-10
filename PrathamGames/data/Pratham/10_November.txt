@@ -13,3 +13,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:29:30 AM IST] GAME PLAYED: Scary Teacher 3D | Category: Racing | Score: 959 pts | Duration: 43s
 [11:29:32 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
 [11:29:37 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 128 pts | Duration: 5s
+[11:29:37 AM IST] GAME PLAYED: Beauty Salon | Category: Casual | Score: Active Session Started | Duration: 0m
