@@ -36,3 +36,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [11:54:47 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [11:57:12 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: 3210 pts | Duration: 2m 25s
 [11:57:15 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
+[12:02:11 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 6517 pts | Duration: 4m 55s
