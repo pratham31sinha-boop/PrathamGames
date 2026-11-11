@@ -87,3 +87,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:06:27 PM IST] GAME PLAYED: Brain Test: Tricky Puzzles | Category: Puzzle | Score: 175 pts | Duration: 7s
 [7:08:57 PM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
 [7:13:31 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
+[7:13:35 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 114 pts | Duration: 4s
