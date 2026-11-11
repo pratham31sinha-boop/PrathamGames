@@ -87,3 +87,5 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 05:04:32 UTC | 🎮 GAME_PLAY | **Fear Response** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-11 05:12:32 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 05:12:32 UTC | 🎮 GAME_PLAY | **Monkey Mart** (Simulation) | Linux x86_64 • Desktop |
+| 2026-11-11 05:12:36 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-11 05:12:36 UTC | 🎮 GAME_PLAY | **Planet Destruction** (Arcade) | Linux x86_64 • Desktop |
