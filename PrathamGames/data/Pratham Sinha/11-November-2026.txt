@@ -36,3 +36,4 @@
 [10:07:36 PM IST] GAME PLAYED: Happy Glass | Category: Arcade | Score: 2906 pts | Duration: 2m 12s
 [10:07:59 PM IST] GAME PLAYED: Happy Glass | Category: Arcade | Score: 492 pts | Duration: 22s
 [10:08:16 PM IST] GAME PLAYED: Count Control Legends | Category: Arcade | Score: 327 pts | Duration: 14s
+[10:08:18 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
