@@ -287,3 +287,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 15:29:30 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 15:29:54 UTC | 🎮 GAME_PLAY | **Stickman Hook** (Skill) | Linux x86_64 • Desktop |
 | 2026-11-11 15:40:02 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
+| 2026-11-11 15:40:21 UTC | 🎮 GAME_PLAY | **Vortella's Dress Up** (Casual) | Linux armv81 • Mobile |
