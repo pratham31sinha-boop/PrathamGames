@@ -12,3 +12,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:19:55 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 237 pts | Duration: 10s
 [10:27:48 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 10392 pts | Duration: 7m 52s
 [10:27:48 AM IST] GAME PLAYED: Stickman Hook | Category: Skill | Score: Active Session Started | Duration: 0m
+[10:27:53 AM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: Active Session Started | Duration: 0m
