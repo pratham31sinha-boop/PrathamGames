@@ -2338,14 +2338,6 @@ body.mode-play #playerView {
 }
 
 /* ==========================================================================
-   MOBILE BOTTOM NAVIGATION BAR (Desktop Default: Hidden)
-   Theme: Warm Claude Ivory + Claude Orange + Crisp Black Borders
-   ========================================================================== */
-.mobile-bottom-nav {
-  display: none;
-}
-
-/* ==========================================================================
    RESPONSIVE DESIGN BREAKPOINTS
    ========================================================================== */
 @media (max-width: 1200px) {
@@ -2370,86 +2362,73 @@ body.mode-play #playerView {
 }
 
 @media (max-width: 768px) {
-  /* Prevent page content from being obscured by sticky mobile bottom nav */
-  body {
-    padding-bottom: 74px !important;
-  }
-
   .pratham-side-dock {
     display: none !important;
   }
 
-  /* Fixed, Ultra-Responsive Mobile Bottom Navigation Bar */
-  .mobile-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 62px;
-    background: #faf9f5;
-    border-top: 2.5px solid #18181b;
-    box-shadow: 0 -3px 12px rgba(24, 24, 27, 0.08);
-    z-index: 995;
-    align-items: stretch;
-    justify-content: space-around;
-    padding: 0 0.5rem;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  /* Compact Mobile View: Hide banner & trending sections to jump directly to games */
+  .store-hero-banner,
+  .store-trending-section,
+  .store-section-header {
+    display: none !important;
   }
 
-  .mobile-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    background: transparent;
-    border: none;
+  /* Poki-style Bento Grid Mosaic on Mobile (4-column compact edge-to-edge layout) */
+  #storeAllGamesGrid,
+  .all-games-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    grid-auto-flow: dense !important;
+    padding: 0.25rem 0 2rem 0 !important;
+  }
+
+  /* Edge-to-edge compact game cards matching user reference */
+  .game-catalog-card {
+    aspect-ratio: 1 / 1 !important;
+    border: 2px solid #18181b !important;
+    border-radius: 16px !important;
+    box-shadow: 3px 3px 0px #18181b !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
     cursor: pointer;
-    padding: 0.35rem 0.2rem;
-    color: #4b5563;
-    font-size: 0.72rem;
-    font-weight: 700;
-    transition: color 0.15s ease, transform 0.1s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    position: relative;
   }
 
-  .mobile-nav-item .mobile-nav-icon {
-    font-size: 1.25rem;
-    line-height: 1;
-    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Featured games span 2x2 cells */
+  .game-catalog-card.card-featured-2x2 {
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
+    aspect-ratio: 1 / 1 !important;
   }
 
-  .mobile-nav-item .mobile-nav-label {
-    letter-spacing: -0.01em;
+  .game-catalog-card .game-card-thumb-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    position: relative !important;
   }
 
-  .mobile-nav-item.active {
-    color: #da7756;
-    font-weight: 800;
+  .game-catalog-card .game-card-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 14px !important;
   }
 
-  .mobile-nav-item.active .mobile-nav-icon {
-    transform: translateY(-2px) scale(1.1);
+  /* Hide card text details on mobile so artwork fills the card edge-to-edge */
+  .game-catalog-card .game-card-details {
+    display: none !important;
   }
 
-  .mobile-nav-item.active::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    width: 22px;
-    height: 3px;
-    background: #da7756;
-    border-radius: 999px;
-  }
-
-  .mobile-nav-item:active {
-    transform: scale(0.92);
+  .game-catalog-card:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0px #18181b !important;
   }
 
   .pratham-top-header {
@@ -2463,18 +2442,8 @@ body.mode-play #playerView {
     display: none;
   }
   #storeView, #playerView {
-    padding: 1rem 1rem 2.5rem 1rem;
+    padding: 0.5rem 0.75rem 2.5rem 0.75rem;
   }
-  .hero-left-content {
-    padding: 1.5rem 1.25rem;
-  }
-  .hero-title {
-    font-size: 1.85rem;
-  }
-  .trending-cards-grid {
-    grid-template-columns: 1fr;
-  }
-  .all-games-grid,
   .player-bottom-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.85rem;
@@ -2551,7 +2520,7 @@ body.mode-play #playerView {
   }
 
   .pratham-toast {
-    bottom: 74px !important;
+    bottom: 1.5rem !important;
     left: 1rem !important;
     right: 1rem !important;
     justify-content: center;
@@ -2646,7 +2615,6 @@ body.mode-play #playerView {
     width: 100%;
     justify-content: space-between;
   }
-  .all-games-grid,
   .player-bottom-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.6rem;
@@ -2700,7 +2668,6 @@ body.mode-play #playerView {
 }
 
 @media (max-width: 360px) {
-  .all-games-grid,
   .player-bottom-grid {
     grid-template-columns: 1fr;
   }

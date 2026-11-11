@@ -131,11 +131,27 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
     measure: noop,
     captureError: noop,
     customEvent: noop,
-    gameInteractive: noop,
+    gameInteractive: function() {
+      try { window.parent.postMessage({ type: 'PRATHAM_GAME_READY', source: 'gameInteractive' }, '*'); } catch(e) {}
+    },
     gameLoadingFinished: noop,
-    gameLoadingProgress: noop,
-    gameLoadingStart: noop,
-    gameplayStart: noop,
+    gameLoadingProgress: function(p) {
+      try {
+        var pct = typeof p === 'number' ? p : (p && p.percentageDone) ? Math.round(p.percentageDone * 100) : null;
+        if (pct !== null) {
+          window.parent.postMessage({ type: 'PRATHAM_GAME_PROGRESS', progress: pct }, '*');
+          if (pct >= 100) {
+            window.parent.postMessage({ type: 'PRATHAM_GAME_READY', source: 'progress_100' }, '*');
+          }
+        }
+      } catch(e) {}
+    },
+    gameLoadingStart: function() {
+      try { window.parent.postMessage({ type: 'PRATHAM_GAME_STAGE', stage: 'Building 3D Maps & Terrain...' }, '*'); } catch(e) {}
+    },
+    gameplayStart: function() {
+      try { window.parent.postMessage({ type: 'PRATHAM_GAME_READY', source: 'gameplayStart' }, '*'); } catch(e) {}
+    },
     gameplayStop: noop,
     happyTime: noop,
     logError: noop,
@@ -182,11 +198,48 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
     window.PokiSDK = pokiProxy;
   }
 
+  // PokiSDK Lifecycle Hooks & Progress Tracking
   window.pokiReady = true;
   window.pokiAdBlock = false;
   window.PokiSDKInited = true;
   window.isPokiSDKInited = true;
   window.isWasmLoaded = true;
+})();
+</script>`;
+
+const RENDER_DETECTOR_SNIPPET = `<script>
+(function() {
+  var _painted = false;
+  function _notifyReady() {
+    if (_painted) return;
+    _painted = true;
+    try { window.parent.postMessage({ type: 'PRATHAM_GAME_READY' }, '*'); } catch(e){}
+  }
+  try {
+    if (window.PokiSDK) {
+      var _origGI = window.PokiSDK.gameInteractive;
+      window.PokiSDK.gameInteractive = function() {
+        _notifyReady();
+        if (typeof _origGI === 'function') _origGI.apply(this, arguments);
+      };
+      var _origGPS = window.PokiSDK.gameplayStart;
+      window.PokiSDK.gameplayStart = function() {
+        _notifyReady();
+        if (typeof _origGPS === 'function') _origGPS.apply(this, arguments);
+      };
+      var _origGLP = window.PokiSDK.gameLoadingProgress;
+      window.PokiSDK.gameLoadingProgress = function(p) {
+        try {
+          var pct = typeof p === 'number' ? p : (p && p.percentageDone) ? Math.round(p.percentageDone * 100) : null;
+          if (pct !== null) {
+            window.parent.postMessage({ type: 'PRATHAM_GAME_PROGRESS', progress: pct }, '*');
+            if (pct >= 100) _notifyReady();
+          }
+        } catch(e){}
+        if (typeof _origGLP === 'function') _origGLP.apply(this, arguments);
+      };
+    }
+  } catch(e){}
 })();
 </script>`;
 
@@ -213,7 +266,15 @@ module.exports = async function handler(req, res) {
   // 1. In-memory bundle lookup (Instant, works 100% on Vercel, Render, or any host)
   if (gamesBundle[slug]) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(200).send(gamesBundle[slug]);
+    let html = gamesBundle[slug];
+    if (!html.includes('PRATHAM_GAME_READY')) {
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${RENDER_DETECTOR_SNIPPET}\n</head>`);
+      } else {
+        html = `${RENDER_DETECTOR_SNIPPET}\n${html}`;
+      }
+    }
+    return res.status(200).send(html);
   }
 
   // 2. Check if slug is a sub-resource path (e.g. scripts/jobworker.js or slug/subpath)
