@@ -33,3 +33,4 @@
 [10:05:06 PM IST] GAME PLAYED: Blocky Blast Puzzle | Category: Puzzle | Score: 68 pts | Duration: 3s
 [10:05:11 PM IST] GAME PLAYED: Blocky Blast Puzzle | Category: Puzzle | Score: 81 pts | Duration: 3s
 [10:05:24 PM IST] GAME PLAYED: Happy Glass | Category: Arcade | Score: Active Session Started | Duration: 0m
+[10:07:36 PM IST] GAME PLAYED: Happy Glass | Category: Arcade | Score: 2906 pts | Duration: 2m 12s
