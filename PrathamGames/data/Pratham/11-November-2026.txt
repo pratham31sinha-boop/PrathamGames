@@ -78,3 +78,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:03:26 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: 574 pts | Duration: 26s
 [7:03:30 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
 [7:03:58 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 619 pts | Duration: 27s
+[7:05:08 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 1536 pts | Duration: 1m 9s
