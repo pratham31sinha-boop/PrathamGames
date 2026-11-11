@@ -43,3 +43,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [12:05:41 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 120309 pts | Duration: 91m 8s
 [12:19:27 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 31919 pts | Duration: 24m 10s
 [12:19:35 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 174 pts | Duration: 7s
+[12:19:36 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
