@@ -9,3 +9,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [12:00:49 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 298243 pts | Duration: 225m 56s
 [10:16:24 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
 [10:19:44 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 4398 pts | Duration: 3m 19s
+[10:19:55 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 237 pts | Duration: 10s
