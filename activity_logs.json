@@ -1,5 +1,35 @@
 [
   {
+    "id": "act_1794373969052",
+    "timestamp": "2026-11-11 05:12:49 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Temple Run 2",
+    "slug": "temple-run-2",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=temple-run-2"
+  },
+  {
+    "id": "act_1794373969012",
+    "timestamp": "2026-11-11 05:12:49 UTC",
+    "type": "USER_VISIT",
+    "gameTitle": "Games Store Home",
+    "slug": "",
+    "category": "Portal",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=temple-run-2"
+  },
+  {
+    "id": "act_1794373960951",
+    "timestamp": "2026-11-11 05:12:40 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Tic Tac Toe Ultimate",
+    "slug": "tic-tac-toe-ultimate",
+    "category": "Puzzle",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=tic-tac-toe-ultimate"
+  },
+  {
     "id": "act_1794373960919",
     "timestamp": "2026-11-11 05:12:40 UTC",
     "type": "USER_VISIT",
