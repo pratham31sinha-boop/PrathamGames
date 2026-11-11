@@ -82,7 +82,7 @@
         <nav class="store-categories-bar" id="storeCategoriesBar"></nav>
 
         <!-- Section 1: Top Trending Showcase Grid -->
-        <div class="store-trending-section">
+        <div class="store-trending-section" id="storeTrendingSection">
           <div class="store-section-header">
             <div class="store-section-title-wrap">
               <h2 class="store-section-title">Top Trending</h2>
@@ -102,7 +102,7 @@
         </div>
 
         <!-- Section 2: All 151 Games Mosaic Grid -->
-        <div class="store-catalog-section">
+        <div class="store-catalog-section" id="storeCatalogSection">
           <div class="store-section-header">
             <div class="store-section-title-wrap">
               <h2 class="store-section-title">All Games</h2>
@@ -155,11 +155,37 @@
         <div class="player-split-body">
           <div class="player-main-arena">
             <div class="player-frame-box" id="playerFrameBox">
-              <!-- Loading Overlay -->
+              <!-- Rich High-Fidelity Branded Loading Overlay -->
               <div class="player-loading-overlay" id="playerLoadingOverlay">
-                <div class="player-loading-spinner"></div>
-                <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">Launching Game...</div>
-                <div style="font-size: 0.85rem; color: var(--text-muted);">100% Free • Ad-Free Verified Stream</div>
+                <div class="loader-content-card">
+                  <div class="loader-icon-wrapper">
+                    <img id="loaderGameIcon" src="./assets/icons/logo.svg" alt="Game Icon" class="loader-game-icon">
+                    <div class="loader-pulse-ring"></div>
+                  </div>
+                  <div class="loader-game-info">
+                    <div class="loader-game-title" id="loaderGameTitle">Loading Game...</div>
+                    <div class="loader-badge-row">
+                      <span class="loader-cat-badge" id="loaderCatBadge">Arcade</span>
+                      <span class="loader-status-pill">🟢 100% Ad-Free</span>
+                      <span class="loader-speed-pill">⚡ Fast Stream</span>
+                    </div>
+                  </div>
+                  <div class="loader-progress-track">
+                    <div class="loader-progress-fill" id="loaderProgressFill"></div>
+                  </div>
+                  <div class="loader-status-row">
+                    <span class="loader-status-text" id="loaderStatusText">Connecting high-speed stream...</span>
+                    <span class="loader-percent-badge" id="loaderPercentBadge">15%</span>
+                  </div>
+                  <div class="loader-tip-box" id="loaderTipBox">
+                    <span class="loader-tip-icon">💡</span>
+                    <span class="loader-tip-text" id="loaderTipText">Tip: Use Arrow keys or WASD to navigate!</span>
+                  </div>
+                  <button type="button" class="loader-skip-btn" id="loaderSkipBtn" title="Dismiss loader early">
+                    <span>Tap to Play Now</span>
+                    <span style="font-size: 0.9rem;">▶</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Real Game Iframe -->
@@ -201,7 +227,7 @@
               </div>
               <span class="player-rail-badge">1-CLICK PLAY</span>
             </div>
-            <div id="playerSiblingRailList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            <div id="playerSiblingRailList" class="player-rail-list"></div>
           </aside>
         </div>
 
@@ -324,6 +350,30 @@
       </div>
     </div>
   </div>
+
+  <!-- Modern Lag-Free Mobile Bottom Navigation Bar (Visible only on <= 768px) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
+    <button type="button" class="mobile-nav-item active" id="mobileNavHome" data-target="home">
+      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-label">Home</span>
+    </button>
+    <button type="button" class="mobile-nav-item" id="mobileNavTrending" data-target="trending">
+      <span class="mobile-nav-icon">🔥</span>
+      <span class="mobile-nav-label">Trending</span>
+    </button>
+    <button type="button" class="mobile-nav-item" id="mobileNavGames" data-target="games">
+      <span class="mobile-nav-icon">🎮</span>
+      <span class="mobile-nav-label">Games</span>
+    </button>
+    <button type="button" class="mobile-nav-item" id="mobileNavSearch" data-target="search">
+      <span class="mobile-nav-icon">🔍</span>
+      <span class="mobile-nav-label">Search</span>
+    </button>
+    <button type="button" class="mobile-nav-item" id="mobileNavProfile" data-target="profile">
+      <span class="mobile-nav-icon">👤</span>
+      <span class="mobile-nav-label">Profile</span>
+    </button>
+  </nav>
 
   <!-- Database & Interactive Engine Scripts -->
   <script src="./assets/games-data.js"></script>

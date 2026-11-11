@@ -246,6 +246,7 @@
     attachHeaderListeners();
     attachDockListeners();
     attachPlayerStageListeners();
+    attachMobileNavListeners();
     attachGitHubModalListeners();
     attachPlayerModalListeners();
 
@@ -620,6 +621,10 @@
     const iframe = document.getElementById('playerIframe');
     const loader = document.getElementById('playerLoadingOverlay');
 
+    // Dismiss onboarding modal if user jumps straight into playing
+    const onboardModal = document.getElementById('playerOnboardModal');
+    if (onboardModal) onboardModal.style.display = 'none';
+
     // Finalize previous game session if any
     finalizeGameSession();
 
@@ -670,12 +675,91 @@
     if (likeBtn) likeBtn.classList.toggle('liked', isLiked);
     if (likeCount) likeCount.innerText = (game.likes || 89) + (isLiked ? 1 : 0);
 
+    // Enhanced Branded Game Loader
+    const loaderIcon = document.getElementById('loaderGameIcon');
+    const loaderTitle = document.getElementById('loaderGameTitle');
+    const loaderCat = document.getElementById('loaderCatBadge');
+    const loaderFill = document.getElementById('loaderProgressFill');
+    const loaderStatus = document.getElementById('loaderStatusText');
+    const loaderPercent = document.getElementById('loaderPercentBadge');
+    const loaderTip = document.getElementById('loaderTipText');
+    const loaderSkip = document.getElementById('loaderSkipBtn');
+
+    if (loaderIcon) {
+      loaderIcon.src = game.cdnThumbnail || game.thumbnail || './assets/icons/logo.svg';
+      loaderIcon.onerror = function() {
+        this.src = getColoredPlaceholder(game.title, game.category);
+      };
+    }
+    if (loaderTitle) loaderTitle.innerText = game.title;
+    if (loaderCat) loaderCat.innerText = game.category || 'Arcade';
+    if (loaderTip) {
+      loaderTip.innerText = game.controls ? `Controls: ${game.controls}` : 'Tip: Use Arrow keys or WASD to navigate!';
+    }
+
+    let progressVal = 15;
+    const setLoaderProgress = (val, msg) => {
+      progressVal = Math.min(100, Math.max(0, val));
+      if (loaderFill) loaderFill.style.width = `${progressVal}%`;
+      if (loaderPercent) loaderPercent.innerText = `${Math.round(progressVal)}%`;
+      if (msg && loaderStatus) loaderStatus.innerText = msg;
+    };
+    setLoaderProgress(15, 'Connecting high-speed stream...');
+
     // Show loading overlay
     if (loader) {
       loader.style.pointerEvents = 'auto';
       loader.style.display = 'flex';
       loader.style.opacity = '1';
     }
+
+    let loaderTimer = null;
+    let isLoaderDismissed = false;
+
+    const dismissLoader = () => {
+      if (isLoaderDismissed) return;
+      isLoaderDismissed = true;
+      if (loaderTimer) clearInterval(loaderTimer);
+      setLoaderProgress(100, 'Game Ready! Launching...');
+      setTimeout(() => {
+        if (state.loadCounter === currentLoadId && loader) {
+          loader.style.pointerEvents = 'none';
+          loader.style.opacity = '0';
+          setTimeout(() => {
+            if (state.loadCounter === currentLoadId && loader) {
+              loader.style.display = 'none';
+            }
+          }, 350);
+        }
+      }, 200);
+    };
+
+    if (loaderSkip) {
+      loaderSkip.onclick = () => {
+        sfx.click();
+        dismissLoader();
+      };
+    }
+
+    // Step-by-step progress ticker over ~2.3s so WebGL/WASM compile cleanly behind it
+    let elapsed = 0;
+    loaderTimer = setInterval(() => {
+      if (state.loadCounter !== currentLoadId || isLoaderDismissed) {
+        clearInterval(loaderTimer);
+        return;
+      }
+      elapsed += 100;
+      if (elapsed <= 500) {
+        setLoaderProgress(15 + (elapsed / 500) * 25, 'Downloading high-speed assets & sound...');
+      } else if (elapsed <= 1400) {
+        setLoaderProgress(40 + ((elapsed - 500) / 900) * 35, 'Compiling WebGL shaders & 3D engine...');
+      } else if (elapsed <= 2300) {
+        setLoaderProgress(75 + ((elapsed - 1400) / 900) * 20, 'Initializing game canvas & memory...');
+      } else {
+        clearInterval(loaderTimer);
+        dismissLoader();
+      }
+    }, 100);
 
     // Embed local ad-free streaming iframe
     if (iframe) {
@@ -691,23 +775,14 @@
         if (state.loadCounter === currentLoadId) {
           iframe.src = `/play-game/${game.slug}`;
 
-          let dismissed = false;
-          const dismissLoader = () => {
-            if (dismissed) return;
-            dismissed = true;
-            if (state.loadCounter === currentLoadId && loader) {
-              loader.style.pointerEvents = 'none';
-              loader.style.opacity = '0';
-              setTimeout(() => { loader.style.display = 'none'; }, 200);
-            }
-          };
-
           iframe.onload = () => {
-            setTimeout(dismissLoader, 150);
+            setTimeout(() => {
+              if (!isLoaderDismissed && elapsed >= 1200) {
+                dismissLoader();
+              }
+            }, 300);
           };
           iframe.onerror = dismissLoader;
-          // Ultra-fast safety dismiss so user never feels stuck (max 1200ms)
-          setTimeout(dismissLoader, 1200);
         }
       }, 20);
     }
@@ -749,6 +824,7 @@
     }
     document.title = 'PRATHAM GAMES — Premium Online Web Gaming Platform';
 
+    updateMobileNav('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast('Returned to Games Store');
   }
@@ -962,8 +1038,12 @@
     // Restart Game button
     document.getElementById('playerRestartBtn').addEventListener('click', () => {
       sfx.click();
-      const iframe = document.getElementById('playerIframe');
-      if (iframe) iframe.src = iframe.src;
+      if (state.activeSlug) {
+        switchToPlay(state.activeSlug, false);
+      } else {
+        const iframe = document.getElementById('playerIframe');
+        if (iframe) iframe.src = iframe.src;
+      }
       showToast('🔄 Restarting game...');
     });
 
@@ -1015,6 +1095,69 @@
         showToast('🔗 Link copied to clipboard!');
       }).catch(() => {
         showToast(`Share URL: ${shareUrl}`);
+      });
+    });
+  }
+
+  // --- 6B. MOBILE BOTTOM NAVIGATION SYSTEM ---
+  function updateMobileNav(target) {
+    const navItems = document.querySelectorAll('.mobile-nav-item');
+    navItems.forEach(item => {
+      if (item.dataset.target === target) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  function attachMobileNavListeners() {
+    const navItems = document.querySelectorAll('.mobile-nav-item');
+    navItems.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        sfx.click();
+        const target = btn.dataset.target;
+        updateMobileNav(target);
+
+        if (target === 'home') {
+          if (document.body.classList.contains('mode-play')) {
+            switchToBrowse();
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (target === 'trending') {
+          if (document.body.classList.contains('mode-play')) {
+            switchToBrowse();
+          }
+          const trendingSec = document.getElementById('storeTrendingSection') || document.querySelector('.store-trending-section');
+          if (trendingSec) {
+            trendingSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            window.scrollTo({ top: 380, behavior: 'smooth' });
+          }
+        } else if (target === 'games') {
+          if (document.body.classList.contains('mode-play')) {
+            switchToBrowse();
+          }
+          const allGamesSec = document.getElementById('storeCatalogSection') || document.querySelector('.store-catalog-section');
+          if (allGamesSec) {
+            allGamesSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            window.scrollTo({ top: 780, behavior: 'smooth' });
+          }
+        } else if (target === 'search') {
+          if (document.body.classList.contains('mode-play')) {
+            switchToBrowse();
+          }
+          const searchInput = document.getElementById('headerSearchInput');
+          if (searchInput) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => { searchInput.focus(); }, 120);
+          }
+        } else if (target === 'profile') {
+          const profileBtn = document.getElementById('headerProfileBtn');
+          if (profileBtn) profileBtn.click();
+        }
       });
     });
   }
@@ -1121,7 +1264,8 @@
   // --- 8. PLAYER ONBOARDING & PROFILE CONTROLLERS ---
   function checkPlayerOnboarding() {
     const player = getPlayer();
-    if (!player || !player.name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if ((!player || !player.name) && !urlParams.get('game')) {
       const modal = document.getElementById('playerOnboardModal');
       if (modal) {
         modal.style.display = 'flex';
@@ -1129,7 +1273,7 @@
         if (nameInput) setTimeout(() => nameInput.focus(), 150);
       }
     } else {
-      updatePlayerUI(player);
+      updatePlayerUI(player || { name: 'Rahul', age: 16 });
     }
   }
 
@@ -1299,6 +1443,10 @@
       });
     }
   }
+
+  // Expose global helpers for programmatic navigation
+  window.switchToPlay = switchToPlay;
+  window.switchToBrowse = switchToBrowse;
 
   // Handle Tab Close / Unload Session Logging
   window.addEventListener('beforeunload', () => {
