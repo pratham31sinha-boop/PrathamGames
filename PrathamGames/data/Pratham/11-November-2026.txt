@@ -49,3 +49,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [4:26:44 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
 [4:56:13 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 38913 pts | Duration: 29m 28s
 [5:40:50 PM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: 99 pts | Duration: 4s
+[5:45:45 PM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: 36 pts | Duration: 1s
