@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+    <head>
+<base href="https://97d4060b-757a-4759-9bdb-2c06e9915d6e.gdn.poki.com/035b50ee-8472-420f-baa8-3c5af9c7f683/">
+<script>
+(function() {
+  'use strict';
+  var noop = function() {};
+  var resolvedPromise = function(val) { return Promise.resolve(val); };
+
+  // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
+  window.Progress = window.Progress || {
+    _listeners: [],
+    addListener: function(fn) {
+      if (typeof fn === 'function') {
+        this._listeners.push(fn);
+        try { fn(100); } catch(e) {}
+      }
+    },
+    notifyListeners: function(val) {
+      for (var i = 0; i < this._listeners.length; i++) {
+        try { this._listeners[i](val); } catch(e) {}
+      }
+    }
+  };
+
+  // Intercept slow dynamic script injections (e.g. ad networks, tracking)
+  try {
+    var _origCreate = document.createElement;
+    document.createElement = function(tag) {
+      var el = _origCreate.apply(document, arguments);
+      if (typeof tag === 'string' && tag.toLowerCase() === 'script') {
+        var _origSetAttr = el.setAttribute;
+        el.setAttribute = function(name, val) {
+          if (name && name.toLowerCase() === 'src' && typeof val === 'string' && (val.indexOf('poki-sdk') !== -1 || val.indexOf('t2.js') !== -1)) {
+            setTimeout(function() {
+              if (typeof el.onload === 'function') el.onload();
+              el.dispatchEvent(new Event('load'));
+            }, 0);
+            return;
+          }
+          return _origSetAttr.apply(el, arguments);
+        };
+      }
+      return el;
+    };
+  } catch(e) {}
+
+  // Disable service workers inside iframe to prevent hanging
+  try {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register = function() {
+        return Promise.reject(new Error('SW disabled'));
+      };
+    }
+  } catch(e) {}
+
+  var PokiMock = {
+    init: function(opts) {
+      if (opts && typeof opts === 'object') {
+        if (typeof opts.submitScore === 'function') {
+          try { opts.submitScore(function() {}); } catch(e) {}
+        }
+        if (typeof opts.onReady === 'function') {
+          try { opts.onReady(); } catch(e) {}
+        }
+      }
+      if (typeof arguments[0] === 'function') {
+        try { arguments[0](); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
+    initWithVideoHB: function() { return resolvedPromise(); },
+    commercialBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(); } catch(e) {}
+      }
+      return resolvedPromise();
+    },
+    rewardedBreak: function(fn) {
+      if (typeof fn === 'function') {
+        try { fn(true); } catch(e) {}
+      }
+      return resolvedPromise(true);
+    },
+    displayAd: function(e, t, o, i) {
+      if (typeof i === 'function') i(true);
+      if (typeof o === 'function') o();
+      if (typeof e === 'function') e();
+      return resolvedPromise();
+    },
+    destroyAd: noop,
+    getLeaderboard: function() { return resolvedPromise([]); },
+    shareableURL: function() { return resolvedPromise(window.location.href); },
+    getURLParam: function(p) {
+      try {
+        return new URLSearchParams(window.location.search).get(p) || '';
+      } catch(e) { return ''; }
+    },
+    getLanguage: function() { return (navigator.language || 'en').split('-')[0]; },
+    getDeviceInfo: function() { return { category: 'desktop' }; },
+    isAdBlocked: function() { return false; },
+    getUser: function() { return resolvedPromise({ id: 'pratham_user', name: 'Gamer' }); },
+    getToken: function() { return resolvedPromise('pratham_token'); },
+    login: function() { return resolvedPromise({ id: 'pratham_user' }); },
+    generateScreenshot: function() { return resolvedPromise(''); },
+    measure: noop,
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: function() { return resolvedPromise([]); }
+  };
+
+  var pokiProxy = new Proxy(PokiMock, {
+    get: function(target, prop) {
+      if (prop in target) return target[prop];
+      return function() {
+        var lastArg = arguments[arguments.length - 1];
+        if (typeof lastArg === 'function') {
+          try { lastArg(true); } catch(e) {}
+        }
+        return resolvedPromise(true);
+      };
+    }
+  });
+
+  try {
+    Object.defineProperty(window, 'PokiSDK', {
+      value: pokiProxy,
+      writable: true,
+      configurable: true
+    });
+  } catch(e) {
+    window.PokiSDK = pokiProxy;
+  }
+
+  window.pokiReady = true;
+  window.pokiAdBlock = false;
+  window.PokiSDKInited = true;
+  window.isPokiSDKInited = true;
+  window.isWasmLoaded = true;
+
+  // Cross-origin Worker polyfill using Blob and importScripts
+  try {
+    var _origWorker = window.Worker;
+    if (_origWorker) {
+      window.Worker = function(scriptURL, options) {
+        try {
+          var resolved = new URL(scriptURL, document.baseURI || window.location.href).href;
+          if (resolved.indexOf(window.location.origin) !== 0) {
+            var blobCode = 'importScripts(' + JSON.stringify(resolved) + ');';
+            var blob = new Blob([blobCode], { type: 'application/javascript' });
+            return new _origWorker(URL.createObjectURL(blob), options);
+          }
+          return new _origWorker(resolved, options);
+        } catch(e) {
+          return new _origWorker(scriptURL, options);
+        }
+      };
+    }
+  } catch(e) {}
+
+  // Safe DOM Load fallback (never override Object.defineProperty(window, 'onload'))
+  if (document.readyState === 'complete') {
+    setTimeout(function() {
+      try { window.dispatchEvent(new Event('load')); } catch(e) {}
+    }, 20);
+  }
+
+  // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
+  try {
+    var PROXY_DOMAINS = ['minefun.io', 'vectaria.io', 'supabase.co', 'pangolinworks.dev', 'cryzen.io', 'sushiparty.io'];
+    var shouldProxy = function(u) {
+      if (typeof u !== 'string') return false;
+      for (var i = 0; i < PROXY_DOMAINS.length; i++) {
+        if (u.indexOf(PROXY_DOMAINS[i]) !== -1) return true;
+      }
+      return false;
+    };
+
+    var _origFetch = window.fetch;
+    if (_origFetch) {
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (shouldProxy(url)) {
+          var proxyUrl = '/api/cors-proxy?url=' + encodeURIComponent(url);
+          if (typeof input === 'string') {
+            input = proxyUrl;
+          } else if (input && input.url) {
+            input = new Request(proxyUrl, input);
+          }
+        }
+        return _origFetch.call(this, input, init).then(function(res) {
+          if (typeof url === 'string' && (url.indexOf('.gz') !== -1 || url.indexOf('.unityweb') !== -1)) {
+            var origGet = res.headers.get.bind(res.headers);
+            res.headers.get = function(name) {
+              if (name && name.toLowerCase() === 'content-encoding') {
+                return origGet(name) || 'gzip';
+              }
+              return origGet(name);
+            };
+          }
+          return res;
+        });
+      };
+    }
+
+    var _origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      if (shouldProxy(url)) {
+        url = '/api/cors-proxy?url=' + encodeURIComponent(url);
+      }
+      return _origXhrOpen.call(this, method, url, async !== false, user, pass);
+    };
+  } catch(e) {}
+
+  // Defold Engine Auto-starter Watchdog
+  (function() {
+    var defoldInterval = setInterval(function() {
+      if (window.Module && typeof window.Module.runApp === 'function') {
+        try {
+          if (!window._defoldAppRan) {
+            window._defoldAppRan = true;
+            window.Module.runApp("canvas");
+          }
+          clearInterval(defoldInterval);
+        } catch(e) {}
+      }
+    }, 150);
+    setTimeout(function() { clearInterval(defoldInterval); }, 5000);
+  })();
+
+  // Unity Engine Bridge Watchdog
+  (function() {
+    var bridgeInterval = setInterval(function() {
+      if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+        try {
+          window.unityGame.SendMessage(window.pokiBridge, 'ready');
+          clearInterval(bridgeInterval);
+        } catch(e) {}
+      }
+    }, 100);
+    setTimeout(function() { clearInterval(bridgeInterval); }, 6000);
+  })();
+
+  // Universal Loading Overlay Auto-Dismiss Watchdog (< 1.5s max wait)
+  (function() {
+    var dismissOverlays = function() {
+      var selectors = [
+        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
+        '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
+        '#load', '#progress-container', '#progress-bar-root'
+      ];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = document.querySelector(selectors[i]);
+        if (el) {
+          try {
+            el.style.transition = 'opacity 0.25s ease';
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+            (function(target) {
+              setTimeout(function() {
+                target.style.display = 'none';
+                target.style.visibility = 'hidden';
+              }, 250);
+            })(el);
+          } catch(e) {}
+        }
+      }
+      try {
+        if (window.PokiSDK && window.PokiSDK.gameLoadingFinished) {
+          window.PokiSDK.gameLoadingFinished();
+        }
+      } catch(e) {}
+    };
+
+    if (document.readyState === 'complete') {
+      setTimeout(dismissOverlays, 800);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(dismissOverlays, 800);
+      });
+    }
+    setTimeout(dismissOverlays, 1500);
+  })();
+})();
+</script>
+
+
+        <meta charset="UTF-8" />
+        <!-- width=device-width — иначе мобильный браузер вёрстает страницу под ~980px и масштабирует вниз.
+             user-scalable=no / maximum-scale=1 — запрет pinch-zoom (iOS Safari их игнорирует, там зум добивается через touch-action: none).
+             viewport-fit=cover — канвас уходит под "чёлку" на iPhone. -->
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
+        <title>cart-ts</title>
+        <script>
+            // Prevent scroll (source: poki sdk)
+            window.addEventListener('keydown', (ev) => {
+                if (['ArrowDown', 'ArrowUp', ' '].includes(ev.key)) {
+                    ev.preventDefault();
+                }
+            });
+            // Prevent context menu (right click)
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+        </script>
+
+        <style>
+            body {
+                margin: 0;
+                /* Убираем скролл */
+                overflow: hidden;
+
+                /* Убираем лонгтап на IOS */
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            }
+
+            canvas {
+                display: block;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #loading-screen {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background-color: black;
+                color: white;
+                font-size: 2rem;
+                z-index: 1000;
+            }
+
+            #loading-icon {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 20px;
+            }
+        </style>
+
+        <script>
+            // Загружаем GameAnalytics отдельным скриптом из файла (лежит в public/gameanalytics/). Потому что если npm бандл
+            // использовать то надо ждать загрузки всего главного JS файла с игрой. А так GA начнет грузиться сразу.
+            // А из файла потому что CDN версия требует доступа к внешнему серверу. Не охота лишнее разрешение на поки просить.
+
+            // Ниже это код взят с https://docs.gameanalytics.com/event-tracking-and-integrations/sdks-and-collection-api/open-source-sdks/javascript#the-javascript-ga-snippet
+            // Чтобы инициализировать GA сразу же как только она будет загружена, и если какие-то команды до загрузки будут вызваны, они будут поставлены в очередь.
+            (function (window, document) {
+                var scriptTagName = 'script';
+                var gaGlobalName = 'GameAnalytics';
+                window[gaGlobalName] =
+                    window[gaGlobalName] ||
+                    function () {
+                        (window[gaGlobalName].q = window[gaGlobalName].q || []).push(arguments);
+                    };
+
+                var gaScript = document.createElement(scriptTagName);
+                var firstScript = document.getElementsByTagName(scriptTagName)[0];
+
+                gaScript.async = true;
+                gaScript.src = 'gameanalytics/GameAnalytics.js';
+
+                // Вставляем скрипт перед первым тегом <script>
+                firstScript.parentNode.insertBefore(gaScript, firstScript);
+            })(window, document);
+
+            GameAnalytics('setEnabledInfoLog', true);
+            GameAnalytics('setEnabledVerboseLog', true);
+            GameAnalytics('configureBuild', '2.2.0');
+            GameAnalytics('initialize', 'f0bb17b3cef86952a24d60fadff9337a', '176f1f15ef82f9f08cba342886a3ac9ba16de8e0');
+        </script>
+        
+
+      <script type="module" crossorigin src="./assets/index-V3F3wFyT.js"></script>
+    </head>
+    <body>
+        <div id="loading-screen">
+            <img src="./assets/icon-CRPZlS46.png" alt="Loading Icon" id="loading-icon" />
+            <span>Loading...</span>
+        </div>
+        <canvas id="application-canvas"></canvas>
+
+        <script>
+            document.addEventListener('gameLoaded', () => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            });
+        </script>
+    </body>
+</html>

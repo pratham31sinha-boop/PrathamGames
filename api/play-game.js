@@ -1,10 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 
-// Potential cache directory paths (handles local dev and Vercel Lambda /var/task)
+// Statically required to guarantee Vercel bundler packages it
+let gamesCache = {};
+try {
+  gamesCache = require('./games_cache.json');
+} catch (e) {
+  try {
+    gamesCache = require('../games_cache.json');
+  } catch (err) {}
+}
+
 const POSSIBLE_CACHE_DIRS = [
-  path.join(process.cwd(), 'games_html_cache'),
+  path.join(__dirname, 'games_html_cache'),
   path.join(__dirname, '..', 'games_html_cache'),
+  path.join(process.cwd(), 'api', 'games_html_cache'),
+  path.join(process.cwd(), 'games_html_cache'),
+  path.join('/var/task', 'api', 'games_html_cache'),
   path.join('/var/task', 'games_html_cache')
 ];
 
@@ -19,21 +31,6 @@ function findCachedFile(slug) {
   }
   return null;
 }
-
-let gamesCache = {};
-try {
-  const possibleCacheJson = [
-    path.join(process.cwd(), 'games_cache.json'),
-    path.join(__dirname, '..', 'games_cache.json'),
-    path.join('/var/task', 'games_cache.json')
-  ];
-  for (const cp of possibleCacheJson) {
-    if (fs.existsSync(cp)) {
-      gamesCache = JSON.parse(fs.readFileSync(cp, 'utf8'));
-      break;
-    }
-  }
-} catch (e) {}
 
 const MOCK_SDK_SNIPPET = `<script>
 (function() {
@@ -188,7 +185,7 @@ module.exports = async function handler(req, res) {
   const cachedPath = findCachedFile(slug);
   if (cachedPath) {
     try {
-      let html = fs.readFileSync(cachedPath, 'utf8');
+      const html = fs.readFileSync(cachedPath, 'utf8');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.status(200).send(html);
     } catch (e) {
@@ -267,7 +264,7 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // 3. Dynamic upstream fallback fetch (resolves and prepares game if not pre-cached)
+  // 3. Dynamic upstream fallback fetch (resolves and prepares game from gamesCache or Poki)
   let gameUri = gamesCache[slug] || null;
   if (!gameUri) {
     try {
@@ -317,5 +314,18 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  return res.status(404).send(`Game or resource "${slug}" not found.`);
+  // 4. Return an active playable iframe runner rather than a 404
+  const fallbackHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${slug}</title>
+  <style>body,html{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;}iframe{width:100%;height:100%;border:none;}</style>
+</head>
+<body>
+  <iframe src="https://games.poki.com/${slug}" allow="autoplay; fullscreen; camera; focus-without-user-activation *"></iframe>
+</body>
+</html>`;
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.status(200).send(fallbackHtml);
 };
