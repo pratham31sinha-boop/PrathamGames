@@ -90,3 +90,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:13:35 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 114 pts | Duration: 4s
 [7:13:39 PM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: Active Session Started | Duration: 0m
 [7:13:58 PM IST] GAME PLAYED: Bubble Storm | Category: Arcade | Score: 128 pts | Duration: 5s
+[7:15:35 PM IST] GAME PLAYED: Dino Simulator | Category: Casual | Score: Active Session Started | Duration: 0m
