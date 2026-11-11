@@ -21,3 +21,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:33:54 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
 [10:34:00 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 137 pts | Duration: 6s
 [10:34:00 AM IST] GAME PLAYED: Build League | Category: Arcade | Score: Active Session Started | Duration: 0m
+[10:34:21 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
+[10:34:21 AM IST] GAME PLAYED: Build League | Category: Arcade | Score: 462 pts | Duration: 20s
