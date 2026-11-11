@@ -1,5 +1,25 @@
 [
   {
+    "id": "act_1794373982034",
+    "timestamp": "2026-11-11 05:13:02 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Retro Bowl",
+    "slug": "retro-bowl",
+    "category": "Sports",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=retro-bowl"
+  },
+  {
+    "id": "act_1794373982025",
+    "timestamp": "2026-11-11 05:13:02 UTC",
+    "type": "USER_VISIT",
+    "gameTitle": "Games Store Home",
+    "slug": "",
+    "category": "Portal",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=retro-bowl"
+  },
+  {
     "id": "act_1794373977364",
     "timestamp": "2026-11-11 05:12:57 UTC",
     "type": "GAME_PLAY",

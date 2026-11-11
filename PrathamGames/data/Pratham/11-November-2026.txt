@@ -31,3 +31,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:42:36 AM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
 [10:42:40 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [10:42:49 AM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: Active Session Started | Duration: 0m
+[10:42:57 AM IST] GAME PLAYED: Drive Mad | Category: Racing | Score: Active Session Started | Duration: 0m
+[10:43:02 AM IST] GAME PLAYED: Retro Bowl | Category: Sports | Score: Active Session Started | Duration: 0m
