@@ -29,3 +29,4 @@
 [9:11:18 PM IST] GAME PLAYED: Karate Fighter | Category: Action | Score: 246 pts | Duration: 10s
 [9:11:22 PM IST] GAME PLAYED: Drive Mad | Category: Racing | Score: Active Session Started | Duration: 0m
 [9:11:31 PM IST] GAME PLAYED: Cryzen.io | Category: .io & Arena | Score: Active Session Started | Duration: 0m
+[9:11:52 PM IST] GAME PLAYED: Cryzen.io | Category: .io & Arena | Score: 452 pts | Duration: 20s
