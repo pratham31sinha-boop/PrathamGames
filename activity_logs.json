@@ -1,5 +1,25 @@
 [
   {
+    "id": "act_1794373311891",
+    "timestamp": "2026-11-11 05:01:51 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Temple Run 2",
+    "slug": "temple-run-2",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=temple-run-2"
+  },
+  {
+    "id": "act_1794373311876",
+    "timestamp": "2026-11-11 05:01:51 UTC",
+    "type": "USER_VISIT",
+    "gameTitle": "Games Store Home",
+    "slug": "",
+    "category": "Portal",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=temple-run-2"
+  },
+  {
     "id": "act_1794373310832",
     "timestamp": "2026-11-11 05:01:50 UTC",
     "type": "GAME_PLAY",
