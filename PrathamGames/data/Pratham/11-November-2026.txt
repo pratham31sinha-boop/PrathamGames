@@ -58,3 +58,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [6:45:33 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 14238 pts | Duration: 10m 46s
 [6:45:45 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 133 pts | Duration: 5s
 [6:45:52 PM IST] GAME PLAYED: Dino Merge | Category: Arcade | Score: 140 pts | Duration: 6s
+[6:45:55 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
