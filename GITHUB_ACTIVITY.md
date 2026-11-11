@@ -305,3 +305,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 16:41:03 UTC | 🎮 GAME_PLAY | **Perfect Landing, Plane Pilot** (Arcade) | Linux armv81 • Mobile |
 | 2026-11-11 16:41:16 UTC | 🎮 GAME_PLAY | **Paper.io 2** (.io & Arena) | Linux armv81 • Mobile |
 | 2026-11-11 16:47:26 UTC | 🎮 GAME_PLAY | **Cyber Cars Punk Racing** (Racing) | Linux x86_64 • Desktop |
+| 2026-11-11 16:47:39 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
