@@ -263,3 +263,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 14:35:27 UTC | 🎮 GAME_PLAY | **MR RACER - Car Racing** (Racing) | Linux armv81 • Mobile |
 | 2026-11-11 14:35:39 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
 | 2026-11-11 14:36:01 UTC | 🎮 GAME_PLAY | **Planet Destruction** (Arcade) | Linux armv81 • Mobile |
+| 2026-11-11 14:36:25 UTC | 🎮 GAME_PLAY | **Happy Glass** (Arcade) | Linux armv81 • Mobile |
