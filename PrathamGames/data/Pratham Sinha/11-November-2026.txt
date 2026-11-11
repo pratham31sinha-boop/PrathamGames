@@ -12,3 +12,4 @@
 [7:50:59 PM IST] GAME PLAYED: School Cleaning | Category: Arcade | Score: 617 pts | Duration: 27s
 [7:53:16 PM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 2448 pts | Duration: 1m 51s
 [7:53:18 PM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
+[7:53:22 PM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 68 pts | Duration: 3s
