@@ -238,3 +238,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 13:18:10 UTC | 🎮 GAME_PLAY | **Gas Station** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-11 13:22:40 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 13:24:07 UTC | 🎮 GAME_PLAY | **Temple Run 2** (Adventure) | Linux x86_64 • Desktop |
+| 2026-11-11 13:27:12 UTC | 🎮 GAME_PLAY | **Perfect Landing, Plane Pilot** (Arcade) | Linux x86_64 • Desktop |
