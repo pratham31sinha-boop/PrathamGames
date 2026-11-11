@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794373440539",
+    "timestamp": "2026-11-11 05:04:00 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Build League",
+    "slug": "build-league",
+    "category": "Arcade",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=hill-climb-racing-lite"
+  },
+  {
     "id": "act_1794373434489",
     "timestamp": "2026-11-11 05:03:54 UTC",
     "type": "GAME_PLAY",

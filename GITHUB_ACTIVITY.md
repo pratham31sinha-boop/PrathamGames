@@ -80,3 +80,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 05:03:42 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 05:03:44 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 05:03:54 UTC | 🎮 GAME_PLAY | **Hill Climb Racing Lite** (Racing) | Linux x86_64 • Desktop |
+| 2026-11-11 05:04:00 UTC | 🎮 GAME_PLAY | **Build League** (Arcade) | Linux x86_64 • Desktop |
