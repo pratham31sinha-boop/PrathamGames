@@ -285,3 +285,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 15:15:49 UTC | 🎮 GAME_PLAY | **Drive Mad** (Racing) | Linux x86_64 • Desktop |
 | 2026-11-11 15:29:26 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 15:29:30 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-11 15:29:54 UTC | 🎮 GAME_PLAY | **Stickman Hook** (Skill) | Linux x86_64 • Desktop |
