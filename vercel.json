@@ -25,6 +25,7 @@
       "source": "/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
         { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' *;" }
       ]
     },

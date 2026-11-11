@@ -1255,6 +1255,7 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.send_header('Content-Length', str(len(content_bytes)))
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Referrer-Policy', 'no-referrer')
         self.send_header('X-Frame-Options', 'ALLOWALL')
         self.end_headers()
         self.wfile.write(content_bytes)

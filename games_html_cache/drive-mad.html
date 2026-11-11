@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="en-us"><head>
+<meta name="referrer" content="no-referrer">
 <base href="https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.gdn.poki.com/68ae072b-bde4-4175-8300-0e3e02c5a10e/">
 <script>
 (function() {
@@ -7,6 +8,7 @@
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
   // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
+  window.updateProgress = window.updateProgress || function() {};
   window.Progress = window.Progress || {
     _listeners: [],
     addListener: function(fn) {
@@ -269,7 +271,7 @@
   (function() {
     var dismissOverlays = function() {
       var selectors = [
-        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
+        '#loadingOverlay', '#boot', '#loadingContainer',
         '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
         '#load', '#progress-container', '#progress-bar-root'
       ];

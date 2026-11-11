@@ -21,12 +21,14 @@ try {
   } catch (err) {}
 }
 
-const MOCK_SDK_SNIPPET = `<script>
+const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
+<script>
 (function() {
   'use strict';
   var noop = function() {};
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
+  window.updateProgress = window.updateProgress || function() {};
   window.Progress = window.Progress || {
     _listeners: [],
     addListener: function(fn) {
@@ -163,6 +165,7 @@ module.exports = async function handler(req, res) {
   }
 
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-Frame-Options', 'ALLOWALL');
   res.setHeader('Content-Security-Policy', "frame-ancestors 'self' *;");
 

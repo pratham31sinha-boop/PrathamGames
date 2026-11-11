@@ -676,6 +676,9 @@
 
     // Embed local ad-free streaming iframe
     if (iframe) {
+      // Ensure cross-origin asset hotlinking protection bypass via no-referrer
+      iframe.referrerPolicy = 'no-referrer';
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
       // Clear previous iframe first to immediately stop previous game sound/state
       iframe.src = 'about:blank';
 

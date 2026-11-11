@@ -4,6 +4,7 @@
      the next re-render then tears the DOM (insertBefore NotFoundError storms in otel → vanished UI). -->
 <html lang="en" translate="no">
   <head>
+<meta name="referrer" content="no-referrer">
 <base href="https://c89f4abe-5041-497b-8705-986b6f3b748c.gdn.poki.com/93756285-89ef-4a9b-a7b2-46ec20e1d80e/">
 <script>
 (function() {
@@ -12,6 +13,7 @@
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
   // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
+  window.updateProgress = window.updateProgress || function() {};
   window.Progress = window.Progress || {
     _listeners: [],
     addListener: function(fn) {
@@ -274,7 +276,7 @@
   (function() {
     var dismissOverlays = function() {
       var selectors = [
-        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
+        '#loadingOverlay', '#boot', '#loadingContainer',
         '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
         '#load', '#progress-container', '#progress-bar-root'
       ];

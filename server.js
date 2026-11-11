@@ -51,6 +51,7 @@ function serveFile(filePath, res) {
     const ctype = MIME_TYPES[ext] || 'application/octet-stream';
     res.setHeader('Content-Type', ctype);
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self' *;");
     fs.createReadStream(filePath).pipe(res);
     return true;
