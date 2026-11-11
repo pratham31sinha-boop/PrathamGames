@@ -1,13 +1,26 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "functions": {
+    "api/play-game.js": {
+      "includeFiles": "games_html_cache/**,games_cache.json",
+      "maxDuration": 30
+    },
+    "api/*.js": {
+      "maxDuration": 15
+    }
+  },
   "rewrites": [
     { "source": "/assets/(.*)", "destination": "/package/assets/$1" },
-    { "source": "/play-game/:slug*", "destination": "/api/play-game?slug=:slug*" },
+    { "source": "/play-game/:slug", "destination": "/games_html_cache/:slug.html" },
+    { "source": "/play-game/:slug/:subpath*", "destination": "/api/play-game?slug=:slug/:subpath*" },
+    { "source": "/play-game/(.*)", "destination": "/api/play-game?slug=$1" },
     { "source": "/files/(.*)", "destination": "/api/play-game?slug=files/$1" },
     { "source": "/Build/(.*)", "destination": "/api/play-game?slug=Build/$1" },
     { "source": "/TemplateData/(.*)", "destination": "/api/play-game?slug=TemplateData/$1" },
     { "source": "/StreamingAssets/(.*)", "destination": "/api/play-game?slug=StreamingAssets/$1" },
+    { "source": "/api/github-telemetry", "destination": "/api/github-telemetry" },
+    { "source": "/api/github-config", "destination": "/api/github-config" },
     { "source": "/api/cors-proxy", "destination": "/api/cors-proxy" },
     { "source": "/api/register-player", "destination": "/api/register-player" },
     { "source": "/api/log-gameplay", "destination": "/api/log-gameplay" },
@@ -18,8 +31,16 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "ALLOWALL" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' *;" }
+      ]
+    },
+    {
+      "source": "/games_html_cache/(.*)",
+      "headers": [
+        { "key": "Content-Type", "value": "text/html; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' *;" }
       ]
     },
     {
