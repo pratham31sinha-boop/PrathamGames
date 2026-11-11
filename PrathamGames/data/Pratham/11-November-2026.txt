@@ -9,3 +9,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [12:00:49 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 298243 pts | Duration: 225m 56s
 [10:31:05 AM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
 [10:31:40 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
+[10:31:41 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 46 pts | Duration: 1s
