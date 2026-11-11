@@ -2,9 +2,14 @@
   "name": "pratham-games",
   "version": "2.0.0",
   "description": "Premium Online Web Gaming Platform - 150+ Instant Play Web Games",
-  "main": "index.html",
+  "main": "server.js",
   "scripts": {
-    "start": "python3 server.py 8080"
+    "start": "node server.js",
+    "start:python": "python3 server.py",
+    "start:local": "node server.js 8080"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [
     "games",

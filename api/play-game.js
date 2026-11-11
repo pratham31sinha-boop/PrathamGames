@@ -1,7 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-// Statically required to guarantee Vercel bundler packages it
+// 1. Direct in-memory bundle of all 151 game HTML documents (0ms lookup, no filesystem errors)
+let gamesBundle = {};
+try {
+  gamesBundle = require('./games_bundle.json');
+} catch (e) {
+  try {
+    gamesBundle = require('../games_bundle.json');
+  } catch (err) {}
+}
+
+// 2. Direct catalog cache mapping slugs to upstream CDN endpoints
 let gamesCache = {};
 try {
   gamesCache = require('./games_cache.json');
@@ -9,27 +19,6 @@ try {
   try {
     gamesCache = require('../games_cache.json');
   } catch (err) {}
-}
-
-const POSSIBLE_CACHE_DIRS = [
-  path.join(__dirname, 'games_html_cache'),
-  path.join(__dirname, '..', 'games_html_cache'),
-  path.join(process.cwd(), 'api', 'games_html_cache'),
-  path.join(process.cwd(), 'games_html_cache'),
-  path.join('/var/task', 'api', 'games_html_cache'),
-  path.join('/var/task', 'games_html_cache')
-];
-
-function findCachedFile(slug) {
-  for (const dir of POSSIBLE_CACHE_DIRS) {
-    const candidate = path.join(dir, `${slug}.html`);
-    try {
-      if (fs.existsSync(candidate)) {
-        return candidate;
-      }
-    } catch (e) {}
-  }
-  return null;
 }
 
 const MOCK_SDK_SNIPPET = `<script>
@@ -181,16 +170,10 @@ module.exports = async function handler(req, res) {
     return res.status(400).send('Game slug required');
   }
 
-  // 1. Direct cached HTML file on disk
-  const cachedPath = findCachedFile(slug);
-  if (cachedPath) {
-    try {
-      const html = fs.readFileSync(cachedPath, 'utf8');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.status(200).send(html);
-    } catch (e) {
-      console.error(`Error reading cached file for ${slug}:`, e);
-    }
+  // 1. In-memory bundle lookup (Instant, works 100% on Vercel, Render, or any host)
+  if (gamesBundle[slug]) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(gamesBundle[slug]);
   }
 
   // 2. Check if slug is a sub-resource path (e.g. scripts/jobworker.js or slug/subpath)
@@ -198,7 +181,7 @@ module.exports = async function handler(req, res) {
   let subpath = slug;
   if (slug.includes('/')) {
     const parts = slug.split('/', 2);
-    if (gamesCache[parts[0]] || findCachedFile(parts[0])) {
+    if (gamesBundle[parts[0]] || gamesCache[parts[0]]) {
       refSlug = parts[0];
       subpath = slug.substring(parts[0].length + 1);
     }
@@ -219,15 +202,9 @@ module.exports = async function handler(req, res) {
     if (gamesCache[refSlug]) {
       const cleanUri = gamesCache[refSlug].split('?')[0];
       baseUrl = cleanUri.substring(0, cleanUri.lastIndexOf('/') + 1);
-    } else {
-      const refFile = findCachedFile(refSlug);
-      if (refFile) {
-        try {
-          const content = fs.readFileSync(refFile, 'utf8');
-          const m = content.match(/<base\s+href=['"]([^'"]+)['"]/i);
-          if (m) baseUrl = m[1];
-        } catch (e) {}
-      }
+    } else if (gamesBundle[refSlug]) {
+      const m = gamesBundle[refSlug].match(/<base\s+href=['"]([^'"]+)['"]/i);
+      if (m) baseUrl = m[1];
     }
 
     if (baseUrl) {

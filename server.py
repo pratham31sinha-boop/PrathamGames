@@ -13,8 +13,9 @@ import re
 import datetime
 import subprocess
 import threading
+import sys
 
-PORT = 8080
+PORT = int(os.environ.get('PORT', sys.argv[1] if len(sys.argv) > 1 else 8080))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_DIR = os.path.join(BASE_DIR, 'package')
 CACHE_FILE = os.path.join(BASE_DIR, 'games_cache.json')
@@ -1263,6 +1264,6 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
 
 if __name__ == '__main__':
-    with ThreadedHTTPServer(('', PORT), PrathamGamesHandler) as httpd:
+    with ThreadedHTTPServer(('0.0.0.0', PORT), PrathamGamesHandler) as httpd:
         print(f"Pratham Games Multi-Threaded Server active on port {PORT}...")
         httpd.serve_forever()

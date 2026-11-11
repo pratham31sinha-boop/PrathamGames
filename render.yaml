@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pratham-games
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: GITHUB_TOKEN
+        sync: false

@@ -1,12 +1,8 @@
 {
   "version": 2,
   "functions": {
-    "api/play-game.js": {
-      "includeFiles": "api/games_html_cache/**,games_html_cache/**,api/games_cache.json,games_cache.json",
-      "maxDuration": 30
-    },
     "api/*.js": {
-      "maxDuration": 15
+      "maxDuration": 30
     }
   },
   "rewrites": [
