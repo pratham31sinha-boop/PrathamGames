@@ -60,3 +60,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [6:45:52 PM IST] GAME PLAYED: Dino Merge | Category: Arcade | Score: 140 pts | Duration: 6s
 [6:45:55 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
 [6:46:00 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 103 pts | Duration: 4s
+[6:46:03 PM IST] GAME PLAYED: Neon Challenge Legends | Category: Arcade | Score: Active Session Started | Duration: 0m
