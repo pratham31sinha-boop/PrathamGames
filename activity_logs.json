@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794373952344",
+    "timestamp": "2026-11-11 05:12:32 UTC",
+    "type": "USER_VISIT",
+    "gameTitle": "Games Store Home",
+    "slug": "",
+    "category": "Portal",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=monkey-mart"
+  },
+  {
     "id": "act_1794373472759",
     "timestamp": "2026-11-11 05:04:32 UTC",
     "type": "GAME_PLAY",
