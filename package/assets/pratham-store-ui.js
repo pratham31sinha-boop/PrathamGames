@@ -679,6 +679,7 @@
       // Ensure cross-origin asset hotlinking protection bypass via no-referrer
       iframe.referrerPolicy = 'no-referrer';
       iframe.setAttribute('referrerpolicy', 'no-referrer');
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups');
       // Clear previous iframe first to immediately stop previous game sound/state
       iframe.src = 'about:blank';
 

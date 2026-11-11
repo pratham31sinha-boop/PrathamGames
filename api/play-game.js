@@ -29,6 +29,25 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
   window.updateProgress = window.updateProgress || function() {};
+
+  // Universal Sitelock Neutralizer: Prevents domain checks from redirecting to poki.com/sitelock
+  try {
+    var _origAtob = window.atob;
+    if (typeof _origAtob === 'function') {
+      window.atob = function(str) {
+        if (typeof str === 'string') {
+          if (str === 'bG9jYWxob3N0' || str === 'LnBva2kuY29t' || str === 'LnBva2ktZ2RuLmNvbQ==' || str === 'cG9raS5jb20=' || str === 'LnBva2ktZ2Ru') {
+            return window.location.hostname || 'localhost';
+          }
+          if (str === 'aHR0cHM6Ly9wb2tpLmNvbS9zaXRlbG9jaw==' || str === 'aHR0cHM6Ly9nYW1lcy5wb2tpLmNvbS9zaXRlbG9jaw==') {
+            return 'javascript:void(0)';
+          }
+        }
+        return _origAtob.call(window, str);
+      };
+    }
+  } catch(e) {}
+
   window.Progress = window.Progress || {
     _listeners: [],
     addListener: function(fn) {
@@ -157,6 +176,8 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
 
 module.exports = async function handler(req, res) {
   let slug = req.query.slug || '';
+  if (Array.isArray(slug)) slug = slug.join('/');
+  if (typeof slug !== 'string') slug = String(slug || '');
   if (!slug && req.url) {
     const parts = req.url.split('?')[0].split('/play-game/');
     if (parts.length > 1) {
@@ -300,10 +321,14 @@ module.exports = async function handler(req, res) {
 <head>
   <meta charset="utf-8">
   <title>${slug}</title>
-  <style>body,html{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;}iframe{width:100%;height:100%;border:none;}</style>
+  <style>body,html{margin:0;padding:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#090d16;color:#fff;font-family:sans-serif;}</style>
 </head>
 <body>
-  <iframe src="https://games.poki.com/${slug}" allow="autoplay; fullscreen; camera; focus-without-user-activation *"></iframe>
+  <div style="text-align:center;">
+    <h2>🎮 Launching ${slug}...</h2>
+    <p style="color:#aaa;">Connecting to high-speed game server...</p>
+    <script>setTimeout(function() { window.location.reload(); }, 2000);</script>
+  </div>
 </body>
 </html>`;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');

@@ -12,6 +12,26 @@
 
   // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
   window.updateProgress = window.updateProgress || function() {};
+  window.updateProgress = window.updateProgress || function() {};
+
+  // Universal Sitelock Neutralizer: Prevents domain checks from redirecting to poki.com/sitelock
+  try {
+    var _origAtob = window.atob;
+    if (typeof _origAtob === 'function') {
+      window.atob = function(str) {
+        if (typeof str === 'string') {
+          if (str === 'bG9jYWxob3N0' || str === 'LnBva2kuY29t' || str === 'LnBva2ktZ2RuLmNvbQ==' || str === 'cG9raS5jb20=' || str === 'LnBva2ktZ2Ru') {
+            return window.location.hostname || 'localhost';
+          }
+          if (str === 'aHR0cHM6Ly9wb2tpLmNvbS9zaXRlbG9jaw==' || str === 'aHR0cHM6Ly9nYW1lcy5wb2tpLmNvbS9zaXRlbG9jaw==') {
+            return 'javascript:void(0)';
+          }
+        }
+        return _origAtob.call(window, str);
+      };
+    }
+  } catch(e) {}
+
   window.Progress = window.Progress || {
     _listeners: [],
     addListener: function(fn) {
