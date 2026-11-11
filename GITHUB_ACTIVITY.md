@@ -240,3 +240,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 13:24:07 UTC | 🎮 GAME_PLAY | **Temple Run 2** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 13:27:12 UTC | 🎮 GAME_PLAY | **Perfect Landing, Plane Pilot** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-11 13:27:40 UTC | 🎮 GAME_PLAY | **Magic Battleground** (.io & Arena) | Linux x86_64 • Desktop |
+| 2026-11-11 13:31:20 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
