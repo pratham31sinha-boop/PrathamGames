@@ -309,3 +309,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 16:47:55 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 16:48:11 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 16:48:33 UTC | 🎮 GAME_PLAY | **Nuke Policy** (Arcade) | Linux x86_64 • Desktop |
+| 2026-11-11 17:00:47 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
