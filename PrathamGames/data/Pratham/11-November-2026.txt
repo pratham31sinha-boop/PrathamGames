@@ -94,3 +94,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:15:37 PM IST] GAME PLAYED: Dino Simulator | Category: Casual | Score: 269 pts | Duration: 12s
 [7:15:41 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
 [7:17:07 PM IST] GAME PLAYED: Car Circle | Category: Racing | Score: Active Session Started | Duration: 0m
+[7:17:15 PM IST] GAME PLAYED: Car Circle | Category: Racing | Score: 203 pts | Duration: 8s
