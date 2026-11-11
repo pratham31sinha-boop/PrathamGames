@@ -275,3 +275,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 14:47:45 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 14:48:21 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 14:48:21 UTC | 🎮 GAME_PLAY | **Drive Mad** (Racing) | Linux x86_64 • Desktop |
+| 2026-11-11 14:57:13 UTC | 🎮 GAME_PLAY | **Drive Mad** (Racing) | Linux x86_64 • Desktop |
