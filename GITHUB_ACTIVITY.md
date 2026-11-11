@@ -235,3 +235,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 13:15:39 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 13:15:49 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 13:15:55 UTC | 🎮 GAME_PLAY | **Monkey Mart** (Simulation) | Linux x86_64 • Desktop |
+| 2026-11-11 13:18:10 UTC | 🎮 GAME_PLAY | **Gas Station** (Arcade) | Linux x86_64 • Desktop |
