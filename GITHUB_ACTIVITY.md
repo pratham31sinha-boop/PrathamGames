@@ -249,3 +249,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 13:44:28 UTC | 🎮 GAME_PLAY | **World of Yarn** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-11 13:47:21 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 14:16:04 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
+| 2026-11-11 14:16:06 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux armv81 • Mobile |
