@@ -46,6 +46,22 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
         return _origAtob.call(window, str);
       };
     }
+    var _origSplit = String.prototype.split;
+    String.prototype.split = function(delim) {
+      var res = _origSplit.apply(this, arguments);
+      if ((delim === ';' || delim === ',') && Array.isArray(res) && res.length > 2) {
+        for (var i = 0; i < res.length; i++) {
+          if (typeof res[i] === 'string' && (res[i].indexOf('poki') !== -1 || res[i] === 'localhost')) {
+            if (window.location && window.location.hostname) res.push(window.location.hostname);
+            res.push('.vercel.app');
+            res.push('localhost');
+            res.push('127.0.0.1');
+            break;
+          }
+        }
+      }
+      return res;
+    };
   } catch(e) {}
 
   window.Progress = window.Progress || {
