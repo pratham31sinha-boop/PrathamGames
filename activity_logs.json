@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794373424838",
+    "timestamp": "2026-11-11 05:03:44 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Subway Surfers",
+    "slug": "subway-surfers",
+    "category": "Adventure",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?utm_source=chatgpt.com"
+  },
+  {
     "id": "act_1794373422691",
     "timestamp": "2026-11-11 05:03:42 UTC",
     "type": "USER_VISIT",

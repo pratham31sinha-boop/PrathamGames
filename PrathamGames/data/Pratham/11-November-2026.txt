@@ -14,3 +14,6 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:31:46 AM IST] GAME PLAYED: Tic Tac Toe Ultimate | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [10:31:50 AM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: Active Session Started | Duration: 0m
 [10:31:51 AM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: 45 pts | Duration: 1s
+[10:31:51 AM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: Active Session Started | Duration: 0m
+[10:31:57 AM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
+[10:33:44 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
