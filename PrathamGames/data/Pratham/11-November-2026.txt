@@ -92,3 +92,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:13:58 PM IST] GAME PLAYED: Bubble Storm | Category: Arcade | Score: 128 pts | Duration: 5s
 [7:15:35 PM IST] GAME PLAYED: Dino Simulator | Category: Casual | Score: Active Session Started | Duration: 0m
 [7:15:37 PM IST] GAME PLAYED: Dino Simulator | Category: Casual | Score: 269 pts | Duration: 12s
+[7:15:41 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
