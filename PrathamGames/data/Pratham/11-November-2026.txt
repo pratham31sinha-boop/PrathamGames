@@ -65,3 +65,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [6:46:14 PM IST] GAME PLAYED: Master Chess | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [6:48:01 PM IST] GAME PLAYED: Master Chess | Category: Puzzle | Score: 2358 pts | Duration: 1m 47s
 [6:48:14 PM IST] GAME PLAYED: Gas Station | Category: Arcade | Score: 110 pts | Duration: 4s
+[6:48:18 PM IST] GAME PLAYED: Escape From Spider | Category: Adventure | Score: Active Session Started | Duration: 0m
