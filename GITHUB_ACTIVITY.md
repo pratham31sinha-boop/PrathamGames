@@ -300,3 +300,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 16:34:35 UTC | 🎮 GAME_PLAY | **Cyber Cars Punk Racing** (Racing) | Linux x86_64 • Desktop |
 | 2026-11-11 16:35:03 UTC | 🎮 GAME_PLAY | **Blocky Blast Puzzle** (Puzzle) | Linux armv81 • Mobile |
 | 2026-11-11 16:35:15 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
+| 2026-11-11 16:37:37 UTC | 🎮 GAME_PLAY | **Happy Glass** (Arcade) | Linux armv81 • Mobile |
