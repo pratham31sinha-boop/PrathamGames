@@ -41,3 +41,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:43:02 AM IST] GAME PLAYED: Retro Bowl | Category: Sports | Score: Active Session Started | Duration: 0m
 [11:55:14 AM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 115285 pts | Duration: 87m 19s
 [12:05:41 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 120309 pts | Duration: 91m 8s
+[12:19:27 PM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: 31919 pts | Duration: 24m 10s
