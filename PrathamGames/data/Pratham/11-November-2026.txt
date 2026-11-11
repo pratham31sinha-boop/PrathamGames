@@ -73,3 +73,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [7:01:18 PM IST] GAME PLAYED: School Cleaning | Category: Arcade | Score: 2487 pts | Duration: 1m 52s
 [7:01:30 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 237 pts | Duration: 10s
 [7:01:35 PM IST] GAME PLAYED: My Perfect Hotel | Category: Arcade | Score: Active Session Started | Duration: 0m
+[7:02:01 PM IST] GAME PLAYED: My Perfect Hotel | Category: Arcade | Score: 567 pts | Duration: 25s
