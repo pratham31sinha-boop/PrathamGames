@@ -27,3 +27,5 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:34:28 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
 [10:34:32 AM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: 107 pts | Duration: 4s
 [10:34:32 AM IST] GAME PLAYED: Fear Response | Category: Arcade | Score: Active Session Started | Duration: 0m
+[10:42:32 AM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: Active Session Started | Duration: 0m
+[10:42:36 AM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
