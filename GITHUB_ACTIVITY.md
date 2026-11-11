@@ -302,3 +302,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 16:35:15 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux armv81 • Mobile |
 | 2026-11-11 16:37:37 UTC | 🎮 GAME_PLAY | **Happy Glass** (Arcade) | Linux armv81 • Mobile |
 | 2026-11-11 16:38:02 UTC | 🎮 GAME_PLAY | **Count Control Legends** (Arcade) | Linux armv81 • Mobile |
+| 2026-11-11 16:41:03 UTC | 🎮 GAME_PLAY | **Perfect Landing, Plane Pilot** (Arcade) | Linux armv81 • Mobile |
