@@ -1,5 +1,25 @@
 [
   {
+    "id": "act_1794373472759",
+    "timestamp": "2026-11-11 05:04:32 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Fear Response",
+    "slug": "fear-response",
+    "category": "Arcade",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=hill-climb-racing-lite"
+  },
+  {
+    "id": "act_1794373468238",
+    "timestamp": "2026-11-11 05:04:28 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Hill Climb Racing Lite",
+    "slug": "hill-climb-racing-lite",
+    "category": "Racing",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=hill-climb-racing-lite"
+  },
+  {
     "id": "act_1794373468208",
     "timestamp": "2026-11-11 05:04:28 UTC",
     "type": "USER_VISIT",

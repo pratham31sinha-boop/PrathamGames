@@ -83,3 +83,5 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 05:04:00 UTC | 🎮 GAME_PLAY | **Build League** (Arcade) | Linux x86_64 • Desktop |
 | 2026-11-11 05:04:21 UTC | 🎮 GAME_PLAY | **Hill Climb Racing Lite** (Racing) | Linux x86_64 • Desktop |
 | 2026-11-11 05:04:28 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-11 05:04:28 UTC | 🎮 GAME_PLAY | **Hill Climb Racing Lite** (Racing) | Linux x86_64 • Desktop |
+| 2026-11-11 05:04:32 UTC | 🎮 GAME_PLAY | **Fear Response** (Arcade) | Linux x86_64 • Desktop |
