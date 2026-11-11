@@ -5,3 +5,4 @@
 [1:02:55 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: Active Session Started | Duration: 0m
 [1:03:02 PM IST] GAME PLAYED: Hide and Paint | Category: Arcade | Score: 164 pts | Duration: 7s
 [7:46:07 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
+[7:47:33 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 640 pts | Duration: 28s
