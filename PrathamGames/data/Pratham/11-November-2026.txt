@@ -102,3 +102,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [8:03:33 PM IST] GAME PLAYED: Monkey Mart | Category: Simulation | Score: 142 pts | Duration: 6s
 [8:03:37 PM IST] GAME PLAYED: MR RACER - Car Racing | Category: Racing | Score: Active Session Started | Duration: 0m
 [8:03:50 PM IST] GAME PLAYED: MR RACER - Car Racing | Category: Racing | Score: 315 pts | Duration: 13s
+[8:03:52 PM IST] GAME PLAYED: Hill Climb Racing Lite | Category: Racing | Score: Active Session Started | Duration: 0m
