@@ -1,5 +1,15 @@
 [
   {
+    "id": "act_1794373434489",
+    "timestamp": "2026-11-11 05:03:54 UTC",
+    "type": "GAME_PLAY",
+    "gameTitle": "Hill Climb Racing Lite",
+    "slug": "hill-climb-racing-lite",
+    "category": "Racing",
+    "device": "Linux x86_64 \u2022 Desktop",
+    "path": "/?game=subway-surfers"
+  },
+  {
     "id": "act_1794373424838",
     "timestamp": "2026-11-11 05:03:44 UTC",
     "type": "GAME_PLAY",

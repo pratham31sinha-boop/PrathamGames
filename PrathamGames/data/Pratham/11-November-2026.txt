@@ -17,3 +17,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [10:31:51 AM IST] GAME PLAYED: Temple Run 2 | Category: Adventure | Score: Active Session Started | Duration: 0m
 [10:31:57 AM IST] GAME PLAYED: Planet Destruction | Category: Arcade | Score: Active Session Started | Duration: 0m
 [10:33:44 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: Active Session Started | Duration: 0m
+[10:33:54 AM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 221 pts | Duration: 9s
