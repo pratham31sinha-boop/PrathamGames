@@ -594,8 +594,8 @@ MOCK_SDK_TEMPLATE = """
   try {
     Object.defineProperty(window, 'PokiSDK', {
       value: pokiProxy,
-      writable: false,
-      configurable: false
+      writable: true,
+      configurable: true
     });
   } catch(e) {
     window.PokiSDK = pokiProxy;
@@ -1219,6 +1219,7 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
                     mock_sdk = MOCK_SDK_TEMPLATE.replace('__BASE_URL__', base_url)
                     html = re.sub(r'<script[^>]*src=[\'"][^\'"]*poki-sdk[^\'"]*[\'"][^>]*>\s*</script>', '', html, flags=re.IGNORECASE)
                     html = re.sub(r'<div[^>]*id=["\'](?:adInfo|poki-video-ad-container)["\'][^>]*>.*?</div>', '', html, flags=re.DOTALL | re.IGNORECASE)
+                    html = html.replace('src="/loaders/v3/master-loader.js"', 'src="https://game-cdn.poki.com/loaders/v3/master-loader.js"')
                     if '<head>' in html:
                         html = html.replace('<head>', '<head>' + mock_sdk, 1)
                     elif '<head ' in html:

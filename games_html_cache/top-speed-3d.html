@@ -152,8 +152,8 @@
   try {
     Object.defineProperty(window, 'PokiSDK', {
       value: pokiProxy,
-      writable: false,
-      configurable: false
+      writable: true,
+      configurable: true
     });
   } catch(e) {
     window.PokiSDK = pokiProxy;
@@ -339,6 +339,6 @@
 	</script>
 </head>
 <body>
-	<script src="/loaders/v3/master-loader.js"></script>
+	<script src="https://game-cdn.poki.com/loaders/v3/master-loader.js"></script>
 </body>
 </html>

@@ -242,7 +242,8 @@
 
   <!-- Player Onboarding Modal (Name & Age Required at Start) -->
   <div class="player-onboard-backdrop" id="playerOnboardModal" style="display: none;">
-    <div class="player-onboard-card">
+    <div class="player-onboard-card" style="position: relative;">
+      <button class="github-modal-close" id="onboardCloseBtn" style="position: absolute; top: 1rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" title="Play as Guest">&times;</button>
       <div class="onboard-header">
         <div class="onboard-logo-icon">
           <img src="./assets/icons/logo.svg" alt="PRATHAM GAMES" class="onboard-brand-logo-img">
@@ -271,6 +272,9 @@
         <button type="submit" id="onboardSubmitBtn" class="onboard-submit-btn">
           <span>START PLAYING</span>
           <span>▶</span>
+        </button>
+        <button type="button" id="onboardSkipBtn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; text-decoration: underline; width: 100%; text-align: center;">
+          Or Play as Guest (Skip for Now)
         </button>
       </form>
     </div>

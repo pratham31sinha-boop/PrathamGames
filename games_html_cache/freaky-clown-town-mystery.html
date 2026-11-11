@@ -152,8 +152,8 @@
   try {
     Object.defineProperty(window, 'PokiSDK', {
       value: pokiProxy,
-      writable: false,
-      configurable: false
+      writable: true,
+      configurable: true
     });
   } catch(e) {
     window.PokiSDK = pokiProxy;
@@ -342,7 +342,7 @@
 <!-- will be copied to the resulting head //-->
 </head>
 <body>
-	<script src="/loaders/v3/master-loader.js"></script>
+	<script src="https://game-cdn.poki.com/loaders/v3/master-loader.js"></script>
 <body style="background-color: #000000; background-image: url('Bg.jpg'); background-repeat: no-repeat; background-size: cover;">
 <!-- will be copied to the resulting body //-->
 <!-- will also be copied to the resulting body //-->

@@ -1138,6 +1138,20 @@
     const profileCloseBtn = document.getElementById('profileCloseBtn');
     const profileSwitchBtn = document.getElementById('profileSwitchBtn');
 
+    // Skip / Close Onboarding
+    const skipOnboarding = () => {
+      sfx.click();
+      const guestPlayer = setPlayer('Player', 16);
+      if (onboardModal) onboardModal.style.display = 'none';
+      showToast('🎮 Welcome! Playing as <strong>Player</strong>');
+    };
+
+    const onboardClose = document.getElementById('onboardCloseBtn');
+    if (onboardClose) onboardClose.addEventListener('click', skipOnboarding);
+
+    const onboardSkip = document.getElementById('onboardSkipBtn');
+    if (onboardSkip) onboardSkip.addEventListener('click', skipOnboarding);
+
     // Onboarding Form Submit
     if (onboardForm) {
       onboardForm.addEventListener('submit', (e) => {
