@@ -68,3 +68,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [6:48:18 PM IST] GAME PLAYED: Escape From Spider | Category: Adventure | Score: Active Session Started | Duration: 0m
 [6:57:01 PM IST] GAME PLAYED: Brain Test: Tricky Puzzles | Category: Puzzle | Score: Active Session Started | Duration: 0m
 [6:57:07 PM IST] GAME PLAYED: Brain Test: Tricky Puzzles | Category: Puzzle | Score: 138 pts | Duration: 5s
+[6:57:39 PM IST] GAME PLAYED: Perfect Landing, Plane Pilot | Category: Arcade | Score: Active Session Started | Duration: 0m
