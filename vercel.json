@@ -4,6 +4,10 @@
   "rewrites": [
     { "source": "/assets/(.*)", "destination": "/package/assets/$1" },
     { "source": "/play-game/:slug*", "destination": "/api/play-game?slug=:slug*" },
+    { "source": "/files/(.*)", "destination": "/api/play-game?slug=files/$1" },
+    { "source": "/Build/(.*)", "destination": "/api/play-game?slug=Build/$1" },
+    { "source": "/TemplateData/(.*)", "destination": "/api/play-game?slug=TemplateData/$1" },
+    { "source": "/StreamingAssets/(.*)", "destination": "/api/play-game?slug=StreamingAssets/$1" },
     { "source": "/api/cors-proxy", "destination": "/api/cors-proxy" },
     { "source": "/api/register-player", "destination": "/api/register-player" },
     { "source": "/api/log-gameplay", "destination": "/api/log-gameplay" },

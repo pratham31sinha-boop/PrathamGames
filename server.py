@@ -16,6 +16,7 @@ import threading
 
 PORT = 8080
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PACKAGE_DIR = os.path.join(BASE_DIR, 'package')
 CACHE_FILE = os.path.join(BASE_DIR, 'games_cache.json')
 GITHUB_CONFIG_FILE = os.path.join(BASE_DIR, 'github_config.json')
 ACTIVITY_JSON_FILE = os.path.join(BASE_DIR, 'activity_logs.json')
@@ -53,8 +54,10 @@ IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 PRATHAM_GAMES_DIR = os.path.join(BASE_DIR, 'PrathamGames')
 PRATHAM_DATA_DIR = os.path.join(PRATHAM_GAMES_DIR, 'data')
 HTML_CACHE_DIR = os.path.join(BASE_DIR, 'games_html_cache')
+ASSET_CACHE_DIR = os.path.join(BASE_DIR, 'games_assets_cache')
 os.makedirs(PRATHAM_DATA_DIR, exist_ok=True)
 os.makedirs(HTML_CACHE_DIR, exist_ok=True)
+os.makedirs(ASSET_CACHE_DIR, exist_ok=True)
 
 def async_git_commit(message):
     def _worker():
@@ -448,6 +451,22 @@ MOCK_SDK_TEMPLATE = """
   var noop = function() {};
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
+  // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
+  window.Progress = window.Progress || {
+    _listeners: [],
+    addListener: function(fn) {
+      if (typeof fn === 'function') {
+        this._listeners.push(fn);
+        try { fn(100); } catch(e) {}
+      }
+    },
+    notifyListeners: function(val) {
+      for (var i = 0; i < this._listeners.length; i++) {
+        try { this._listeners[i](val); } catch(e) {}
+      }
+    }
+  };
+
   // Intercept slow dynamic script injections (e.g. ad networks, tracking)
   try {
     var _origCreate = document.createElement;
@@ -586,6 +605,7 @@ MOCK_SDK_TEMPLATE = """
   window.pokiAdBlock = false;
   window.PokiSDKInited = true;
   window.isPokiSDKInited = true;
+  window.isWasmLoaded = true;
 
   // Cross-origin Worker polyfill using Blob and importScripts
   try {
@@ -607,24 +627,12 @@ MOCK_SDK_TEMPLATE = """
     }
   } catch(e) {}
 
-  // Universal onload handler: ensures window.onload runs even if assigned after DOM load
-  try {
-    var _assignedOnload = null;
-    Object.defineProperty(window, 'onload', {
-      get: function() { return _assignedOnload; },
-      set: function(fn) {
-        _assignedOnload = fn;
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-          setTimeout(function() {
-            if (typeof fn === 'function') {
-              try { fn(); } catch(e) {}
-            }
-          }, 10);
-        }
-      },
-      configurable: true
-    });
-  } catch(e) {}
+  // Safe DOM Load fallback (never override Object.defineProperty(window, 'onload'))
+  if (document.readyState === 'complete') {
+    setTimeout(function() {
+      try { window.dispatchEvent(new Event('load')); } catch(e) {}
+    }, 20);
+  }
 
   // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
   try {
@@ -673,16 +681,75 @@ MOCK_SDK_TEMPLATE = """
     };
   } catch(e) {}
 
-  // Poll for Unity bridge and signal ready immediately
-  var bridgeInterval = setInterval(function() {
-    if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+  // Defold Engine Auto-starter Watchdog
+  (function() {
+    var defoldInterval = setInterval(function() {
+      if (window.Module && typeof window.Module.runApp === 'function') {
+        try {
+          if (!window._defoldAppRan) {
+            window._defoldAppRan = true;
+            window.Module.runApp("canvas");
+          }
+          clearInterval(defoldInterval);
+        } catch(e) {}
+      }
+    }, 150);
+    setTimeout(function() { clearInterval(defoldInterval); }, 5000);
+  })();
+
+  // Unity Engine Bridge Watchdog
+  (function() {
+    var bridgeInterval = setInterval(function() {
+      if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+        try {
+          window.unityGame.SendMessage(window.pokiBridge, 'ready');
+          clearInterval(bridgeInterval);
+        } catch(e) {}
+      }
+    }, 100);
+    setTimeout(function() { clearInterval(bridgeInterval); }, 6000);
+  })();
+
+  // Universal Loading Overlay Auto-Dismiss Watchdog (< 1.5s max wait)
+  (function() {
+    var dismissOverlays = function() {
+      var selectors = [
+        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
+        '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
+        '#load', '#progress-container', '#progress-bar-root'
+      ];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = document.querySelector(selectors[i]);
+        if (el) {
+          try {
+            el.style.transition = 'opacity 0.25s ease';
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+            (function(target) {
+              setTimeout(function() {
+                target.style.display = 'none';
+                target.style.visibility = 'hidden';
+              }, 250);
+            })(el);
+          } catch(e) {}
+        }
+      }
       try {
-        window.unityGame.SendMessage(window.pokiBridge, 'ready');
-        clearInterval(bridgeInterval);
+        if (window.PokiSDK && window.PokiSDK.gameLoadingFinished) {
+          window.PokiSDK.gameLoadingFinished();
+        }
       } catch(e) {}
+    };
+
+    if (document.readyState === 'complete') {
+      setTimeout(dismissOverlays, 800);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(dismissOverlays, 800);
+      });
     }
-  }, 100);
-  setTimeout(function() { clearInterval(bridgeInterval); }, 10000);
+    setTimeout(dismissOverlays, 1500);
+  })();
 })();
 </script>
 """
@@ -697,6 +764,17 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
             return
+        clean_path = self.path.split('?')[0].lstrip('/')
+        local_path = os.path.join(BASE_DIR, clean_path)
+        package_path = os.path.join(PACKAGE_DIR, clean_path)
+        if clean_path and not (os.path.exists(local_path) or os.path.exists(package_path)):
+            referer = self.headers.get('Referer', '')
+            if '/play-game/' in referer or '?game=' in referer:
+                self.send_response(200)
+                self.send_header('Content-Type', self.guess_mime(clean_path))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                return
         return super().do_HEAD()
 
     def do_OPTIONS(self):
@@ -778,6 +856,23 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Location', f'/?search={cat}')
             self.end_headers()
             return
+        # Check if the requested file exists locally
+        clean_path = self.path.split('?')[0].lstrip('/')
+        local_path = os.path.join(BASE_DIR, clean_path)
+        package_path = os.path.join(PACKAGE_DIR, clean_path)
+
+        if clean_path and not (os.path.exists(local_path) or os.path.exists(package_path)):
+            ref_slug = None
+            referer = self.headers.get('Referer', '')
+            if '/play-game/' in referer:
+                ref_slug = referer.split('/play-game/')[1].split('?')[0].strip('/').split('/')[0]
+            elif '?game=' in referer:
+                ref_slug = referer.split('?game=')[1].split('&')[0].strip('/')
+
+            if ref_slug:
+                base_url = self.get_game_base_url(ref_slug)
+                if base_url and self.proxy_upstream_asset(ref_slug, base_url, clean_path):
+                    return
 
         # Default static file serving
         return super().do_GET()
@@ -928,6 +1023,99 @@ class PrathamGamesHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(str(e).encode('utf-8'))
+
+    def get_game_base_url(self, slug):
+        if not slug:
+            return None
+        if slug in GAME_CACHE:
+            clean_uri = GAME_CACHE[slug].split('?')[0]
+            return clean_uri.rsplit('/', 1)[0] + '/'
+        ref_file = os.path.join(HTML_CACHE_DIR, f"{slug}.html")
+        if os.path.exists(ref_file):
+            try:
+                with open(ref_file, 'r', encoding='utf-8', errors='ignore') as f:
+                    m = re.search(r'<base\s+href=[\'"]([^\'"]+)[\'"]', f.read())
+                    if m:
+                        return m.group(1)
+            except Exception:
+                pass
+        return None
+
+    def guess_mime(self, path):
+        p = path.lower().split('?')[0]
+        if p.endswith('.js') or p.endswith('.mjs'): return 'text/javascript; charset=utf-8'
+        if p.endswith('.wasm'): return 'application/wasm'
+        if p.endswith('.json'): return 'application/json'
+        if p.endswith('.css'): return 'text/css'
+        if p.endswith('.png'): return 'image/png'
+        if p.endswith('.jpg') or p.endswith('.jpeg'): return 'image/jpeg'
+        if p.endswith('.webp'): return 'image/webp'
+        if p.endswith('.gif'): return 'image/gif'
+        if p.endswith('.svg'): return 'image/svg+xml'
+        if p.endswith('.mp3'): return 'audio/mpeg'
+        if p.endswith('.ogg'): return 'audio/ogg'
+        if p.endswith('.wav'): return 'audio/wav'
+        if p.endswith('.otf'): return 'font/otf'
+        if p.endswith('.ttf'): return 'font/ttf'
+        if p.endswith('.woff'): return 'font/woff'
+        if p.endswith('.woff2'): return 'font/woff2'
+        if p.endswith('.data') or p.endswith('.unityweb') or p.endswith('.bin'): return 'application/octet-stream'
+        return 'application/octet-stream'
+
+    def proxy_upstream_asset(self, ref_slug, base_url, subpath):
+        safe_rel_path = re.sub(r'[^a-zA-Z0-9_\-\./]', '_', subpath)
+        asset_cache_file = os.path.join(ASSET_CACHE_DIR, ref_slug, safe_rel_path)
+        if os.path.exists(asset_cache_file) and os.path.getsize(asset_cache_file) > 0:
+            try:
+                with open(asset_cache_file, 'rb') as f:
+                    data = f.read()
+                ctype = self.guess_mime(subpath)
+                self.send_response(200)
+                self.send_header('Content-Type', ctype)
+                self.send_header('Content-Length', str(len(data)))
+                if subpath.endswith('.gz') or subpath.endswith('.unityweb'):
+                    self.send_header('Content-Encoding', 'gzip')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Cache-Control', 'public, max-age=31536000')
+                self.end_headers()
+                self.wfile.write(data)
+                return True
+            except Exception as e:
+                print(f"Error serving cached asset {asset_cache_file}: {e}")
+
+        target_url = urllib.parse.urljoin(base_url, subpath)
+        try:
+            req = urllib.request.Request(target_url, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://games.poki.com/'
+            })
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                data = resp.read()
+                self.send_response(resp.status)
+                ctype = resp.headers.get('Content-Type')
+                if not ctype or 'text/plain' in ctype:
+                    ctype = self.guess_mime(subpath)
+                self.send_header('Content-Type', ctype)
+                upstream_enc = resp.headers.get('Content-Encoding')
+                if upstream_enc:
+                    self.send_header('Content-Encoding', upstream_enc)
+                elif subpath.endswith('.gz') or subpath.endswith('.unityweb'):
+                    self.send_header('Content-Encoding', 'gzip')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Cache-Control', 'public, max-age=31536000')
+                self.end_headers()
+                self.wfile.write(data)
+
+                try:
+                    os.makedirs(os.path.dirname(asset_cache_file), exist_ok=True)
+                    with open(asset_cache_file, 'wb') as f:
+                        f.write(data)
+                except Exception:
+                    pass
+                return True
+        except Exception as e:
+            print(f"Error upstream proxying {subpath} for {ref_slug}: {e}")
+            return False
 
     def send_json_response(self, obj, status=200):
         body = json.dumps(obj).encode('utf-8')

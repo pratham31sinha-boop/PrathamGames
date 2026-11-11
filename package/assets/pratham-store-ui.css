@@ -1528,7 +1528,7 @@ body.mode-play #playerView {
   height: calc(100vh - 220px);
   min-height: 580px;
   max-height: 840px;
-  background: #ffffff;
+  background: #090d16;
   border: var(--border-thick);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
@@ -1541,7 +1541,7 @@ body.mode-play #playerView {
   height: 100%;
   border: none;
   display: block;
-  background: #ffffff;
+  background: #090d16;
 }
 
 /* Loading Overlay */

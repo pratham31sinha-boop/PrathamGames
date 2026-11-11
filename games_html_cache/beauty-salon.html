@@ -7,6 +7,22 @@
   var noop = function() {};
   var resolvedPromise = function(val) { return Promise.resolve(val); };
 
+  // Defold Engine Progress Polyfill (crucial for Monkey Mart, Level Devil, etc.)
+  window.Progress = window.Progress || {
+    _listeners: [],
+    addListener: function(fn) {
+      if (typeof fn === 'function') {
+        this._listeners.push(fn);
+        try { fn(100); } catch(e) {}
+      }
+    },
+    notifyListeners: function(val) {
+      for (var i = 0; i < this._listeners.length; i++) {
+        try { this._listeners[i](val); } catch(e) {}
+      }
+    }
+  };
+
   // Intercept slow dynamic script injections (e.g. ad networks, tracking)
   try {
     var _origCreate = document.createElement;
@@ -145,6 +161,7 @@
   window.pokiAdBlock = false;
   window.PokiSDKInited = true;
   window.isPokiSDKInited = true;
+  window.isWasmLoaded = true;
 
   // Cross-origin Worker polyfill using Blob and importScripts
   try {
@@ -166,24 +183,12 @@
     }
   } catch(e) {}
 
-  // Universal onload handler: ensures window.onload runs even if assigned after DOM load
-  try {
-    var _assignedOnload = null;
-    Object.defineProperty(window, 'onload', {
-      get: function() { return _assignedOnload; },
-      set: function(fn) {
-        _assignedOnload = fn;
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-          setTimeout(function() {
-            if (typeof fn === 'function') {
-              try { fn(); } catch(e) {}
-            }
-          }, 10);
-        }
-      },
-      configurable: true
-    });
-  } catch(e) {}
+  // Safe DOM Load fallback (never override Object.defineProperty(window, 'onload'))
+  if (document.readyState === 'complete') {
+    setTimeout(function() {
+      try { window.dispatchEvent(new Event('load')); } catch(e) {}
+    }, 20);
+  }
 
   // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
   try {
@@ -232,16 +237,75 @@
     };
   } catch(e) {}
 
-  // Poll for Unity bridge and signal ready immediately
-  var bridgeInterval = setInterval(function() {
-    if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+  // Defold Engine Auto-starter Watchdog
+  (function() {
+    var defoldInterval = setInterval(function() {
+      if (window.Module && typeof window.Module.runApp === 'function') {
+        try {
+          if (!window._defoldAppRan) {
+            window._defoldAppRan = true;
+            window.Module.runApp("canvas");
+          }
+          clearInterval(defoldInterval);
+        } catch(e) {}
+      }
+    }, 150);
+    setTimeout(function() { clearInterval(defoldInterval); }, 5000);
+  })();
+
+  // Unity Engine Bridge Watchdog
+  (function() {
+    var bridgeInterval = setInterval(function() {
+      if (window.pokiBridge && window.unityGame && typeof window.unityGame.SendMessage === 'function') {
+        try {
+          window.unityGame.SendMessage(window.pokiBridge, 'ready');
+          clearInterval(bridgeInterval);
+        } catch(e) {}
+      }
+    }, 100);
+    setTimeout(function() { clearInterval(bridgeInterval); }, 6000);
+  })();
+
+  // Universal Loading Overlay Auto-Dismiss Watchdog (< 1.5s max wait)
+  (function() {
+    var dismissOverlays = function() {
+      var selectors = [
+        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
+        '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
+        '#load', '#progress-container', '#progress-bar-root'
+      ];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = document.querySelector(selectors[i]);
+        if (el) {
+          try {
+            el.style.transition = 'opacity 0.25s ease';
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+            (function(target) {
+              setTimeout(function() {
+                target.style.display = 'none';
+                target.style.visibility = 'hidden';
+              }, 250);
+            })(el);
+          } catch(e) {}
+        }
+      }
       try {
-        window.unityGame.SendMessage(window.pokiBridge, 'ready');
-        clearInterval(bridgeInterval);
+        if (window.PokiSDK && window.PokiSDK.gameLoadingFinished) {
+          window.PokiSDK.gameLoadingFinished();
+        }
       } catch(e) {}
+    };
+
+    if (document.readyState === 'complete') {
+      setTimeout(dismissOverlays, 800);
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(dismissOverlays, 800);
+      });
     }
-  }, 100);
-  setTimeout(function() { clearInterval(bridgeInterval); }, 10000);
+    setTimeout(dismissOverlays, 1500);
+  })();
 })();
 </script>
 

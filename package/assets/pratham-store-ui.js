@@ -695,10 +695,12 @@
             }
           };
 
-          iframe.onload = dismissLoader;
+          iframe.onload = () => {
+            setTimeout(dismissLoader, 150);
+          };
           iframe.onerror = dismissLoader;
-          // Ultra-fast safety dismiss so user never feels stuck
-          setTimeout(dismissLoader, 600);
+          // Ultra-fast safety dismiss so user never feels stuck (max 1200ms)
+          setTimeout(dismissLoader, 1200);
         }
       }, 20);
     }
