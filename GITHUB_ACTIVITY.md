@@ -231,3 +231,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 12:59:12 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 13:02:13 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 13:04:21 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
+| 2026-11-11 13:04:26 UTC | 🎮 GAME_PLAY | **Scary Teacher 3D** (Racing) | Linux x86_64 • Desktop |
