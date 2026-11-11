@@ -69,3 +69,5 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-11 05:01:40 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
 | 2026-11-11 05:01:41 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-11 05:01:42 UTC | 🎮 GAME_PLAY | **Subway Surfers** (Adventure) | Linux x86_64 • Desktop |
+| 2026-11-11 05:01:46 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-11 05:01:46 UTC | 🎮 GAME_PLAY | **Tic Tac Toe Ultimate** (Puzzle) | Linux x86_64 • Desktop |
