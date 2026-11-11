@@ -108,3 +108,4 @@ Timezone: Indian Standard Time (IST, UTC+5:30)
 [8:59:27 PM IST] GAME PLAYED: Subway Surfers | Category: Adventure | Score: 29 pts | Duration: 1s
 [8:59:54 PM IST] GAME PLAYED: Stickman Hook | Category: Skill | Score: Active Session Started | Duration: 0m
 [10:04:17 PM IST] GAME PLAYED: Prankster 3D | Category: Arcade | Score: 85233 pts | Duration: 64m 33s
+[10:04:35 PM IST] GAME PLAYED: Cyber Cars Punk Racing | Category: Racing | Score: Active Session Started | Duration: 0m
