@@ -737,13 +737,12 @@
 
     let loaderTimer = null;
     let isLoaderDismissed = false;
-    let gameReadyReceived = false;
 
     const dismissLoader = (reason = 'unknown') => {
       if (isLoaderDismissed) return;
       isLoaderDismissed = true;
       if (loaderTimer) clearInterval(loaderTimer);
-      setLoaderProgress(100, '3D World Ready! Launching now...');
+      setLoaderProgress(100, 'Game stream connected!');
       setTimeout(() => {
         if (state.loadCounter === currentLoadId && loader) {
           loader.style.pointerEvents = 'none';
@@ -757,12 +756,6 @@
       }, 250);
     };
 
-    const attemptDismiss = (reason = 'auto') => {
-      if (reason === 'skipBtn' || (gameReadyReceived && elapsed >= 3200) || elapsed >= 6500) {
-        dismissLoader(reason);
-      }
-    };
-
     if (loaderSkip) {
       loaderSkip.onclick = () => {
         sfx.click();
@@ -772,22 +765,16 @@
 
     // Connect global hooks for real iframe render detection & progress events
     window._prathamGameReady = () => {
-      gameReadyReceived = true;
       if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
-        attemptDismiss('window._prathamGameReady');
+        dismissLoader('window._prathamGameReady');
       }
     };
     window._prathamSetLoaderProgress = (pct) => {
       if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
         const val = typeof pct === 'number' ? pct : 0;
-        const mapped = Math.min(98, Math.max(progressVal, val));
-        const msg = mapped >= 85 ? 'Building 3D maps, terrain meshes & lighting...' :
-                    mapped >= 55 ? 'Compiling WebAssembly (WASM) & WebGL shaders...' :
-                    'Downloading 3D textures, models & audio banks...';
-        setLoaderProgress(mapped, msg);
+        setLoaderProgress(Math.min(99, Math.max(progressVal, val)), 'Loading game assets...');
         if (val >= 100) {
-          gameReadyReceived = true;
-          attemptDismiss('progress_100');
+          dismissLoader('progress_100');
         }
       }
     };
@@ -797,7 +784,7 @@
       }
     };
 
-    // Realistic technical progressive ticker that steps through compilation & terrain building stages
+    // Smooth initial connection ticker while the iframe initializes
     let elapsed = 0;
     loaderTimer = setInterval(() => {
       if (state.loadCounter !== currentLoadId || isLoaderDismissed) {
@@ -805,23 +792,14 @@
         return;
       }
       elapsed += 100;
-      if (elapsed <= 700) {
-        setLoaderProgress(15 + (elapsed / 700) * 18, 'Connecting high-speed ad-free stream...');
-      } else if (elapsed <= 1800) {
-        setLoaderProgress(33 + ((elapsed - 700) / 1100) * 27, 'Downloading 3D textures, models & audio banks...');
-      } else if (elapsed <= 3200) {
-        setLoaderProgress(60 + ((elapsed - 1800) / 1400) * 25, 'Compiling WebAssembly (WASM) & WebGL shaders...');
-      } else if (elapsed <= 4800) {
-        setLoaderProgress(85 + ((elapsed - 3200) / 1600) * 11, 'Building 3D maps, terrain meshes & lighting...');
-      } else if (elapsed <= 6200) {
-        // Hold at 96%-98% while waiting for canvas paint detection
-        setLoaderProgress(96 + ((elapsed - 4800) / 1400) * 2, 'Building 3D world assets & initializing canvas...');
-      }
-
-      if (gameReadyReceived && elapsed >= 3200) {
-        attemptDismiss('gameReadyDelayed');
-      } else if (elapsed >= 6500) {
-        attemptDismiss('timeout_6.5s');
+      if (elapsed <= 500) {
+        setLoaderProgress(15 + (elapsed / 500) * 45, 'Connecting high-speed ad-free stream...');
+      } else if (elapsed <= 1200) {
+        setLoaderProgress(60 + ((elapsed - 500) / 700) * 35, 'Initializing game environment...');
+      } else if (elapsed > 2000) {
+        // Automatically reveal game frame after 2s max wait so the game's official loader is seen
+        clearInterval(loaderTimer);
+        dismissLoader('timeout_2s');
       }
     }, 100);
 
@@ -840,10 +818,11 @@
           iframe.src = `/play-game/${game.slug}`;
 
           iframe.onload = () => {
-            // HTML stream loaded into DOM - advance progress to shader compilation
-            if (!isLoaderDismissed && progressVal < 50) {
-              setLoaderProgress(50, 'Compiling WebGL shaders & 3D engine...');
-            }
+            // HTML stream loaded into DOM - advance progress and reveal game's official loader!
+            setLoaderProgress(100, 'Game stream connected!');
+            setTimeout(() => {
+              dismissLoader('iframe_loaded');
+            }, 300);
           };
           iframe.onerror = () => {
             setLoaderProgress(99, 'Launching game...');
