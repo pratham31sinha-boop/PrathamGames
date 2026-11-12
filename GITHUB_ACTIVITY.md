@@ -370,3 +370,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-12 06:58:39 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-12 06:58:50 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-12 07:23:55 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-12 07:24:07 UTC | 🎮 GAME_PLAY | **Prankster 3D** (Arcade) | Linux x86_64 • Desktop |
