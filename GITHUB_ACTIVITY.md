@@ -361,3 +361,4 @@ Automated telemetry stream tracking real-time player sessions and game launches 
 | 2026-11-12 06:57:19 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-12 06:57:28 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
 | 2026-11-12 06:57:38 UTC | 🌐 USER_VISIT | **Games Store Home** (Portal) | Linux x86_64 • Desktop |
+| 2026-11-12 06:57:43 UTC | 🎮 GAME_PLAY | **Vectaria.io** (.io & Arena) | Linux x86_64 • Desktop |
