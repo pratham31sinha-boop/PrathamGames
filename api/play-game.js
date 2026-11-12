@@ -248,6 +248,11 @@ const RENDER_DETECTOR_SNIPPET = `<script>
         _notifyReady();
         if (typeof _origGPS === 'function') _origGPS.apply(this, arguments);
       };
+      var _origGLS = window.PokiSDK.gameLoadingStart;
+      window.PokiSDK.gameLoadingStart = function() {
+        try { window.parent.postMessage({ type: 'PRATHAM_GAME_STAGE', stage: 'Building 3D Maps & Terrain...' }, '*'); } catch(e){}
+        if (typeof _origGLS === 'function') _origGLS.apply(this, arguments);
+      };
       var _origGLP = window.PokiSDK.gameLoadingProgress;
       window.PokiSDK.gameLoadingProgress = function(p) {
         try {
@@ -260,6 +265,16 @@ const RENDER_DETECTOR_SNIPPET = `<script>
         if (typeof _origGLP === 'function') _origGLP.apply(this, arguments);
       };
     }
+
+    // Monitor canvas initialization to signal ready when game draws
+    var _checkCanvas = setInterval(function() {
+      var canvas = document.querySelector('canvas');
+      if (canvas && canvas.width > 50 && canvas.height > 50) {
+        _notifyReady();
+        clearInterval(_checkCanvas);
+      }
+    }, 400);
+    setTimeout(function() { clearInterval(_checkCanvas); }, 14000);
   } catch(e){}
 })();
 </script>`;

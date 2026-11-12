@@ -12,7 +12,12 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./assets/pratham-store-ui.css?v=20261111_bento_v6">
+  <!-- High-Speed CDN & Asset Preconnect for Zero-Lag Instant Game Loading -->
+  <link rel="preconnect" href="https://game-cdn.poki.com" crossorigin>
+  <link rel="dns-prefetch" href="https://game-cdn.poki.com">
+  <link rel="preconnect" href="https://img.poki-cdn.com" crossorigin>
+  <link rel="dns-prefetch" href="https://img.poki-cdn.com">
+  <link rel="stylesheet" href="./assets/pratham-store-ui.css?v=20261112_preload_v9">
 </head>
 <body class="mode-browse">
 
@@ -352,7 +357,7 @@
   </div>
 
   <!-- Database & Interactive Engine Scripts -->
-  <script src="./assets/games-data.js?v=20261111_bento_v6"></script>
-  <script src="./assets/pratham-store-ui.js?v=20261112_loader_v7"></script>
+  <script src="./assets/games-data.js?v=20261112_preload_v9"></script>
+  <script src="./assets/pratham-store-ui.js?v=20261112_preload_v9"></script>
 </body>
 </html>

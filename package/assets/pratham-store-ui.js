@@ -306,6 +306,68 @@
 
     window.switchToPlay = switchToPlay;
     window.switchToBrowse = switchToBrowse;
+    window.prefetchGame = prefetchGame;
+
+    // Start background preloading for top games on phone and PC
+    initIntelligentPreloader();
+  }
+
+  // --- 3.5 INTELLIGENT PRELOAD & CACHE ENGINE (PHONE & PC) ---
+  const prefetchedSlugs = new Set();
+  function prefetchGame(slug) {
+    if (!slug || prefetchedSlugs.has(slug)) return;
+    prefetchedSlugs.add(slug);
+
+    // 1. Silently fetch HTML and cache in browser cache
+    try {
+      fetch(`/play-game/${slug}`, { priority: 'low' })
+        .then(res => {
+          if (res.ok && 'caches' in window) {
+            caches.open('pratham-games-cache-v1')
+              .then(cache => cache.put(`/play-game/${slug}`, res.clone()))
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    } catch(e) {}
+
+    // 2. Preload thumbnail
+    const game = findGame(slug);
+    if (game && (game.cdnThumbnail || game.thumbnail)) {
+      const img = new Image();
+      img.src = game.cdnThumbnail || game.thumbnail;
+    }
+  }
+
+  // Automatic Background Preloader for Top Games on Phone & PC
+  function initIntelligentPreloader() {
+    const TOP_PRELOAD_SLUGS = [
+      'subway-surfers',
+      'drive-mad',
+      'prankster-3d',
+      'monkey-mart',
+      'temple-run-2',
+      'level-devil',
+      'retro-bowl',
+      'fruit-ninja',
+      'stickman-hook',
+      'blumgi-rocket',
+      'tag',
+      'slice-master'
+    ];
+
+    // Wait 1.2s after initial page render so initial painting has 0 latency
+    setTimeout(() => {
+      let idx = 0;
+      const interval = setInterval(() => {
+        if (idx >= TOP_PRELOAD_SLUGS.length) {
+          clearInterval(interval);
+          return;
+        }
+        prefetchGame(TOP_PRELOAD_SLUGS[idx]);
+        idx++;
+      }, 300); // 300ms gentle spacing
+    }, 1200);
   }
 
   // --- 4. RENDER PAGE 1: GAMES STORE ---
@@ -515,17 +577,23 @@
     `;
     }).join('');
 
-    // Click handler for all catalog cards
+    // Click and prefetch handlers for all catalog cards (Instant Touch & Hover Preloading)
     grid.querySelectorAll('.game-catalog-card').forEach(card => {
-      card.addEventListener('mouseenter', () => sfx.hover());
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        const slug = card.getAttribute('data-slug');
-        if (slug) {
+      const slug = card.getAttribute('data-slug');
+      if (slug) {
+        card.addEventListener('mouseenter', () => {
+          sfx.hover();
+          prefetchGame(slug);
+        });
+        card.addEventListener('touchstart', () => {
+          prefetchGame(slug);
+        }, { passive: true });
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
           sfx.launch();
           switchToPlay(slug);
-        }
-      });
+        });
+      }
     });
   }
 
@@ -726,7 +794,7 @@
       if (loaderPercent) loaderPercent.innerText = `${Math.round(progressVal)}%`;
       if (msg && loaderStatus) loaderStatus.innerText = msg;
     };
-    setLoaderProgress(12, 'Connecting high-speed ad-free stream...');
+    setLoaderProgress(15, 'Connecting high-speed ad-free stream...');
 
     // Show loading overlay
     if (loader) {
@@ -742,7 +810,7 @@
       if (isLoaderDismissed) return;
       isLoaderDismissed = true;
       if (loaderTimer) clearInterval(loaderTimer);
-      setLoaderProgress(100, 'Game stream connected!');
+      setLoaderProgress(100, 'Game Ready! Launching...');
       setTimeout(() => {
         if (state.loadCounter === currentLoadId && loader) {
           loader.style.pointerEvents = 'none';
@@ -772,7 +840,7 @@
     window._prathamSetLoaderProgress = (pct) => {
       if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
         const val = typeof pct === 'number' ? pct : 0;
-        setLoaderProgress(Math.min(99, Math.max(progressVal, val)), 'Loading game assets...');
+        setLoaderProgress(Math.min(99, Math.max(progressVal, val)), 'Downloading game assets...');
         if (val >= 100) {
           dismissLoader('progress_100');
         }
@@ -780,28 +848,32 @@
     };
     window._prathamSetLoaderStage = (stage) => {
       if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
-        setLoaderProgress(Math.max(progressVal, 75), stage);
+        setLoaderProgress(Math.max(progressVal, 60), stage);
       }
     };
 
-    // Smooth initial connection ticker while the iframe initializes
+    // Progressive real-time ticker displaying alive stages while game engine boots
     let elapsed = 0;
     loaderTimer = setInterval(() => {
       if (state.loadCounter !== currentLoadId || isLoaderDismissed) {
         clearInterval(loaderTimer);
         return;
       }
-      elapsed += 100;
-      if (elapsed <= 500) {
-        setLoaderProgress(15 + (elapsed / 500) * 45, 'Connecting high-speed ad-free stream...');
-      } else if (elapsed <= 1200) {
-        setLoaderProgress(60 + ((elapsed - 500) / 700) * 35, 'Initializing game environment...');
-      } else if (elapsed > 2000) {
-        // Automatically reveal game frame after 2s max wait so the game's official loader is seen
+      elapsed += 150;
+      if (elapsed <= 1200) {
+        setLoaderProgress(15 + (elapsed / 1200) * 25, 'Connecting high-speed ad-free stream...');
+      } else if (elapsed <= 3500) {
+        setLoaderProgress(40 + ((elapsed - 1200) / 2300) * 25, 'Downloading 3D engine & assets...');
+      } else if (elapsed <= 7500) {
+        setLoaderProgress(65 + ((elapsed - 3500) / 4000) * 20, 'Building 3D maps & terrain...');
+      } else if (elapsed <= 12000) {
+        setLoaderProgress(85 + ((elapsed - 7500) / 4500) * 10, 'Compiling WebGL shaders & textures...');
+      } else if (elapsed > 14000) {
+        // Safety release so user is never blocked indefinitely
         clearInterval(loaderTimer);
-        dismissLoader('timeout_2s');
+        dismissLoader('max_safety_timeout');
       }
-    }, 100);
+    }, 150);
 
     // Embed local ad-free streaming iframe
     if (iframe) {
@@ -818,15 +890,12 @@
           iframe.src = `/play-game/${game.slug}`;
 
           iframe.onload = () => {
-            // HTML stream loaded into DOM - advance progress and reveal game's official loader!
-            setLoaderProgress(100, 'Game stream connected!');
-            setTimeout(() => {
-              dismissLoader('iframe_loaded');
-            }, 300);
+            // HTML stream loaded into DOM - advance progress and update stage (never show black screen)
+            setLoaderProgress(Math.max(progressVal, 42), 'Downloading 3D engine & assets...');
           };
           iframe.onerror = () => {
             setLoaderProgress(99, 'Launching game...');
-            setTimeout(dismissLoader, 300);
+            setTimeout(dismissLoader, 400);
           };
         }
       }, 20);
@@ -897,6 +966,8 @@
           <div class="player-sibling-meta">⭐ ${g.rating || 4.8} • ${g.category}</div>
         </div>
       `;
+      item.addEventListener('mouseenter', () => prefetchGame(g.slug));
+      item.addEventListener('touchstart', () => prefetchGame(g.slug), { passive: true });
       item.addEventListener('click', () => {
         sfx.launch();
         switchToPlay(g.slug);
@@ -923,12 +994,17 @@
           </div>
         </div>
       `;
+      card.addEventListener('mouseenter', () => prefetchGame(g.slug));
+      card.addEventListener('touchstart', () => prefetchGame(g.slug), { passive: true });
       card.addEventListener('click', () => {
         sfx.launch();
         switchToPlay(g.slug);
       });
       bottomGrid.appendChild(card);
     });
+
+    // Automatically prefetch top 3 adjacent recommendations for instant switching
+    shuffled.slice(0, 3).forEach(g => prefetchGame(g.slug));
   }
 
   // --- 6. EVENT LISTENERS ATTACHMENT ---
