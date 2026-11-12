@@ -4,3 +4,4 @@
 [12:31:18 PM IST] GAME PLAYED: Who Is? | Category: Arcade | Score: Active Session Started | Duration: 0m
 [12:31:29 PM IST] GAME PLAYED: Who Is? | Category: Arcade | Score: 246 pts | Duration: 11s
 [12:32:29 PM IST] GAME PLAYED: Magic Coloring Book | Category: Arcade | Score: Active Session Started | Duration: 0m
+[12:53:37 PM IST] GAME PLAYED: Magic Coloring Book | Category: Arcade | Score: 28118 pts | Duration: 21m 17s
