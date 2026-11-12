@@ -11,3 +11,4 @@ yarn-error.log*
 *.log
 games_assets_cache/
 
+scratch_*.json

@@ -765,118 +765,24 @@
     if (likeBtn) likeBtn.classList.toggle('liked', isLiked);
     if (likeCount) likeCount.innerText = (game.likes || 89) + (isLiked ? 1 : 0);
 
-    // Enhanced Branded Game Loader
-    const loaderIcon = document.getElementById('loaderGameIcon');
-    const loaderTitle = document.getElementById('loaderGameTitle');
-    const loaderCat = document.getElementById('loaderCatBadge');
-    const loaderFill = document.getElementById('loaderProgressFill');
-    const loaderStatus = document.getElementById('loaderStatusText');
-    const loaderPercent = document.getElementById('loaderPercentBadge');
-    const loaderTip = document.getElementById('loaderTipText');
-    const loaderSkip = document.getElementById('loaderSkipBtn');
-
-    if (loaderIcon) {
-      loaderIcon.src = game.cdnThumbnail || game.thumbnail || './assets/icons/logo.svg';
-      loaderIcon.onerror = function() {
-        this.src = getColoredPlaceholder(game.title, game.category);
-      };
-    }
-    if (loaderTitle) loaderTitle.innerText = game.title;
-    if (loaderCat) loaderCat.innerText = game.category || 'Arcade';
-    if (loaderTip) {
-      loaderTip.innerText = game.controls ? `Controls: ${game.controls}` : 'Tip: Use Arrow keys or WASD to navigate!';
-    }
-
-    let progressVal = 12;
-    const setLoaderProgress = (val, msg) => {
-      progressVal = Math.min(100, Math.max(0, val));
-      if (loaderFill) loaderFill.style.width = `${progressVal}%`;
-      if (loaderPercent) loaderPercent.innerText = `${Math.round(progressVal)}%`;
-      if (msg && loaderStatus) loaderStatus.innerText = msg;
-    };
-    setLoaderProgress(15, 'Connecting high-speed ad-free stream...');
-
-    // Show loading overlay
+    // Hide store loading overlay completely - each game contains its own official loading screen
     if (loader) {
-      loader.style.pointerEvents = 'auto';
-      loader.style.display = 'flex';
-      loader.style.opacity = '1';
-    }
-
-    let loaderTimer = null;
-    let isLoaderDismissed = false;
-
-    const dismissLoader = (reason = 'unknown') => {
-      if (isLoaderDismissed) return;
-      isLoaderDismissed = true;
-      if (loaderTimer) clearInterval(loaderTimer);
-      setLoaderProgress(100, 'Game Ready! Launching...');
-      setTimeout(() => {
-        if (state.loadCounter === currentLoadId && loader) {
-          loader.style.pointerEvents = 'none';
-          loader.style.opacity = '0';
-          setTimeout(() => {
-            if (state.loadCounter === currentLoadId && loader) {
-              loader.style.display = 'none';
-            }
-          }, 350);
-        }
-      }, 250);
-    };
-
-    if (loaderSkip) {
-      loaderSkip.onclick = () => {
-        sfx.click();
-        dismissLoader('skipBtn');
-      };
+      loader.style.pointerEvents = 'none';
+      loader.style.display = 'none';
+      loader.style.opacity = '0';
+      loader.style.visibility = 'hidden';
     }
 
     // Connect global hooks for real iframe render detection & progress events
-    window._prathamGameReady = () => {
-      if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
-        dismissLoader('window._prathamGameReady');
-      }
-    };
-    window._prathamSetLoaderProgress = (pct) => {
-      if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
-        const val = typeof pct === 'number' ? pct : 0;
-        setLoaderProgress(Math.min(99, Math.max(progressVal, val)), 'Downloading game assets...');
-        if (val >= 100) {
-          dismissLoader('progress_100');
-        }
-      }
-    };
-    window._prathamSetLoaderStage = (stage) => {
-      if (state.loadCounter === currentLoadId && !isLoaderDismissed) {
-        setLoaderProgress(Math.max(progressVal, 60), stage);
-      }
-    };
+    window._prathamGameReady = () => {};
+    window._prathamSetLoaderProgress = () => {};
+    window._prathamSetLoaderStage = () => {};
 
-    // Progressive real-time ticker displaying alive stages while game engine boots
-    let elapsed = 0;
-    loaderTimer = setInterval(() => {
-      if (state.loadCounter !== currentLoadId || isLoaderDismissed) {
-        clearInterval(loaderTimer);
-        return;
-      }
-      elapsed += 150;
-      if (elapsed <= 1200) {
-        setLoaderProgress(15 + (elapsed / 1200) * 25, 'Connecting high-speed ad-free stream...');
-      } else if (elapsed <= 3500) {
-        setLoaderProgress(40 + ((elapsed - 1200) / 2300) * 25, 'Downloading 3D engine & assets...');
-      } else if (elapsed <= 7500) {
-        setLoaderProgress(65 + ((elapsed - 3500) / 4000) * 20, 'Building 3D maps & terrain...');
-      } else if (elapsed <= 12000) {
-        setLoaderProgress(85 + ((elapsed - 7500) / 4500) * 10, 'Compiling WebGL shaders & textures...');
-      } else if (elapsed > 14000) {
-        // Safety release so user is never blocked indefinitely
-        clearInterval(loaderTimer);
-        dismissLoader('max_safety_timeout');
-      }
-    }, 150);
-
-    // Embed local ad-free streaming iframe
+    // Embed local ad-free streaming iframe directly - official game loader is visible from frame 0
     if (iframe) {
+      iframe.style.display = 'block';
+      iframe.style.opacity = '1';
+      iframe.style.visibility = 'visible';
       // Ensure cross-origin asset hotlinking protection bypass via no-referrer
       iframe.referrerPolicy = 'no-referrer';
       iframe.setAttribute('referrerpolicy', 'no-referrer');
@@ -888,15 +794,6 @@
       setTimeout(() => {
         if (state.loadCounter === currentLoadId) {
           iframe.src = `/play-game/${game.slug}`;
-
-          iframe.onload = () => {
-            // HTML stream loaded into DOM - advance progress and update stage (never show black screen)
-            setLoaderProgress(Math.max(progressVal, 42), 'Downloading 3D engine & assets...');
-          };
-          iframe.onerror = () => {
-            setLoaderProgress(99, 'Launching game...');
-            setTimeout(dismissLoader, 400);
-          };
         }
       }, 20);
     }

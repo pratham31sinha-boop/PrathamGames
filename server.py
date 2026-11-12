@@ -710,47 +710,6 @@ MOCK_SDK_TEMPLATE = """
     }, 100);
     setTimeout(function() { clearInterval(bridgeInterval); }, 6000);
   })();
-
-  // Universal Loading Overlay Auto-Dismiss Watchdog (< 1.5s max wait)
-  (function() {
-    var dismissOverlays = function() {
-      var selectors = [
-        '#loadingOverlay', '#boot', '#splash-content', '#loadingContainer',
-        '#loader', '#loading-bar', '.loading-overlay', '#loading-cover',
-        '#load', '#progress-container', '#progress-bar-root'
-      ];
-      for (var i = 0; i < selectors.length; i++) {
-        var el = document.querySelector(selectors[i]);
-        if (el) {
-          try {
-            el.style.transition = 'opacity 0.25s ease';
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none';
-            (function(target) {
-              setTimeout(function() {
-                target.style.display = 'none';
-                target.style.visibility = 'hidden';
-              }, 250);
-            })(el);
-          } catch(e) {}
-        }
-      }
-      try {
-        if (window.PokiSDK && window.PokiSDK.gameLoadingFinished) {
-          window.PokiSDK.gameLoadingFinished();
-        }
-      } catch(e) {}
-    };
-
-    if (document.readyState === 'complete') {
-      setTimeout(dismissOverlays, 800);
-    } else {
-      window.addEventListener('load', function() {
-        setTimeout(dismissOverlays, 800);
-      });
-    }
-    setTimeout(dismissOverlays, 1500);
-  })();
 })();
 </script>
 """

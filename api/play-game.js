@@ -209,25 +209,35 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
 
 const RENDER_DETECTOR_SNIPPET = `<script>
 (function() {
-  // Ensure late window.onload handlers execute if document already completed
+  // Reliable Loader Initializer: Ensures unity-2020.js / unity.js window.onload executes reliably
   (function() {
-    var _onload = null;
-    try {
-      Object.defineProperty(window, 'onload', {
-        get: function() { return _onload; },
-        set: function(fn) {
-          _onload = fn;
-          if (document.readyState === 'complete') {
-            setTimeout(function() {
-              if (typeof _onload === 'function') {
-                try { _onload(); } catch(e) {}
-              }
-            }, 20);
-          }
-        },
-        configurable: true
-      });
-    } catch(e) {}
+    var executed = false;
+    function triggerOnload() {
+      if (executed) return;
+      if (typeof window.onload === 'function') {
+        if (!document.body) return;
+        executed = true;
+        var fn = window.onload;
+        window.onload = null;
+        try {
+          fn();
+        } catch(e) {
+          console.error('Error in window.onload:', e);
+        }
+      }
+    }
+
+    window.addEventListener('load', function() { setTimeout(triggerOnload, 10); });
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(triggerOnload, 10); });
+
+    var timer = setInterval(function() {
+      if (typeof window.onload === 'function') {
+        clearInterval(timer);
+        triggerOnload();
+      }
+    }, 50);
+
+    setTimeout(function() { clearInterval(timer); }, 15000);
   })();
 
   var _painted = false;
