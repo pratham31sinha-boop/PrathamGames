@@ -220,12 +220,26 @@
     }
   } catch(e) {}
 
-  // Safe DOM Load fallback (never override Object.defineProperty(window, 'onload'))
-  if (document.readyState === 'complete') {
-    setTimeout(function() {
-      try { window.dispatchEvent(new Event('load')); } catch(e) {}
-    }, 20);
-  }
+  // Ensure late window.onload handlers (such as in unity-2020.js) execute even if document already loaded
+  (function() {
+    var _onload = null;
+    try {
+      Object.defineProperty(window, 'onload', {
+        get: function() { return _onload; },
+        set: function(fn) {
+          _onload = fn;
+          if (document.readyState === 'complete') {
+            setTimeout(function() {
+              if (typeof _onload === 'function') {
+                try { _onload(); } catch(e) {}
+              }
+            }, 20);
+          }
+        },
+        configurable: true
+      });
+    } catch(e) {}
+  })();
 
   // Transparent CORS proxy for external game APIs (e.g. minefun.io, vectaria.io, supabase)
   try {

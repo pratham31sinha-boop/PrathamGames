@@ -209,6 +209,27 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
 
 const RENDER_DETECTOR_SNIPPET = `<script>
 (function() {
+  // Ensure late window.onload handlers execute if document already completed
+  (function() {
+    var _onload = null;
+    try {
+      Object.defineProperty(window, 'onload', {
+        get: function() { return _onload; },
+        set: function(fn) {
+          _onload = fn;
+          if (document.readyState === 'complete') {
+            setTimeout(function() {
+              if (typeof _onload === 'function') {
+                try { _onload(); } catch(e) {}
+              }
+            }, 20);
+          }
+        },
+        configurable: true
+      });
+    } catch(e) {}
+  })();
+
   var _painted = false;
   function _notifyReady() {
     if (_painted) return;
