@@ -16,6 +16,11 @@ function getGitHubConfig() {
  * Handles existing files by fetching current SHA and Base64 appending.
  */
 async function appendFileToGitHub(filePath, newText, commitMessage = 'Activity update [IST]') {
+  // Guard against runaway commit flooding that exhausts Vercel/Render build rate limits
+  if (process.env.ENABLE_GIT_COMMITS !== 'true') {
+    return { success: true, mocked: true };
+  }
+
   const { token, repo } = getGitHubConfig();
   if (!token || !repo) {
     return { success: false, reason: 'No GITHUB_TOKEN configured' };
