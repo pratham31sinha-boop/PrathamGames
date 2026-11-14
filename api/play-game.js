@@ -204,6 +204,101 @@ const MOCK_SDK_SNIPPET = `<meta name="referrer" content="no-referrer">
   window.PokiSDKInited = true;
   window.isPokiSDKInited = true;
   window.isWasmLoaded = true;
+
+  // Universal Root-Relative Asset Path Resolver & Transparent CORS Proxy
+  try {
+    var fixAssetUrl = function(url) {
+      if (typeof url !== 'string') return url;
+      try {
+        var base = document.baseURI;
+        if (base && (base.indexOf('gdn.poki.com') !== -1 || base.indexOf('poki-gdn.com') !== -1)) {
+          var baseParsed = new URL(base);
+          var origin = baseParsed.origin;
+          var basePath = baseParsed.pathname;
+          if (basePath && basePath.length > 1) {
+            if (!basePath.endsWith('/')) basePath += '/';
+            if (url.indexOf(origin + '/') === 0 && url.indexOf(origin + basePath) !== 0) {
+              return origin + basePath + url.substring(origin.length + 1);
+            }
+            if (url.charAt(0) === '/' && url.indexOf(basePath) !== 0) {
+              return origin + basePath + url.substring(1);
+            }
+          }
+        }
+      } catch(e) {}
+      return url;
+    };
+
+    var PROXY_DOMAINS = ['minefun.io', 'vectaria.io', 'supabase.co', 'pangolinworks.dev', 'cryzen.io', 'sushiparty.io'];
+    var shouldProxy = function(u) {
+      if (typeof u !== 'string') return false;
+      for (var i = 0; i < PROXY_DOMAINS.length; i++) {
+        if (u.indexOf(PROXY_DOMAINS[i]) !== -1) return true;
+      }
+      return false;
+    };
+
+    var _origFetch = window.fetch;
+    if (_origFetch) {
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        var fixed = fixAssetUrl(url);
+        if (fixed !== url) {
+          if (typeof input === 'string') {
+            input = fixed;
+          } else if (input && input.url) {
+            input = new Request(fixed, input);
+          }
+          url = fixed;
+        }
+        if (shouldProxy(url)) {
+          var proxyUrl = '/api/cors-proxy?url=' + encodeURIComponent(url);
+          if (typeof input === 'string') {
+            input = proxyUrl;
+          } else if (input && input.url) {
+            input = new Request(proxyUrl, input);
+          }
+        }
+        return _origFetch.call(this, input, init).then(function(res) {
+          if (typeof url === 'string' && (url.indexOf('.gz') !== -1 || url.indexOf('.unityweb') !== -1)) {
+            var origGet = res.headers.get.bind(res.headers);
+            res.headers.get = function(name) {
+              if (name && name.toLowerCase() === 'content-encoding') {
+                return origGet(name) || 'gzip';
+              }
+              return origGet(name);
+            };
+          }
+          return res;
+        });
+      };
+    }
+
+    var _origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+      url = fixAssetUrl(url);
+      if (shouldProxy(url)) {
+        url = '/api/cors-proxy?url=' + encodeURIComponent(url);
+      }
+      return _origXhrOpen.call(this, method, url, async !== false, user, pass);
+    };
+
+    // Unity-2020 Slideshow Query Guard (prevents single-screenshot crashes)
+    var _origElemQS = Element.prototype.querySelector;
+    Element.prototype.querySelector = function(selector) {
+      var res = _origElemQS.apply(this, arguments);
+      if (!res && typeof selector === 'string' && selector.indexOf('#slideshow-images .right') !== -1) {
+        var dummy = document.createElement('div');
+        dummy.className = 'image right';
+        dummy.setAttribute('data-idx', '0');
+        dummy.setAttribute('fullImageLoaded', 'true');
+        var dummyImg = document.createElement('img');
+        dummy.appendChild(dummyImg);
+        return dummy;
+      }
+      return res;
+    };
+  } catch(e) {}
 })();
 </script>`;
 
